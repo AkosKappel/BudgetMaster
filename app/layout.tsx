@@ -1,25 +1,31 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ReactNode } from 'react';
+
 import './globals.css';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import Nav from '@/components/Nav';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Budget Master',
-  description: 'A personal budget tracker app',
+  description: 'Track and manage your expenses',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`flex flex-col min-h-screen ${inter.className}`}>
+        <Header />
         <Nav />
-        {children}
+        <main className="flex-grow container mx-auto p-4">{children}</main>
+        <Footer />
       </body>
     </html>
   );

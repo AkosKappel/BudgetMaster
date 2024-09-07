@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       ...body,
       date: body?.date ? new Date(body.date) : new Date(),
     });
-    console.log(parsedBody);
 
     const client = await clientPromise;
     const db = client.db(DATABASE_NAME);
