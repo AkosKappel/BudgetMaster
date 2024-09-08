@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
+
 import {
-  HomeIcon,
-  CurrencyEuroIcon,
   ChartPieIcon,
-  DocumentTextIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CurrencyEuroIcon,
+  DocumentTextIcon,
+  HomeIcon,
 } from '@heroicons/react/24/solid';
 
 const Sidebar: React.FC = () => {

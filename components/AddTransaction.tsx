@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
 import Switch from 'react-switch';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusIcon } from '@heroicons/react/24/solid';
-import { transactionSchema, TransactionData } from '@/schemas/transaction';
+
 import Modal from '@/components/Modal';
+import { TransactionData, transactionSchema } from '@/schemas/transaction';
+import { PlusIcon } from '@heroicons/react/24/solid';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const AddTransaction: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -4,5 +4,20 @@
   "singleQuote": true,
   "trailingComma": "all",
   "printWidth": 120,
-  "bracketSpacing": true
+  "bracketSpacing": true,
+  "semi": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": [
+    "^next",
+    "^react",
+    "<THIRD_PARTY_MODULES>",
+    "^@api/(.*)$",
+    "^@components/(.*)$",
+    "^@lib/(.*)$",
+    "^@schemas/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true
 }
