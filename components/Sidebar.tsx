@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-const Nav: React.FC = () => {
+const Sidebar: React.FC = () => {
   const pathname = usePathname();
 
   const navItems = [
@@ -14,14 +14,14 @@ const Nav: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-base-100 shadow-md">
-      <div className="container mx-auto p-4">
-        <ul className="flex space-x-4">
+    <nav className="left-0 bg-base-100 shadow-md w-64 p-4">
+      <div className="flex flex-col h-full">
+        <ul className="flex flex-col space-y-2">
           {navItems.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`text-base font-medium p-2 rounded-lg transition-all duration-300
+                className={`block text-base font-medium p-3 rounded-lg transition-all duration-300
                   ${pathname === item.href ? 'text-primary bg-primary-content scale-105' : 'hover:text-primary hover:bg-primary-content hover:scale-105'}`}
               >
                 {item.name}
@@ -34,4 +34,4 @@ const Nav: React.FC = () => {
   );
 };
 
-export default Nav;
+export default Sidebar;

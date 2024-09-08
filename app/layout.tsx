@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Nav from '@/components/Nav';
+import Sidebar from '@/components/Sidebar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,8 +23,10 @@ export default function RootLayout({ children }: LayoutProps) {
     <html lang="en">
       <body className={`flex flex-col min-h-screen bg-base-200 ${inter.className}`}>
         <Header />
-        <Nav />
-        <main className="flex-grow container mx-auto p-4">{children}</main>
+        <div className="flex flex-grow">
+          <Sidebar />
+          <main className="flex-grow container mx-auto p-4">{children}</main>
+        </div>
         <Footer />
       </body>
     </html>
