@@ -25,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps) {
         <Header />
         <div className="flex flex-grow">
           <Sidebar />
-          <main className="flex-grow container mx-auto p-4">{children}</main>
+          <main className="flex-grow container mx-auto p-4 overflow-auto">{children}</main>
         </div>
         <Footer />
       </body>

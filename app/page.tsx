@@ -1,12 +1,20 @@
-import React from 'react';
-import AddTransaction from '@/components/AddTransaction';
+'use client';
 
-const Home = () => {
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+const Home: React.FC = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
   return (
-    <>
-      <div className="text-3xl min-h-screen">Home</div>
-      <AddTransaction />
-    </>
+    <div className="flex justify-center items-center min-h-64">
+      <LoadingSpinner />
+    </div>
   );
 };
 
