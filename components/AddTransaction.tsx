@@ -9,6 +9,7 @@ import Modal from '@/components/Modal';
 import { TransactionData, transactionSchema } from '@/schemas/transaction';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 
 const AddTransaction: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,10 +39,18 @@ const AddTransaction: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const onSubmit = (data: TransactionData) => {
-    console.log('Transaction Data:', data);
-    reset();
-    closeModal();
+  const onSubmit = async (data: TransactionData) => {
+    try {
+      const response = await axios.post('/api/transactions', data);
+      if (response.status !== 201) {
+        throw new Error('Failed to add transaction');
+      }
+      reset();
+      closeModal();
+      console.log('Transaction added successfully', response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -82,7 +91,7 @@ const AddTransaction: React.FC = () => {
               <input
                 type="date"
                 className={`input input-bordered w-full ${errors.date ? 'input-error' : ''}`}
-                {...register('date', { valueAsDate: true })}
+                {...register('date')}
               />
               {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
             </div>

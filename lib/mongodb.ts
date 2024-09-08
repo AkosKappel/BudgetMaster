@@ -35,3 +35,10 @@ process.on('SIGINT', async () => {
 });
 
 export default clientPromise;
+
+export async function useDb(databaseName?: string, collectionName?: string) {
+  const client = await clientPromise;
+  const db = databaseName ? client.db(databaseName) : null;
+  const collection = collectionName ? db?.collection(collectionName) : null;
+  return { client, db, collection };
+}
