@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const { collection } = await useDb(DATABASE_NAME, COLLECTION_NAME);
     const transactions = await collection?.find({}).toArray();
 
-    return NextResponse.json({ transactions });
+    return NextResponse.json({ transactions }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error }, { status: 500 });

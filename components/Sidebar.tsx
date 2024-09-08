@@ -3,16 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+
+
 import React, { useEffect, useState } from 'react';
 
-import {
-  ChartPieIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CurrencyEuroIcon,
-  DocumentTextIcon,
-  HomeIcon,
-} from '@heroicons/react/24/solid';
+
+
+import { ChartPieIcon, ChevronLeftIcon, ChevronRightIcon, CurrencyEuroIcon, DocumentTextIcon, HomeIcon } from '@heroicons/react/24/solid';
+
 
 const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -21,7 +19,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: <HomeIcon className="w-5 h-5" /> },
-    { name: 'Expenses', href: '/expenses', icon: <CurrencyEuroIcon className="w-5 h-5" /> },
+    { name: 'Transactions', href: '/transactions', icon: <CurrencyEuroIcon className="w-5 h-5" /> },
     { name: 'Stats', href: '/stats', icon: <ChartPieIcon className="w-5 h-5" /> },
     { name: 'Reports', href: '/reports', icon: <DocumentTextIcon className="w-5 h-5" /> },
   ];

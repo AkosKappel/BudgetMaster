@@ -14,6 +14,7 @@ import axios from 'axios';
 const AddTransaction: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -35,12 +36,11 @@ const AddTransaction: React.FC = () => {
   const isExpense = watch('isExpense', true);
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  const closeModal = () => setIsModalOpen(false);
 
   const onSubmit = async (data: TransactionData) => {
     try {
+      setLoading(true);
       const response = await axios.post('/api/transactions', data);
       if (response.status !== 201) {
         throw new Error('Failed to add transaction');
@@ -50,6 +50,8 @@ const AddTransaction: React.FC = () => {
       console.log('Transaction added successfully', response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,69 +112,67 @@ const AddTransaction: React.FC = () => {
               </label>
             </div>
           </div>
-          {!isCollapsed && (
-            <>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Description</label>
+          <div className={`transition-all ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-full'}`}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="Details (optional)"
+                {...register('description')}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Labels</label>
+              <Controller
+                control={control}
+                name="labels"
+                render={({ field }) => (
+                  <CreatableSelect
+                    isMulti
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    styles={{
+                      valueContainer: (provided) => ({
+                        ...provided,
+                        padding: '0.25rem 0.5rem',
+                      }),
+                      input: (provided) => ({
+                        ...provided,
+                        color: 'blue',
+                        '&::placeholder': {
+                          color: 'turquoise',
+                        },
+                      }),
+                    }}
+                    onChange={(val) => field.onChange(val.map((v) => v.value))}
+                    value={(field.value || []).map((label) => ({ label, value: label }))}
+                    placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
+                  />
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Sender</label>
                 <input
                   type="text"
                   className="input input-bordered w-full"
-                  placeholder="Details (optional)"
-                  {...register('description')}
+                  placeholder="Sender name (optional)"
+                  {...register('sender')}
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Labels</label>
-                <Controller
-                  control={control}
-                  name="labels"
-                  render={({ field }) => (
-                    <CreatableSelect
-                      isMulti
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                      styles={{
-                        valueContainer: (provided) => ({
-                          ...provided,
-                          padding: '0.25rem 0.5rem',
-                        }),
-                        input: (provided) => ({
-                          ...provided,
-                          color: 'blue',
-                          '&::placeholder': {
-                            color: 'turquoise',
-                          },
-                        }),
-                      }}
-                      onChange={(val) => field.onChange(val.map((v) => v.value))}
-                      value={(field.value || []).map((label) => ({ label, value: label }))}
-                      placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
-                    />
-                  )}
+              <div>
+                <label className="block text-sm font-medium mb-1">Receiver</label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Receiver name (optional)"
+                  {...register('receiver')}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Sender</label>
-                  <input
-                    type="text"
-                    className="input input-bordered w-full"
-                    placeholder="Sender name (optional)"
-                    {...register('sender')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Receiver</label>
-                  <input
-                    type="text"
-                    className="input input-bordered w-full"
-                    placeholder="Receiver name (optional)"
-                    {...register('receiver')}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+            </div>
+          </div>
           <div className="flex justify-between items-center mt-4">
             <button type="button" className="btn btn-secondary" onClick={() => setIsCollapsed(!isCollapsed)}>
               {isCollapsed ? '▼ Show More' : '▲ Show Less'}
@@ -181,8 +181,8 @@ const AddTransaction: React.FC = () => {
               <button type="button" className="btn btn-ghost bg-gray-200" onClick={() => reset()}>
                 Reset
               </button>
-              <button type="submit" className="btn btn-primary">
-                Create
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Creating...' : 'Create'}
               </button>
             </div>
           </div>
