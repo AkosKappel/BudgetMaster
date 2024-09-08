@@ -21,7 +21,7 @@ interface LayoutProps {
 export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="en">
-      <body className={`flex flex-col min-h-screen ${inter.className}`}>
+      <body className={`flex flex-col min-h-screen bg-base-200 ${inter.className}`}>
         <Header />
         <Nav />
         <main className="flex-grow container mx-auto p-4">{children}</main>
