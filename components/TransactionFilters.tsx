@@ -1,6 +1,8 @@
-import { XCircleIcon } from '@heroicons/react/24/solid';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
+import AmountFilter from '@/components/AmountFilter';
+import DateFilter from '@/components/DateFilter';
+import LabelFilter from '@/components/LabelFilter';
+import SearchFilter from '@/components/SearchFilter';
+import TypeFilter from '@/components/TypeFilter';
 
 type TransactionFiltersProps = {
   searchTerm: string;
@@ -37,24 +39,16 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   setMinAmount,
   setMaxAmount,
 }) => {
+  const amountRange = { min: 0, max: 10_000 };
+  const transactionTypeOptions = [
+    { value: 'all', label: 'All Transactions' },
+    { value: 'income', label: 'Income Only' },
+    { value: 'expense', label: 'Expenses Only' },
+  ];
+
   const handleDateKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleDateJump();
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
-
-  const clearDate = () => {
-    setSelectedDate('');
-  };
-
-  const handleRangeChange = (value: number | number[]) => {
-    if (Array.isArray(value)) {
-      setMinAmount(value[0]);
-      setMaxAmount(value[1] === 10000 ? Infinity : value[1]);
     }
   };
 
@@ -70,51 +64,22 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   return (
     <>
       <div className="mb-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-4 lg:space-y-0">
-        <div className="w-full lg:w-1/2 relative">
-          <input
-            type="text"
-            placeholder="Search for title, description, sender, or receiver..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded pr-10"
-          />
-          {searchTerm && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-            >
-              <XCircleIcon className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+        <SearchFilter
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          placeholder="Search for title, description, sender, or receiver..."
+        />
         <div className="w-full lg:w-1/2 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-          <select
+          <TypeFilter
             value={transactionType}
-            onChange={(e) => setTransactionType(e.target.value as 'all' | 'income' | 'expense')}
-            className="w-full sm:w-2/5 p-2 border border-gray-300 rounded appearance-none bg-white"
-          >
-            <option value="all">All Transactions</option>
-            <option value="income">Income Only</option>
-            <option value="expense">Expenses Only</option>
-          </select>
-          <div className="relative w-full sm:w-2/5">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              onKeyPress={handleDateKeyPress}
-              className="w-full p-2 border border-gray-300 rounded pr-10"
-              title="Press Enter to jump to the selected date"
-            />
-            {selectedDate && (
-              <button
-                onClick={clearDate}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                <XCircleIcon className="h-5 w-5" />
-              </button>
-            )}
-          </div>
+            onChange={setTransactionType}
+            options={transactionTypeOptions}
+          />
+          <DateFilter
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            handleDateKeyPress={handleDateKeyPress}
+          />
           <button
             onClick={resetFilters}
             className="w-full sm:w-1/5 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors duration-200 ease-in-out"
@@ -123,47 +88,19 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           </button>
         </div>
       </div>
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span>
-            Price Range: ${minAmount} - ${maxAmount}
-          </span>
-        </div>
-        <Slider
-          range
-          min={0}
-          max={10000}
-          value={[minAmount, maxAmount]}
-          onChange={handleRangeChange}
-          className="mb-4"
-        />
-      </div>
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-2 items-center">
-          {allLabels.map((label) => (
-            <button
-              key={label}
-              onClick={() => handleLabelToggle(label)}
-              className={`px-3 py-1 rounded transition-colors duration-200 ease-in-out ${
-                selectedLabels.includes(label)
-                  ? 'bg-teal-800 text-white hover:bg-teal-500'
-                  : 'bg-gray-100 text-gray-800 hover:bg-teal-500 hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          {selectedLabels.length > 0 && (
-            <button
-              onClick={() => setSelectedLabels([])}
-              className="p-1 rounded-full text-red-500 hover:text-red-600 transition-colors duration-200 ease-in-out"
-            >
-              <XCircleIcon className="h-6 w-6" />
-            </button>
-          )}
-        </div>
-        <hr className="mt-4 mb-6 border-gray-300" />
-      </div>
+      <AmountFilter
+        minAmount={minAmount}
+        maxAmount={maxAmount}
+        setMinAmount={setMinAmount}
+        setMaxAmount={setMaxAmount}
+        range={amountRange}
+      />
+      <LabelFilter
+        allLabels={allLabels}
+        selectedLabels={selectedLabels}
+        handleLabelToggle={handleLabelToggle}
+        setSelectedLabels={setSelectedLabels}
+      />
     </>
   );
 };
