@@ -3,18 +3,22 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-
-
 import React, { useEffect, useState } from 'react';
 
-
-
-import { ChartPieIcon, ChevronLeftIcon, ChevronRightIcon, CurrencyEuroIcon, DocumentTextIcon, HomeIcon } from '@heroicons/react/24/solid';
-
+import {
+  ChartPieIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CurrencyEuroIcon,
+  DocumentTextIcon,
+  HomeIcon,
+} from '@heroicons/react/24/solid';
 
 const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== 'undefined' ? window.innerWidth : 0,
+  );
   const pathname = usePathname();
 
   const navItems = [
@@ -38,8 +42,15 @@ const Sidebar: React.FC = () => {
     <nav
       className={`overflow-x-hidden overflow-y-auto bg-base-100 shadow-md p-4 transition-all duration-300 ${isCollapsed ? 'min-w-20' : 'min-w-64'} h-screen sticky top-0`}
     >
-      <button className="mb-4 p-2 bg-base-200 rounded-lg" onClick={() => setIsCollapsed(!isCollapsed)}>
-        {isCollapsed ? <ChevronRightIcon className="w-6 h-6" /> : <ChevronLeftIcon className="w-6 h-6" />}
+      <button
+        className="mb-4 p-2 bg-base-200 rounded-lg"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        {isCollapsed ? (
+          <ChevronRightIcon className="w-6 h-6" />
+        ) : (
+          <ChevronLeftIcon className="w-6 h-6" />
+        )}
       </button>
       <div className="flex flex-col">
         <ul className="flex flex-col space-y-2">

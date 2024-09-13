@@ -29,7 +29,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col">
+      <div
+        ref={modalRef}
+        className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col"
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">{title}</h2>
           <button className="btn btn-ghost btn-circle" onClick={onClose}>

@@ -58,7 +58,10 @@ const AddTransaction: React.FC = () => {
   return (
     <>
       <div className="fixed bottom-5 right-5">
-        <button className="btn btn-secondary shadow flex items-center space-x-2" onClick={openModal}>
+        <button
+          className="btn btn-secondary shadow flex items-center space-x-2"
+          onClick={openModal}
+        >
           <PlusIcon className="w-5 h-5" />
           <span>Add Transaction</span>
         </button>
@@ -86,7 +89,9 @@ const AddTransaction: React.FC = () => {
                 min={0}
                 {...register('amount', { valueAsNumber: true })}
               />
-              {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
+              {errors.amount && (
+                <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Date</label>
@@ -112,7 +117,9 @@ const AddTransaction: React.FC = () => {
               </label>
             </div>
           </div>
-          <div className={`transition-all ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-full'}`}>
+          <div
+            className={`transition-all ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-full'}`}
+          >
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Description</label>
               <input
@@ -174,7 +181,11 @@ const AddTransaction: React.FC = () => {
             </div>
           </div>
           <div className="flex justify-between items-center mt-4">
-            <button type="button" className="btn btn-secondary" onClick={() => setIsCollapsed(!isCollapsed)}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
               {isCollapsed ? '▼ Show More' : '▲ Show Less'}
             </button>
             <div className="flex space-x-2">
