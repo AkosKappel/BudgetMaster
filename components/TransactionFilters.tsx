@@ -54,7 +54,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   const handleRangeChange = (value: number | number[]) => {
     if (Array.isArray(value)) {
       setMinAmount(value[0]);
-      setMaxAmount(value[1]);
+      setMaxAmount(value[1] === 10000 ? Infinity : value[1]);
     }
   };
 
@@ -64,7 +64,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
     setSelectedDate('');
     setSelectedLabels([]);
     setMinAmount(0);
-    setMaxAmount(10000);
+    setMaxAmount(Infinity);
   };
 
   return (

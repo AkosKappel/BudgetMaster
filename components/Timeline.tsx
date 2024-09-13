@@ -1,5 +1,6 @@
 import TimelineSection from '@/components/TimelineSection';
 import { Transaction } from '@/types';
+import Fuse from 'fuse.js';
 
 type TimelineProps = {
   blocks: { date: string; expenses: Transaction[]; incomes: Transaction[] }[];
@@ -19,17 +20,25 @@ const Timeline: React.FC<TimelineProps> = ({
   maxAmount,
 }) => {
   const filterTransactions = (transactions: Transaction[]) => {
-    return transactions.filter(
+    const fuse = new Fuse(transactions, {
+      keys: ['description', 'title', 'sender', 'receiver'],
+      threshold: 0.4,
+      includeScore: true,
+    });
+
+    const filteredTransactions = transactions.filter(
       (t) =>
         (selectedLabels.length === 0 || t.labels.some((label) => selectedLabels.includes(label))) &&
-        (searchTerm === '' ||
-          t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (t.sender && t.sender.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (t.receiver && t.receiver.toLowerCase().includes(searchTerm.toLowerCase()))) &&
         t.amount >= minAmount &&
         t.amount <= maxAmount,
     );
+
+    if (searchTerm === '') {
+      return filteredTransactions;
+    }
+
+    const fuseResults = fuse.search(searchTerm);
+    return fuseResults.map((result) => result.item).filter((t) => filteredTransactions.includes(t));
   };
 
   const formatDate = (dateString: string): string => {
