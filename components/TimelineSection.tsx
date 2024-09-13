@@ -22,18 +22,22 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
               }`}
             >
               <h3 className="text-gray-800 mr-3">{transaction.title}</h3>
-              <span className="text-sm text-gray-600">
+              <span className="text-base text-gray-600 font-semibold">
                 {`${isIncome ? '+' : '-'} ${transaction.amount.toFixed(2)}`}
               </span>
             </div>
             <div className="text-gray-700 mt-1">{transaction.description}</div>
-            <div className="text-sm text-gray-600 mt-2">
-              {transaction.sender && <div>From: {transaction.sender}</div>}
-              {transaction.receiver && <div>To: {transaction.receiver}</div>}
+            <div
+              className={`text-sm text-gray-600 mt-2 flex items-center my-2
+                ${isIncome ? 'md:justify-end' : ''}`}
+            >
+              {transaction.sender && <span>From: {transaction.sender}</span>}
+              {transaction.sender && transaction.receiver && <span className="mx-2">|</span>}
+              {transaction.receiver && <span>To: {transaction.receiver}</span>}
             </div>
             {transaction.labels.length > 0 && (
               <div
-                className={`flex flex-wrap mt-2 justify-start gap-1 ${isIncome ? 'md:justify-end' : ''}`}
+                className={`flex flex-wrap mt-2 justify-start gap-2 ${isIncome ? 'md:justify-end' : ''}`}
               >
                 {transaction.labels.map((label) => (
                   <span
