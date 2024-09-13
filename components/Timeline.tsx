@@ -6,6 +6,8 @@ type TimelineProps = {
   selectedLabels: string[];
   searchTerm: string;
   transactionType: 'all' | 'income' | 'expense';
+  minAmount: number;
+  maxAmount: number;
 };
 
 const Timeline: React.FC<TimelineProps> = ({
@@ -13,6 +15,8 @@ const Timeline: React.FC<TimelineProps> = ({
   selectedLabels,
   searchTerm,
   transactionType,
+  minAmount,
+  maxAmount,
 }) => {
   const filterTransactions = (transactions: Transaction[]) => {
     return transactions.filter(
@@ -22,7 +26,9 @@ const Timeline: React.FC<TimelineProps> = ({
           t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (t.sender && t.sender.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (t.receiver && t.receiver.toLowerCase().includes(searchTerm.toLowerCase()))),
+          (t.receiver && t.receiver.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+        t.amount >= minAmount &&
+        t.amount <= maxAmount,
     );
   };
 

@@ -49,6 +49,9 @@ const TransactionsPage: React.FC = () => {
     }
   }, [selectedDate]);
 
+  const [minAmount, setMinAmount] = useState<number>(0);
+  const [maxAmount, setMaxAmount] = useState<number>(Infinity);
+
   return (
     <div className="p-2">
       <h2 className="text-2xl font-bold mb-4 text-center">Transactions history</h2>
@@ -64,6 +67,10 @@ const TransactionsPage: React.FC = () => {
         selectedLabels={selectedLabels}
         handleLabelToggle={handleLabelToggle}
         setSelectedLabels={setSelectedLabels}
+        minAmount={minAmount}
+        maxAmount={maxAmount}
+        setMinAmount={setMinAmount}
+        setMaxAmount={setMaxAmount}
       />
       <div ref={timelineRef}>
         <Timeline
@@ -71,6 +78,8 @@ const TransactionsPage: React.FC = () => {
           selectedLabels={selectedLabels}
           searchTerm={searchTerm}
           transactionType={transactionType}
+          minAmount={minAmount}
+          maxAmount={maxAmount}
         />
       </div>
       <BackToTop />
