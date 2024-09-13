@@ -27,7 +27,7 @@ const AmountFilter: React.FC<AmountFilterProps> = ({
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
         <span>
-          Price Range: ${minAmount} - ${maxAmount === Infinity ? range.max : maxAmount}
+          Price Range: ${minAmount} - ${maxAmount}
         </span>
       </div>
       <Slider
