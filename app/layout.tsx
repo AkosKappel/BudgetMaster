@@ -22,7 +22,7 @@ interface LayoutProps {
 export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="en">
-      <body className={`flex flex-col min-h-screen bg-base-200 ${inter.className}`}>
+      <body className={`${inter.className} flex flex-col min-h-screen bg-base-200`}>
         <Header />
         <div className="flex flex-grow">
           <Sidebar />

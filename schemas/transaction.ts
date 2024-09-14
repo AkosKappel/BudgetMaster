@@ -13,7 +13,7 @@ const toTitleCase = (str: string): string =>
 const nullify = (val: string | null): string | null => val || null;
 
 export const transactionSchema = z.object({
-  id: z.string().optional(),
+  _id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   date: z.string().date().default(new Date().toISOString().split('T')[0]),
   isExpense: z.boolean(),

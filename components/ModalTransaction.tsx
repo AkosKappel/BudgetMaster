@@ -52,18 +52,16 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
       let response;
       if (transaction) {
         // Edit existing transaction
-        response = await axios.put(`/api/transactions/${transaction.id}`, data);
+        response = await axios.put(`/api/transactions/${transaction._id}`, data);
         if (response.status !== 200) {
           throw new Error('Failed to update transaction');
         }
-        console.log('Transaction updated successfully', response.data);
       } else {
         // Create new transaction
         response = await axios.post('/api/transactions', data);
         if (response.status !== 201) {
           throw new Error('Failed to add transaction');
         }
-        console.log('Transaction added successfully', response.data);
       }
       reset();
       onClose();
@@ -75,10 +73,10 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
   };
 
   const onDelete = async () => {
-    if (!transaction || !transaction.id) return;
+    if (!transaction || !transaction._id) return;
     try {
       setLoading(true);
-      const response = await axios.delete(`/api/transactions/${transaction.id}`);
+      const response = await axios.delete(`/api/transactions/${transaction._id}`);
       if (response.status !== 200) {
         throw new Error('Failed to delete transaction');
       }

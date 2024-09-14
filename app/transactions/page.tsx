@@ -5,12 +5,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
 import BackToTop from '@/components/BackToTop';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
 import TransactionFilters from '@/components/TransactionFilters';
-// import { Transaction, groupByDateAndType } from '@/types';
-import { transactions, transactionsByDateAndType } from '@/types';
+import { groupByDateAndType } from '@/lib/utils';
+import { Transaction } from '@/types';
 
 const TransactionsPage: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
@@ -19,17 +21,24 @@ const TransactionsPage: React.FC = () => {
   const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
-  // const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  // useEffect(() => {
-  //   const fetchTransactions = async () => {
-  //     const response = await axios.get('/api/transactions');
-  //     setTransactions(response.data.transactions);
-  //   };
-  //   fetchTransactions();
-  // }, []);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/transactions');
+        setTransactions(response.data);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
-  // const transactionsByDateAndType = groupByDateAndType('date', transactions);
+  const transactionsByDateAndType = groupByDateAndType('date', transactions);
   const allLabels = Array.from(new Set(transactions.flatMap((t) => t.labels)));
 
   const handleLabelToggle = (label: string) => {
@@ -88,15 +97,19 @@ const TransactionsPage: React.FC = () => {
         setShowNoLabels={setShowNoLabels}
       />
       <div ref={timelineRef}>
-        <Timeline
-          blocks={transactionsByDateAndType}
-          selectedLabels={selectedLabels}
-          searchTerm={searchTerm}
-          transactionType={transactionType}
-          minAmount={minAmount}
-          maxAmount={maxAmount}
-          showNoLabels={showNoLabels}
-        />
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <Timeline
+            blocks={transactionsByDateAndType}
+            selectedLabels={selectedLabels}
+            searchTerm={searchTerm}
+            transactionType={transactionType}
+            minAmount={minAmount}
+            maxAmount={maxAmount}
+            showNoLabels={showNoLabels}
+          />
+        )}
       </div>
       <BackToTop />
     </div>
