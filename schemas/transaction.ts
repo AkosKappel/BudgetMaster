@@ -3,12 +3,17 @@ import { z } from 'zod';
 const toTitleCase = (str: string): string =>
   str
     .split(' ')
-    .map((word) => (word !== word.toUpperCase() ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word))
+    .map((word) =>
+      word !== word.toUpperCase()
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : word,
+    )
     .join(' ');
 
 const nullify = (val: string | null): string | null => val || null;
 
 export const transactionSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   date: z.string().date().default(new Date().toISOString().split('T')[0]),
   isExpense: z.boolean(),

@@ -1,3 +1,8 @@
+import { useState } from 'react';
+
+import { PencilIcon } from '@heroicons/react/24/solid';
+
+import ModalTransaction from '@/components/ModalTransaction';
 import { Transaction } from '@/types';
 
 type TimelineSectionProps = {
@@ -7,6 +12,15 @@ type TimelineSectionProps = {
 
 const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncome }) => {
   const color = isIncome ? 'green' : 'red';
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  const openEditModal = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const closeEditModal = () => {
+    setEditingTransaction(null);
+  };
 
   return (
     <section className={`timeline-${isIncome ? 'start' : 'end'} ${isIncome ? 'md:text-end' : ''}`}>
@@ -16,8 +30,16 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
         >
           <div
-            className={`px-4 py-2 rounded-lg shadow-md bg-${color}-200 inline-block w-full md:w-auto`}
+            className={`px-4 py-2 rounded-lg shadow-md bg-${color}-200 inline-block w-full md:w-auto relative group`}
           >
+            <button
+              onClick={() => openEditModal(transaction)}
+              className="absolute top-2 right-2 p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 opacity-0 group-hover:opacity-100"
+              aria-label="Edit transaction"
+              title="Edit transaction"
+            >
+              <PencilIcon className="h-4 w-4 text-gray-600" />
+            </button>
             <div
               className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center ${
                 isIncome ? 'md:justify-end' : ''
@@ -58,6 +80,11 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           </div>
         </div>
       ))}
+      <ModalTransaction
+        isOpen={!!editingTransaction}
+        onClose={closeEditModal}
+        transaction={editingTransaction}
+      />
     </section>
   );
 };

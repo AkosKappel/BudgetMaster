@@ -1,10 +1,13 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import axios from 'axios';
 
 import BackToTop from '@/components/BackToTop';
 import Timeline from '@/components/Timeline';
 import TransactionFilters from '@/components/TransactionFilters';
+// import { Transaction, groupByDateAndType } from '@/types';
 import { transactions, transactionsByDateAndType } from '@/types';
 
 const TransactionsPage: React.FC = () => {
@@ -16,7 +19,17 @@ const TransactionsPage: React.FC = () => {
   const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
+  // const [transactions, setTransactions] = useState<Transaction[]>([]);
 
+  // useEffect(() => {
+  //   const fetchTransactions = async () => {
+  //     const response = await axios.get('/api/transactions');
+  //     setTransactions(response.data.transactions);
+  //   };
+  //   fetchTransactions();
+  // }, []);
+
+  // const transactionsByDateAndType = groupByDateAndType('date', transactions);
   const allLabels = Array.from(new Set(transactions.flatMap((t) => t.labels)));
 
   const handleLabelToggle = (label: string) => {
