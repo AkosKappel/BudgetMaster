@@ -1,6 +1,7 @@
+import Fuse from 'fuse.js';
+
 import TimelineSection from '@/components/TimelineSection';
 import { Transaction } from '@/types';
-import Fuse from 'fuse.js';
 
 type TimelineProps = {
   blocks: { date: string; expenses: Transaction[]; incomes: Transaction[] }[];
