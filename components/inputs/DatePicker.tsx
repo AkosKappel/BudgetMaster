@@ -1,20 +1,24 @@
 import { XCircleIcon } from '@heroicons/react/24/solid';
 
-type DateFilterProps = {
+type DatePickerProps = {
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   handleDateKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  className?: string;
 };
 
-const DateFilter: React.FC<DateFilterProps> = ({
+const DatePicker: React.FC<DatePickerProps> = ({
   selectedDate,
   setSelectedDate,
   handleDateKeyPress,
+  placeholder = 'Select a date',
+  className,
 }) => {
   const clearDate = () => setSelectedDate('');
 
   return (
-    <div className="relative w-full sm:w-2/5">
+    <div className={`relative ${className}`}>
       <input
         type="date"
         value={selectedDate}
@@ -22,6 +26,7 @@ const DateFilter: React.FC<DateFilterProps> = ({
         onKeyPress={handleDateKeyPress}
         className="w-full p-2 border border-gray-300 rounded pr-10"
         title="Press Enter to jump to the selected date"
+        placeholder={placeholder}
       />
       {selectedDate && (
         <button
@@ -35,4 +40,4 @@ const DateFilter: React.FC<DateFilterProps> = ({
   );
 };
 
-export default DateFilter;
+export default DatePicker;

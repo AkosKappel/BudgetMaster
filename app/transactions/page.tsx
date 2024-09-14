@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
 import BackToTop from '@/components/BackToTop';
+import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
-import TransactionFilters from '@/components/TransactionFilters';
 import { groupByDateAndType } from '@/lib/utils';
 import { Transaction } from '@/types';
 
@@ -77,7 +77,7 @@ const TransactionsPage: React.FC = () => {
   return (
     <div className="p-2">
       <h2 className="text-2xl font-bold mb-4 text-center">Transactions history</h2>
-      <TransactionFilters
+      <Filters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         transactionType={transactionType}

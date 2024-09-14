@@ -1,10 +1,10 @@
-import AmountFilter from '@/components/inputs/AmountFilter';
-import DateFilter from '@/components/inputs/DateFilter';
-import LabelFilter from '@/components/inputs/LabelFilter';
+import DatePicker from '@/components/inputs/DatePicker';
+import Dropdown from '@/components/inputs/Dropdown';
+import MultiChoicePicker from '@/components/inputs/MultiChoicePicker';
+import RangeSelector from '@/components/inputs/RangeSelector';
 import SearchFilter from '@/components/inputs/SearchField';
-import TypeFilter from '@/components/inputs/TypeFilter';
 
-type TransactionFiltersProps = {
+type FiltersProps = {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   transactionType: 'all' | 'income' | 'expense';
@@ -24,7 +24,7 @@ type TransactionFiltersProps = {
   setShowNoLabels: (show: boolean) => void;
 };
 
-const TransactionFilters: React.FC<TransactionFiltersProps> = ({
+const Filters: React.FC<FiltersProps> = ({
   searchTerm,
   setSearchTerm,
   transactionType,
@@ -68,50 +68,49 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 
   return (
     <>
-      <div className="mb-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-4 lg:space-y-0">
-        <div className="w-full lg:w-1/2">
-          <SearchFilter
-            value={searchTerm}
-            setValue={setSearchTerm}
-            placeholder="Search for title, description, sender, or receiver..."
-          />
-        </div>
-        <div className="w-full lg:w-1/2 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-          <TypeFilter
-            value={transactionType}
-            onChange={setTransactionType}
-            options={transactionTypeOptions}
-          />
-          <DateFilter
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            handleDateKeyPress={handleDateKeyPress}
-          />
-          <button
-            onClick={resetFilters}
-            className="w-full sm:w-1/5 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
-          >
-            Reset
-          </button>
-        </div>
+      <div className="mb-4 grid grid-cols-12 gap-4 w-full">
+        <SearchFilter
+          value={searchTerm}
+          setValue={setSearchTerm}
+          placeholder="Search for title, description, sender, or receiver..."
+          className="col-span-12 sm:col-span-12 lg:col-span-4 xl:col-span-6"
+        />
+        <Dropdown
+          value={transactionType}
+          onChange={setTransactionType}
+          options={transactionTypeOptions}
+          className="col-span-12 sm:col-span-4 lg:col-span-3 xl:col-span-2"
+        />
+        <DatePicker
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          handleDateKeyPress={handleDateKeyPress}
+          className="col-span-12 sm:col-span-4 lg:col-span-3 xl:col-span-2"
+        />
+        <button
+          onClick={resetFilters}
+          className="col-span-12 sm:col-span-4 lg:col-span-2 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
+        >
+          Reset
+        </button>
       </div>
-      <AmountFilter
+      <RangeSelector
         minAmount={minAmount}
         maxAmount={maxAmount}
         setMinAmount={setMinAmount}
         setMaxAmount={setMaxAmount}
         range={amountRange}
       />
-      <LabelFilter
-        allLabels={allLabels}
-        selectedLabels={selectedLabels}
-        handleLabelToggle={handleLabelToggle}
-        setSelectedLabels={setSelectedLabels}
-        showNoLabels={showNoLabels}
-        setShowNoLabels={setShowNoLabels}
+      <MultiChoicePicker
+        allChoices={allLabels}
+        selectedChoices={selectedLabels}
+        handleChoiceToggle={handleLabelToggle}
+        setSelectedChoices={setSelectedLabels}
+        showNone={showNoLabels}
+        setShowNone={setShowNoLabels}
       />
     </>
   );
 };
 
-export default TransactionFilters;
+export default Filters;

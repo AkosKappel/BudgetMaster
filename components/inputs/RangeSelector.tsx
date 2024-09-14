@@ -1,7 +1,7 @@
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-type AmountFilterProps = {
+type RangeSelectorProps = {
   minAmount: number;
   maxAmount: number;
   setMinAmount: (amount: number) => void;
@@ -9,7 +9,7 @@ type AmountFilterProps = {
   range: { min: number; max: number };
 };
 
-const AmountFilter: React.FC<AmountFilterProps> = ({
+const RangeSelector: React.FC<RangeSelectorProps> = ({
   minAmount,
   maxAmount,
   setMinAmount,
@@ -42,4 +42,4 @@ const AmountFilter: React.FC<AmountFilterProps> = ({
   );
 };
 
-export default AmountFilter;
+export default RangeSelector;
