@@ -1,8 +1,8 @@
-import AmountFilter from '@/components/AmountFilter';
-import DateFilter from '@/components/DateFilter';
-import LabelFilter from '@/components/LabelFilter';
-import SearchFilter from '@/components/SearchFilter';
-import TypeFilter from '@/components/TypeFilter';
+import AmountFilter from '@/components/inputs/AmountFilter';
+import DateFilter from '@/components/inputs/DateFilter';
+import LabelFilter from '@/components/inputs/LabelFilter';
+import SearchFilter from '@/components/inputs/SearchField';
+import TypeFilter from '@/components/inputs/TypeFilter';
 
 type TransactionFiltersProps = {
   searchTerm: string;
@@ -69,11 +69,13 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   return (
     <>
       <div className="mb-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-4 lg:space-y-0">
-        <SearchFilter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          placeholder="Search for title, description, sender, or receiver..."
-        />
+        <div className="w-full lg:w-1/2">
+          <SearchFilter
+            value={searchTerm}
+            setValue={setSearchTerm}
+            placeholder="Search for title, description, sender, or receiver..."
+          />
+        </div>
         <div className="w-full lg:w-1/2 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
           <TypeFilter
             value={transactionType}

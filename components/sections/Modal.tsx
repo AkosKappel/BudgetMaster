@@ -5,8 +5,8 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
   title: string;
+  children: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {

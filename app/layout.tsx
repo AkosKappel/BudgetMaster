@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ReactNode } from 'react';
 
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
+import Footer from '@/components/sections/Footer';
+import Header from '@/components/sections/Header';
+import Sidebar from '@/components/sections/Sidebar';
 
 import './globals.css';
 

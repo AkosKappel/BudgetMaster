@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
 import { connectToDb } from '@/lib/mongodb';
@@ -26,15 +25,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsedBody = transactionSchema.parse(body);
+    // _id is unknown before insetion
+    const { _id, ...parsedBody } = transactionSchema.parse(body);
 
     const { collection } = await connectToDb(DATABASE_NAME, COLLECTION_NAME);
     if (!collection) throw new Error(`Failed to connect to collection ${COLLECTION_NAME}`);
 
-    const { insertedId } = await collection.insertOne({
-      ...parsedBody,
-      _id: new ObjectId(parsedBody._id),
-    });
+    const { insertedId } = await collection.insertOne(parsedBody);
     const newTransaction = { ...parsedBody, _id: insertedId.toString() };
 
     return NextResponse.json(newTransaction, { status: 201 });

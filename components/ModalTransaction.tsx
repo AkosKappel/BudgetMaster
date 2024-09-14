@@ -6,7 +6,7 @@ import Switch from 'react-switch';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 
-import Modal from '@/components/Modal';
+import Modal from '@/components/sections/Modal';
 import { TransactionData, transactionSchema } from '@/schemas/transaction';
 
 type ModalTransactionProps = {
