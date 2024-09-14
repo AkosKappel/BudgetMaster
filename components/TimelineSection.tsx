@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { PencilIcon } from '@heroicons/react/24/solid';
 
-import ModalTransaction from '@/components/ModalTransaction';
+import TransactionForm from '@/components/TransactionForm';
 import { Transaction } from '@/types';
 
 type TimelineSectionProps = {
@@ -25,7 +25,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
     <section className={`timeline-${isIncome ? 'start' : 'end'} ${isIncome ? 'md:text-end' : ''}`}>
       {transactions.map((transaction: Transaction) => (
         <div
-          key={transaction.title}
+          key={`${transaction.title}-${transaction.date}`}
           className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
         >
           <div
@@ -83,7 +83,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           </div>
         </div>
       ))}
-      <ModalTransaction
+      <TransactionForm
         isOpen={!!editingTransaction}
         onClose={closeEditModal}
         transaction={editingTransaction}

@@ -19,7 +19,9 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/solid';
 
-import ModalTransaction from '@/components/ModalTransaction';
+import ExportForm from '@/components/ExportForm';
+import ImportForm from '@/components/ImportForm';
+import TransactionForm from '@/components/TransactionForm';
 
 type NavItem = {
   name: string;
@@ -28,6 +30,7 @@ type NavItem = {
   subItems?: NavItem[];
   action?: () => void;
   tooltip?: string;
+  component?: React.ReactNode;
 };
 
 type SidebarProps = {
@@ -40,11 +43,17 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
     typeof window !== 'undefined' ? window.innerWidth : 0,
   );
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const pathname = usePathname();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openTransactionModal = () => setIsTransactionModalOpen(true);
+  const closeTransactionModal = () => setIsTransactionModalOpen(false);
+  const openImportModal = () => setIsImportModalOpen(true);
+  const closeImportModal = () => setIsImportModalOpen(false);
+  const openExportModal = () => setIsExportModalOpen(true);
+  const closeExportModal = () => setIsExportModalOpen(false);
 
   const topNavItems: NavItem[] = [
     {
@@ -68,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
     {
       name: 'Savings',
       href: '/savings',
-      icon: <BanknotesIcon className="w-5 h-5" />, // Use BanknotesIcon here
+      icon: <BanknotesIcon className="w-5 h-5" />,
       tooltip: 'Manage your savings goals',
     },
     {
@@ -80,20 +89,32 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           name: 'New Transaction',
           href: '#',
           icon: <PlusIcon className="w-5 h-5" />,
-          action: openModal,
+          action: openTransactionModal,
           tooltip: 'Add a new transaction',
+          component: (
+            <TransactionForm
+              isOpen={isTransactionModalOpen}
+              onClose={closeTransactionModal}
+              transaction={null}
+              existingLabels={[]}
+            />
+          ),
         },
         {
           name: 'Import Data',
-          href: '/import',
+          href: '#',
           icon: <ArrowDownTrayIcon className="w-5 h-5" />,
+          action: openImportModal,
           tooltip: 'Import your financial data',
+          component: <ImportForm isOpen={isImportModalOpen} onClose={closeImportModal} />,
         },
         {
           name: 'Export Data',
-          href: '/export',
+          href: '#',
           icon: <ArrowUpTrayIcon className="w-5 h-5" />,
+          action: openExportModal,
           tooltip: 'Export your financial data',
+          component: <ExportForm isOpen={isExportModalOpen} onClose={closeExportModal} />,
         },
       ],
     },
@@ -140,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
 
     return (
       <li
-        key={item.href}
+        key={`${item.name}-${item.href}`}
         className={`flex flex-col ${index < (isTopNav ? topNavItems.length : bottomNavItems.length) - 1 ? 'border-b border-base-300' : ''}`}
       >
         {item.action ? (
@@ -178,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
         {hasSubItems && isExpanded && !isCollapsed && (
           <ul className="ml-6 mt-2 space-y-2">
             {item.subItems!.map((subItem) => (
-              <li key={subItem.href}>
+              <li key={`${subItem.name}-${subItem.href}`}>
                 {subItem.action ? (
                   <button
                     onClick={subItem.action}
@@ -238,7 +259,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           </ul>
         </div>
       </nav>
-      <ModalTransaction isOpen={isModalOpen} onClose={closeModal} transaction={null} />
+      {topNavItems.flatMap((item) => item.subItems || []).map((subItem) => subItem.component)}
     </>
   );
 };

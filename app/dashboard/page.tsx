@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { PlusIcon } from '@heroicons/react/24/solid';
 
-import ModalTransaction from '@/components/ModalTransaction';
+import TransactionForm from '@/components/TransactionForm';
 
 const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +24,7 @@ const DashboardPage = () => {
           <span>New Transaction</span>
         </button>
       </div>
-      <ModalTransaction isOpen={isModalOpen} onClose={closeModal} transaction={null} />
+      <TransactionForm isOpen={isModalOpen} onClose={closeModal} transaction={null} />
     </>
   );
 };

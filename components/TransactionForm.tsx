@@ -9,13 +9,19 @@ import axios from 'axios';
 import Modal from '@/components/sections/Modal';
 import { TransactionData, transactionSchema } from '@/schemas/transaction';
 
-type ModalTransactionProps = {
+type TransactionFormProps = {
   isOpen: boolean;
   onClose: () => void;
   transaction: TransactionData | null;
+  existingLabels?: string[];
 };
 
-const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, transaction }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({
+  isOpen,
+  onClose,
+  transaction,
+  existingLabels = [],
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -113,7 +119,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
           <label className="block text-sm font-medium mb-1 text-left">Title</label>
           <input
             type="text"
-            className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.title ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-blue-500`}
+            className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.title ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
             placeholder="Transaction name"
             {...register('title')}
           />
@@ -125,7 +131,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
             <input
               type="number"
               step="0.01"
-              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.amount ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-blue-500`}
+              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.amount ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
               placeholder="0.00 €"
               min={0}
               {...register('amount', { valueAsNumber: true })}
@@ -136,7 +142,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
             <label className="block text-sm font-medium mb-1 text-left">Date</label>
             <input
               type="date"
-              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.date ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-blue-500`}
+              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.date ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
               {...register('date')}
             />
             {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
@@ -161,7 +167,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
             <label className="block text-sm font-medium mb-1 text-left">Description</label>
             <input
               type="text"
-              className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
               placeholder="Details (optional)"
               {...register('description')}
             />
@@ -181,8 +187,15 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
                       ...provided,
                       backgroundColor: 'white',
                       borderColor: 'rgb(209 213 219)',
+                      borderWidth: '1px',
+                      boxShadow: 'none',
                       '&:hover': {
-                        borderColor: 'rgb(59 130 246)',
+                        borderColor: 'rgb(20 184 166)',
+                        borderWidth: '1px',
+                      },
+                      '&:focus-within': {
+                        borderColor: 'rgb(20 184 166)',
+                        borderWidth: '2px',
                       },
                     }),
                     placeholder: (provided) => ({
@@ -192,6 +205,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
                   }}
                   onChange={(val) => field.onChange(val.map((v) => v.value))}
                   value={(field.value || []).map((label) => ({ label, value: label }))}
+                  options={existingLabels?.map((label) => ({ label, value: label })) || []}
                   placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
                 />
               )}
@@ -202,7 +216,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
               <label className="block text-sm font-medium mb-1 text-left">Sender</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
                 placeholder="Sender name (optional)"
                 {...register('sender')}
               />
@@ -211,7 +225,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
               <label className="block text-sm font-medium mb-1 text-left">Receiver</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
                 placeholder="Receiver name (optional)"
                 {...register('receiver')}
               />
@@ -258,4 +272,4 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
   );
 };
 
-export default ModalTransaction;
+export default TransactionForm;
