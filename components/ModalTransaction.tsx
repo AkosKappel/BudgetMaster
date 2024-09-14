@@ -18,6 +18,7 @@ type ModalTransactionProps = {
 const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, transaction }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     register,
@@ -75,7 +76,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
   const onDelete = async () => {
     if (!transaction || !transaction._id) return;
     try {
-      setLoading(true);
+      setIsDeleting(true);
       const response = await axios.delete(`/api/transactions/${transaction._id}`);
       if (response.status !== 200) {
         throw new Error('Failed to delete transaction');
@@ -85,7 +86,7 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -231,9 +232,9 @@ const ModalTransaction: React.FC<ModalTransactionProps> = ({ isOpen, onClose, tr
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out"
                 onClick={onDelete}
-                disabled={loading}
+                disabled={isDeleting}
               >
-                {loading ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
             )}
             <button

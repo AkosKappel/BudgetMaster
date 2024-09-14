@@ -11,7 +11,6 @@ type TimelineSectionProps = {
 };
 
 const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncome }) => {
-  const color = isIncome ? 'green' : 'red';
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const openEditModal = (transaction: Transaction) => {
@@ -30,7 +29,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
         >
           <div
-            className={`px-4 py-2 rounded-lg shadow-md bg-${color}-200 inline-block w-full md:w-auto relative group`}
+            className={`px-4 py-2 rounded-lg shadow-md ${isIncome ? 'bg-green-200' : 'bg-red-200'} inline-block w-full md:w-auto relative group`}
           >
             <button
               onClick={() => openEditModal(transaction)}
@@ -70,7 +69,11 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
                 {transaction.labels.map((label) => (
                   <span
                     key={`${transaction.title}-${label}`}
-                    className={`bg-${color}-400 text-${color}-800 text-xs px-2 py-1 rounded`}
+                    className={
+                      isIncome
+                        ? 'bg-green-400 text-green-800 text-xs px-2 py-1 rounded'
+                        : 'bg-red-400 text-red-800 text-xs px-2 py-1 rounded'
+                    }
                   >
                     {label}
                   </span>
