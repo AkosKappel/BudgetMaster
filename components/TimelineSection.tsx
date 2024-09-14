@@ -71,8 +71,8 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
                     key={`${transaction.title}-${label}`}
                     className={
                       isIncome
-                        ? 'bg-green-400 text-green-800 text-xs px-2 py-1 rounded'
-                        : 'bg-red-400 text-red-800 text-xs px-2 py-1 rounded'
+                        ? 'bg-green-400 text-green-800 text-xs px-2 py-1 rounded font-semibold'
+                        : 'bg-red-400 text-red-800 text-xs px-2 py-1 rounded font-semibold'
                     }
                   >
                     {label}
