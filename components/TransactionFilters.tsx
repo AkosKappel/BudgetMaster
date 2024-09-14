@@ -20,6 +20,8 @@ type TransactionFiltersProps = {
   maxAmount: number;
   setMinAmount: (amount: number) => void;
   setMaxAmount: (amount: number) => void;
+  showNoLabels: boolean;
+  setShowNoLabels: (show: boolean) => void;
 };
 
 const TransactionFilters: React.FC<TransactionFiltersProps> = ({
@@ -38,6 +40,8 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   maxAmount,
   setMinAmount,
   setMaxAmount,
+  showNoLabels,
+  setShowNoLabels,
 }) => {
   const amountRange = { min: 0, max: 10_000 };
   const transactionTypeOptions = [
@@ -59,6 +63,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
     setSelectedLabels([]);
     setMinAmount(0);
     setMaxAmount(Infinity);
+    setShowNoLabels(false);
   };
 
   return (
@@ -82,7 +87,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           />
           <button
             onClick={resetFilters}
-            className="w-full sm:w-1/5 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors duration-200 ease-in-out"
+            className="w-full sm:w-1/5 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
           >
             Reset
           </button>
@@ -100,6 +105,8 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
         selectedLabels={selectedLabels}
         handleLabelToggle={handleLabelToggle}
         setSelectedLabels={setSelectedLabels}
+        showNoLabels={showNoLabels}
+        setShowNoLabels={setShowNoLabels}
       />
     </>
   );

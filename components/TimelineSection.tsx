@@ -16,7 +16,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
         >
           <div
-            className={`px-4 py-2 rounded-lg shadow-md bg-${color}-100 inline-block w-full md:w-auto`}
+            className={`px-4 py-2 rounded-lg shadow-md bg-${color}-200 inline-block w-full md:w-auto`}
           >
             <div
               className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center ${
@@ -48,7 +48,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
                 {transaction.labels.map((label) => (
                   <span
                     key={`${transaction.title}-${label}`}
-                    className={`bg-${color}-200 text-${color}-800 text-xs px-2 py-1 rounded`}
+                    className={`bg-${color}-400 text-${color}-800 text-xs px-2 py-1 rounded`}
                   >
                     {label}
                   </span>

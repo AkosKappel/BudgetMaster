@@ -13,6 +13,9 @@ const TransactionsPage: React.FC = () => {
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const timelineRef = useRef<HTMLDivElement>(null);
+  const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
+  const [minAmount, setMinAmount] = useState<number>(0);
+  const [maxAmount, setMaxAmount] = useState<number>(Infinity);
 
   const allLabels = Array.from(new Set(transactions.flatMap((t) => t.labels)));
 
@@ -49,9 +52,6 @@ const TransactionsPage: React.FC = () => {
     }
   }, [selectedDate]);
 
-  const [minAmount, setMinAmount] = useState<number>(0);
-  const [maxAmount, setMaxAmount] = useState<number>(Infinity);
-
   return (
     <div className="p-2">
       <h2 className="text-2xl font-bold mb-4 text-center">Transactions history</h2>
@@ -71,6 +71,8 @@ const TransactionsPage: React.FC = () => {
         maxAmount={maxAmount}
         setMinAmount={setMinAmount}
         setMaxAmount={setMaxAmount}
+        showNoLabels={showNoLabels}
+        setShowNoLabels={setShowNoLabels}
       />
       <div ref={timelineRef}>
         <Timeline
@@ -80,6 +82,7 @@ const TransactionsPage: React.FC = () => {
           transactionType={transactionType}
           minAmount={minAmount}
           maxAmount={maxAmount}
+          showNoLabels={showNoLabels}
         />
       </div>
       <BackToTop />

@@ -9,6 +9,7 @@ type TimelineProps = {
   transactionType: 'all' | 'income' | 'expense';
   minAmount: number;
   maxAmount: number;
+  showNoLabels: boolean;
 };
 
 const Timeline: React.FC<TimelineProps> = ({
@@ -18,6 +19,7 @@ const Timeline: React.FC<TimelineProps> = ({
   transactionType,
   minAmount,
   maxAmount,
+  showNoLabels,
 }) => {
   const filterTransactions = (transactions: Transaction[]) => {
     const fuse = new Fuse(transactions, {
@@ -28,7 +30,9 @@ const Timeline: React.FC<TimelineProps> = ({
 
     const filteredTransactions = transactions.filter(
       (t) =>
-        (selectedLabels.length === 0 || t.labels.some((label) => selectedLabels.includes(label))) &&
+        ((selectedLabels.length === 0 && !showNoLabels) ||
+          (showNoLabels && t.labels.length === 0) ||
+          t.labels.some((label) => selectedLabels.includes(label))) &&
         t.amount >= minAmount &&
         t.amount <= maxAmount,
     );
