@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import axios from 'axios';
 
@@ -9,10 +10,14 @@ import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
 import { groupByDateAndType } from '@/lib/utils';
-import { Transaction } from '@/types';
+import { RootState } from '@/store';
+import { setTransactions } from '@/store/transactionsSlice';
 
 const TransactionsPage: React.FC = () => {
+  const transactions = useSelector((state: RootState) => state.transactions.items);
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
@@ -21,25 +26,33 @@ const TransactionsPage: React.FC = () => {
   const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/transactions');
+      dispatch(setTransactions(response.data));
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      setError('Failed to fetch transactions. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/transactions');
-        setTransactions(response.data);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTransactions();
-  }, []);
+  }, [fetchTransactions]);
 
-  const transactionsByDateAndType = groupByDateAndType('date', transactions);
-  const allLabels = Array.from(new Set(transactions.flatMap((t) => t.labels)));
+  const transactionsByDateAndType = useMemo(
+    () => groupByDateAndType('date', transactions),
+    [transactions],
+  );
+  const allLabels = useMemo(
+    () => Array.from(new Set(transactions.flatMap((t) => t.labels))),
+    [transactions],
+  );
 
   const handleLabelToggle = (label: string) => {
     setSelectedLabels((prev) =>
@@ -99,6 +112,8 @@ const TransactionsPage: React.FC = () => {
       <div ref={timelineRef}>
         {loading ? (
           <LoadingSpinner />
+        ) : error ? (
+          <div className="text-red-500 text-center">{error}</div>
         ) : (
           <Timeline
             blocks={transactionsByDateAndType}

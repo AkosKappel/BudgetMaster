@@ -161,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
 
     return (
       <li
-        key={`${item.name}-${item.href}`}
+        key={item.name}
         className={`flex flex-col ${index < (isTopNav ? topNavItems.length : bottomNavItems.length) - 1 ? 'border-b border-base-300' : ''}`}
       >
         {item.action ? (
@@ -199,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
         {hasSubItems && isExpanded && !isCollapsed && (
           <ul className="ml-6 mt-2 space-y-2">
             {item.subItems!.map((subItem) => (
-              <li key={`${subItem.name}-${subItem.href}`}>
+              <li key={subItem.name}>
                 {subItem.action ? (
                   <button
                     onClick={subItem.action}
@@ -259,7 +259,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           </ul>
         </div>
       </nav>
-      {topNavItems.flatMap((item) => item.subItems || []).map((subItem) => subItem.component)}
+      {topNavItems
+        .flatMap((item) => item.subItems || [])
+        .map((subItem) => (
+          <React.Fragment key={subItem.name}>{subItem.component}</React.Fragment>
+        ))}
     </>
   );
 };

@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const data = await collection.updateOne({ _id: new ObjectId(id) }, { $set: parsedBody });
     if (!data) throw new Error('Failed to update transaction');
 
-    return NextResponse.json(parsedBody, { status: 200 });
+    return NextResponse.json({ ...parsedBody, _id }, { status: 200 });
   } catch (error) {
     console.error(error);
     if (error instanceof z.ZodError) {

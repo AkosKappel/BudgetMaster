@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
 import CreatableSelect from 'react-select/creatable';
 import Switch from 'react-switch';
 
@@ -8,6 +9,7 @@ import axios from 'axios';
 
 import Modal from '@/components/sections/Modal';
 import { TransactionData, transactionSchema } from '@/schemas/transaction';
+import { addTransaction, deleteTransaction, updateTransaction } from '@/store/transactionsSlice';
 
 type TransactionFormProps = {
   isOpen: boolean;
@@ -25,6 +27,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -63,12 +66,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         if (response.status !== 200) {
           throw new Error('Failed to update transaction');
         }
+        dispatch(updateTransaction(response.data));
       } else {
         // Create new transaction
         response = await axios.post('/api/transactions', data);
         if (response.status !== 201) {
           throw new Error('Failed to add transaction');
         }
+        dispatch(addTransaction(response.data));
       }
       reset();
       onClose();
@@ -87,6 +92,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       if (response.status !== 200) {
         throw new Error('Failed to delete transaction');
       }
+      dispatch(deleteTransaction(transaction._id));
       onClose();
       console.log('Transaction deleted successfully');
     } catch (error) {
@@ -246,7 +252,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out"
                 onClick={onDelete}
-                disabled={isDeleting}
+                disabled={isDeleting || loading}
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
