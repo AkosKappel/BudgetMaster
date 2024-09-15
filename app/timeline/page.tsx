@@ -1,23 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-
-import axios from 'axios';
+import { useCallback, useRef, useState } from 'react';
 
 import BackToTop from '@/components/BackToTop';
 import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
-import { RootState } from '@/store';
-import { setTransactions } from '@/store/transactionsSlice';
+import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 
 const TransactionsPage: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { transactions } = useSelector((state: RootState) => state.transactions);
-  const dispatch = useDispatch();
+  const { transactions, loading, error } = useTransactionsFetch('/api/transactions');
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -28,24 +20,6 @@ const TransactionsPage: React.FC = () => {
   const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
-
-  const fetchTransactions = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get('/api/transactions');
-      dispatch(setTransactions(response.data));
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      setError('Failed to fetch transactions. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
 
   const handleDateJump = useCallback(() => {
     if (selectedDate && timelineRef.current) {

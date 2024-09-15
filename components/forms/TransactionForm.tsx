@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import CreatableSelect from 'react-select/creatable';
 import Switch from 'react-switch';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 
 import Modal from '@/components/sections/Modal';
+import { useTransactionDelete } from '@/hooks/useTransactionDelete';
+import { useTransactionSubmit } from '@/hooks/useTransactionSubmit';
 import { type TransactionData, transactionSchema } from '@/schemas/transaction';
 import { RootState } from '@/store';
-import { addTransaction, deleteTransaction, updateTransaction } from '@/store/transactionsSlice';
 
 type TransactionFormProps = {
   isOpen: boolean;
@@ -26,11 +25,16 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   transaction,
   startCollapsed = true,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(startCollapsed);
-  const [loading, setLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
   const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
-  const dispatch = useDispatch();
+  const { submitTransaction, loading } = useTransactionSubmit('/api/transactions');
+  const { deleteTransactionById, deleting } = useTransactionDelete('/api/transactions');
+
+  const defaultValues = {
+    date: new Date().toISOString().split('T')[0],
+    isExpense: true,
+    labels: [],
+  };
 
   const {
     register,
@@ -42,11 +46,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     watch,
   } = useForm<TransactionData>({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      date: new Date().toISOString().split('T')[0],
-      isExpense: true,
-      labels: [],
-    },
+    defaultValues,
   });
 
   useEffect(() => {
@@ -60,59 +60,29 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const isExpense = watch('isExpense', true);
 
   const onSubmit = async (data: TransactionData) => {
-    try {
-      setLoading(true);
-      let response;
-      if (transaction) {
-        // Edit existing transaction
-        response = await axios.put(`/api/transactions/${transaction._id}`, data);
-        if (response.status !== 200) {
-          throw new Error('Failed to update transaction');
-        }
-        dispatch(updateTransaction(response.data));
-      } else {
-        // Create new transaction
-        response = await axios.post('/api/transactions', data);
-        if (response.status !== 201) {
-          throw new Error('Failed to add transaction');
-        }
-        dispatch(addTransaction(response.data));
-      }
+    const success = await submitTransaction(data, transaction);
+    if (success) {
       reset();
       onClose();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const onDelete = async () => {
-    if (!transaction || !transaction._id) return;
-    try {
-      setIsDeleting(true);
-      const response = await axios.delete(`/api/transactions/${transaction._id}`);
-      if (response.status !== 200) {
-        throw new Error('Failed to delete transaction');
+    if (transaction?._id) {
+      const success = await deleteTransactionById(transaction._id);
+      if (success) {
+        reset();
+        onClose();
       }
-      dispatch(deleteTransaction(transaction._id));
-      onClose();
-      console.log('Transaction deleted successfully');
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsDeleting(false);
     }
   };
 
   const handleReset = () => {
     if (transaction) {
-      // Reset to initial transaction values in editing mode
       Object.entries(transaction).forEach(([key, value]) => {
         setValue(key as keyof TransactionData, value);
       });
     } else {
-      // Reset to default values in creation mode
       reset();
     }
   };
@@ -269,9 +239,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out"
                 onClick={onDelete}
-                disabled={isDeleting || loading}
+                disabled={loading || deleting}
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             )}
             <button
@@ -284,7 +254,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <button
               type="submit"
               className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out"
-              disabled={loading}
+              disabled={loading || deleting}
             >
               {loading ? 'Saving...' : transaction ? 'Update' : 'Create'}
             </button>
