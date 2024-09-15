@@ -25,7 +25,9 @@ const transactionsSlice = createSlice({
   reducers: {
     // Transactions
     setTransactions: (state, action: PayloadAction<Transaction[]>) => {
-      state.transactions = action.payload;
+      state.transactions = action.payload.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
       updateUniqueLabels(state);
     },
     addTransactions: (state, action: PayloadAction<Transaction[]>) => {
