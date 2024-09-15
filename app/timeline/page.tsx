@@ -9,20 +9,22 @@ import BackToTop from '@/components/BackToTop';
 import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
-import { groupByDateAndType } from '@/lib/utils';
 import { RootState } from '@/store';
 import { setTransactions } from '@/store/transactionsSlice';
 
 const TransactionsPage: React.FC = () => {
-  const transactions = useSelector((state: RootState) => state.transactions.items);
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+
+  const { transactions } = useSelector((state: RootState) => state.transactions);
+  const dispatch = useDispatch();
+
+  // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const timelineRef = useRef<HTMLDivElement>(null);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
@@ -44,21 +46,6 @@ const TransactionsPage: React.FC = () => {
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
-
-  const transactionsByDateAndType = useMemo(
-    () => groupByDateAndType('date', transactions),
-    [transactions],
-  );
-  const allLabels = useMemo(
-    () => Array.from(new Set(transactions.flatMap((t) => t.labels))),
-    [transactions],
-  );
-
-  const handleLabelToggle = (label: string) => {
-    setSelectedLabels((prev) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
-    );
-  };
 
   const handleDateJump = useCallback(() => {
     if (selectedDate && timelineRef.current) {
@@ -98,9 +85,7 @@ const TransactionsPage: React.FC = () => {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         handleDateJump={handleDateJump}
-        allLabels={allLabels}
         selectedLabels={selectedLabels}
-        handleLabelToggle={handleLabelToggle}
         setSelectedLabels={setSelectedLabels}
         minAmount={minAmount}
         maxAmount={maxAmount}
@@ -116,7 +101,7 @@ const TransactionsPage: React.FC = () => {
           <div className="text-red-500 text-center">{error}</div>
         ) : (
           <Timeline
-            blocks={transactionsByDateAndType}
+            transactions={transactions}
             selectedLabels={selectedLabels}
             searchTerm={searchTerm}
             transactionType={transactionType}

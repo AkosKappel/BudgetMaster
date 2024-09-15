@@ -1,35 +1,35 @@
 import { XCircleIcon } from '@heroicons/react/24/solid';
 
-type MultiChoicePickerProps = {
-  allChoices: string[];
-  selectedChoices: string[];
-  handleChoiceToggle: (choice: string) => void;
-  setSelectedChoices: (options: string[]) => void;
+type OptionsSelectorProps = {
+  allOptions: string[];
+  selectedOptions: string[];
+  handleOptionToggle: (option: string) => void;
+  setSelectedOptions: (options: string[]) => void;
   showNone: boolean;
   setShowNone: (show: boolean) => void;
 };
 
-const MultiChoicePicker: React.FC<MultiChoicePickerProps> = ({
-  allChoices,
-  selectedChoices,
-  handleChoiceToggle,
-  setSelectedChoices,
+const OptionsSelector: React.FC<OptionsSelectorProps> = ({
+  allOptions,
+  selectedOptions,
+  handleOptionToggle,
+  setSelectedOptions,
   showNone,
   setShowNone,
 }) => {
   const resetFilters = () => {
-    setSelectedChoices([]);
+    setSelectedOptions([]);
     setShowNone(false);
   };
 
   const renderOptionButton = (option: string) => {
-    const isNoOptions = option === '';
-    const isSelected = isNoOptions ? showNone : selectedChoices.includes(option);
-    const onClick = isNoOptions ? () => setShowNone(!showNone) : () => handleChoiceToggle(option);
+    const isNoneOption = option === '';
+    const isSelected = isNoneOption ? showNone : selectedOptions.includes(option);
+    const onClick = isNoneOption ? () => setShowNone(!showNone) : () => handleOptionToggle(option);
 
     return (
       <button
-        key={isNoOptions ? 'no-options' : option}
+        key={isNoneOption ? 'none-option' : option}
         onClick={onClick}
         className={`px-3 py-1 rounded transition-colors duration-200 ease-in-out ${
           isSelected
@@ -37,7 +37,7 @@ const MultiChoicePicker: React.FC<MultiChoicePickerProps> = ({
             : 'bg-gray-100 text-gray-800 hover:bg-teal-500 hover:text-white'
         }`}
       >
-        {isNoOptions ? 'No labels' : option}
+        {isNoneOption ? 'None' : option}
       </button>
     );
   };
@@ -54,13 +54,13 @@ const MultiChoicePicker: React.FC<MultiChoicePickerProps> = ({
   return (
     <div className="mb-4">
       <div className="flex flex-wrap gap-2 items-center">
-        {allChoices.map((option) => renderOptionButton(option))}
+        {allOptions.map((option: string) => renderOptionButton(option))}
         {renderOptionButton('')}
-        {(selectedChoices.length > 0 || showNone) && renderResetButton()}
+        {(selectedOptions.length > 0 || showNone) && renderResetButton()}
       </div>
       <hr className="mt-4 mb-6 border-gray-300" />
     </div>
   );
 };
 
-export default MultiChoicePicker;
+export default OptionsSelector;

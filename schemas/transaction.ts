@@ -1,16 +1,6 @@
 import { z } from 'zod';
 
-const toTitleCase = (str: string): string =>
-  str
-    .split(' ')
-    .map((word) =>
-      word !== word.toUpperCase()
-        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        : word,
-    )
-    .join(' ');
-
-const nullify = (val: string | null): string | null => val || null;
+import { nullify, toTitleCase } from '@/lib/utils';
 
 export const transactionSchema = z.object({
   _id: z.string().optional(),

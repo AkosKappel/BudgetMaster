@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import CreatableSelect from 'react-select/creatable';
 import Switch from 'react-switch';
 
@@ -9,24 +10,26 @@ import axios from 'axios';
 
 import Modal from '@/components/sections/Modal';
 import { type TransactionData, transactionSchema } from '@/schemas/transaction';
+import { RootState } from '@/store';
 import { addTransaction, deleteTransaction, updateTransaction } from '@/store/transactionsSlice';
 
 type TransactionFormProps = {
   isOpen: boolean;
   onClose: () => void;
   transaction: TransactionData | null;
-  existingLabels?: string[];
+  startCollapsed?: boolean;
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
   isOpen,
   onClose,
   transaction,
-  existingLabels = [],
+  startCollapsed = true,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(startCollapsed);
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
   const dispatch = useDispatch();
 
   const {
@@ -208,11 +211,25 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       ...provided,
                       color: 'rgb(156 163 175)',
                     }),
+                    option: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused
+                        ? 'rgb(20 184 166)'
+                        : provided.backgroundColor,
+                      color: state.isFocused ? 'white' : provided.color,
+                    }),
+                    menuList: (provided) => ({
+                      ...provided,
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                    }),
                   }}
-                  onChange={(val) => field.onChange(val.map((v) => v.value))}
+                  onChange={(val) => field.onChange(val ? val.map((v) => v.value) : [])}
                   value={(field.value || []).map((label) => ({ label, value: label }))}
-                  options={existingLabels?.map((label) => ({ label, value: label })) || []}
+                  options={uniqueLabels.map((label) => ({ label, value: label }))}
                   placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
+                  closeMenuOnSelect={false}
+                  isClearable={true}
                 />
               )}
             />

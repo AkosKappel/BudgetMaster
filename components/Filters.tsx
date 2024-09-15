@@ -1,8 +1,11 @@
+import { useSelector } from 'react-redux';
+
 import DatePicker from '@/components/inputs/DatePicker';
 import Dropdown from '@/components/inputs/Dropdown';
-import MultiChoicePicker from '@/components/inputs/MultiChoicePicker';
+import OptionsSelector from '@/components/inputs/OptionsSelector';
 import RangeSelector from '@/components/inputs/RangeSelector';
 import SearchFilter from '@/components/inputs/SearchField';
+import { RootState } from '@/store';
 
 type FiltersProps = {
   searchTerm: string;
@@ -12,10 +15,8 @@ type FiltersProps = {
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   handleDateJump: () => void;
-  allLabels: string[];
   selectedLabels: string[];
-  handleLabelToggle: (label: string) => void;
-  setSelectedLabels: (labels: string[]) => void;
+  setSelectedLabels: (labels: string[] | ((prev: string[]) => string[])) => void;
   minAmount: number;
   maxAmount: number;
   setMinAmount: (amount: number) => void;
@@ -32,9 +33,7 @@ const Filters: React.FC<FiltersProps> = ({
   selectedDate,
   setSelectedDate,
   handleDateJump,
-  allLabels,
   selectedLabels,
-  handleLabelToggle,
   setSelectedLabels,
   minAmount,
   maxAmount,
@@ -49,6 +48,13 @@ const Filters: React.FC<FiltersProps> = ({
     { value: 'income', label: 'Income Only' },
     { value: 'expense', label: 'Expenses Only' },
   ];
+  const uniqueLabels = useSelector((state: RootState) => state.transactions.uniqueLabels);
+
+  const handleLabelToggle = (label: string) => {
+    setSelectedLabels((prev: string[]) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    );
+  };
 
   const handleDateKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -101,11 +107,11 @@ const Filters: React.FC<FiltersProps> = ({
         setMaxAmount={setMaxAmount}
         range={amountRange}
       />
-      <MultiChoicePicker
-        allChoices={allLabels}
-        selectedChoices={selectedLabels}
-        handleChoiceToggle={handleLabelToggle}
-        setSelectedChoices={setSelectedLabels}
+      <OptionsSelector
+        allOptions={uniqueLabels}
+        selectedOptions={selectedLabels}
+        handleOptionToggle={handleLabelToggle}
+        setSelectedOptions={setSelectedLabels}
         showNone={showNoLabels}
         setShowNone={setShowNoLabels}
       />

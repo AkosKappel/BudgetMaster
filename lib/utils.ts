@@ -1,5 +1,21 @@
 import { Transaction } from '@/types';
 
+export const toTitleCase = (str: string): string =>
+  str
+    .split(' ')
+    .map((word) =>
+      word !== word.toUpperCase()
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : word,
+    )
+    .join(' ');
+
+export const nullify = (val: any): any | null => val || null;
+
+export const isFile = (value: unknown): value is File => {
+  return typeof File !== 'undefined' && value instanceof File;
+};
+
 export const groupBy = <T extends Record<string, any>>(
   key: keyof T,
   items: T[],

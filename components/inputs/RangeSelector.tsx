@@ -7,6 +7,7 @@ type RangeSelectorProps = {
   setMinAmount: (amount: number) => void;
   setMaxAmount: (amount: number) => void;
   range: { min: number; max: number };
+  className?: string;
 };
 
 const RangeSelector: React.FC<RangeSelectorProps> = ({
@@ -15,6 +16,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({
   setMinAmount,
   setMaxAmount,
   range,
+  className,
 }) => {
   const handleRangeChange = (value: number | number[]) => {
     if (Array.isArray(value)) {
@@ -24,7 +26,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({
   };
 
   return (
-    <div className="mb-4">
+    <div className={`mb-4 ${className}`}>
       <div className="flex items-center justify-between mb-2">
         <span>
           Price Range: ${minAmount} - ${maxAmount}

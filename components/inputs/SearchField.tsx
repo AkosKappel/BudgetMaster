@@ -16,13 +16,13 @@ const SearchField: React.FC<SearchFieldProps> = ({
   const clearSearch = () => setValue('');
 
   return (
-    <>
+    <div className={`relative ${className}`}>
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`w-full p-2 border border-gray-300 rounded pr-10 ${className}`}
+        className={`w-full p-2 border border-gray-300 rounded pr-10 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
       />
       {value && (
         <button
@@ -32,7 +32,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
           <XCircleIcon className="h-5 w-5" />
         </button>
       )}
-    </>
+    </div>
   );
 };
 

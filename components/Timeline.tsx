@@ -1,10 +1,13 @@
+import { useMemo } from 'react';
+
 import Fuse from 'fuse.js';
 
 import TimelineSection from '@/components/TimelineSection';
+import { groupByDateAndType } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 type TimelineProps = {
-  blocks: { date: string; expenses: Transaction[]; incomes: Transaction[] }[];
+  transactions: Transaction[];
   selectedLabels: string[];
   searchTerm: string;
   transactionType: 'all' | 'income' | 'expense';
@@ -14,7 +17,7 @@ type TimelineProps = {
 };
 
 const Timeline: React.FC<TimelineProps> = ({
-  blocks,
+  transactions,
   selectedLabels,
   searchTerm,
   transactionType,
@@ -22,6 +25,8 @@ const Timeline: React.FC<TimelineProps> = ({
   maxAmount,
   showNoLabels,
 }) => {
+  const blocks = useMemo(() => groupByDateAndType('date', transactions), [transactions]);
+
   const filterTransactions = (transactions: Transaction[]) => {
     const fuse = new Fuse(transactions, {
       keys: ['description', 'title', 'sender', 'receiver'],

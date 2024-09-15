@@ -96,7 +96,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
               isOpen={isTransactionModalOpen}
               onClose={closeTransactionModal}
               transaction={null}
-              existingLabels={[]}
             />
           ),
         },

@@ -17,10 +17,10 @@ const Dropdown = <T extends string>({ value, onChange, options, className }: Dro
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as T)}
-      className="w-full p-2 pr-8 border rounded appearance-none border-gray-300 bg-white"
+      className="w-full p-2 pr-8 border rounded appearance-none border-gray-300 bg-white focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
     >
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
+        <option key={option.value} value={option.value} className="hover:bg-teal-500">
           {option.label}
         </option>
       ))}

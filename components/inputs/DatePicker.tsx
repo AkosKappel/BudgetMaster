@@ -24,7 +24,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         value={selectedDate}
         onChange={(e) => setSelectedDate(e.target.value)}
         onKeyPress={handleDateKeyPress}
-        className="w-full p-2 border border-gray-300 rounded pr-10"
+        className="w-full p-2 border border-gray-300 rounded pr-10 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
         title="Press Enter to jump to the selected date"
         placeholder={placeholder}
       />
