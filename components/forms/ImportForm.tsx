@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { InformationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 
+import Tooltip from '@/components/Tooltip';
 import Modal from '@/components/sections/Modal';
-
-const importSchema = z.object({
-  rawText: z.string().optional(),
-  file: z.instanceof(File).optional(),
-});
-
-type ImportData = z.infer<typeof importSchema>;
+import { type ImportData, importSchema } from '@/schemas/import';
 
 type ImportFormProps = {
   isOpen: boolean;
@@ -21,6 +16,7 @@ type ImportFormProps = {
 const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
     register,
@@ -28,21 +24,26 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm<ImportData>({
     resolver: zodResolver(importSchema),
   });
+
+  const rawText = watch('rawText');
+  const file = watch('file');
 
   const onSubmit = async (data: ImportData) => {
     try {
       setLoading(true);
       console.log(data);
-      // Here you would handle the import logic
-      // For example:
+
+      console.log(data);
       // const response = await axios.post('/api/import', data);
       // if (response.status !== 200) {
       //   throw new Error('Failed to import data');
       // }
       reset();
+      setSelectedFile(null);
       onClose();
     } catch (error) {
       console.error(error);
@@ -66,17 +67,32 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setValue('file', e.dataTransfer.files[0]);
+      handleFileSelect(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+    setValue('file', file);
+  };
+
+  const handleFileRemove = () => {
+    setSelectedFile(null);
+    setValue('file', undefined);
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Import Transactions">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-left mb-2 text-gray-500">
-            You can import your transactions data by pasting it below or by uploading a file.
+        <div className="flex items-center mb-2">
+          <label className="block text-sm font-medium text-left text-gray-500">
+            Import your transactions from any type of document or just a chunk of text.
           </label>
+          <Tooltip content="You can import your transactions data by pasting it below or by uploading a file.">
+            <InformationCircleIcon className="h-5 w-5 ml-2 text-gray-400 cursor-help" />
+          </Tooltip>
+        </div>
+        <div>
           <textarea
             className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${
               errors.rawText ? 'border-red-500' : 'border-gray-300'
@@ -107,44 +123,62 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
             type="file"
             id="file-upload"
             className="hidden"
-            onChange={(e) => e.target.files && setValue('file', e.target.files[0])}
+            onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
           />
-          <label
-            htmlFor="file-upload"
-            className="cursor-pointer flex flex-col items-center justify-center"
-          >
-            <svg
-              className="w-10 h-10 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          {selectedFile ? (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">{selectedFile.name}</span>
+              <button
+                type="button"
+                onClick={handleFileRemove}
+                className="text-red-500 hover:text-red-700"
+              >
+                <XCircleIcon className="h-6 w-6" />
+              </button>
+            </div>
+          ) : (
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer flex flex-col items-center justify-center"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              ></path>
-            </svg>
-            <p className="mt-2 text-sm text-gray-500">
-              Drag and drop a file here, or click to select a file
-            </p>
-          </label>
+              <svg
+                className="w-10 h-10 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                ></path>
+              </svg>
+              <p className="mt-2 text-sm text-gray-500">
+                Drag and drop a file here, or click to select a file
+              </p>
+            </label>
+          )}
         </div>
+
+        {errors.root && <p className="text-red-500 text-xs mt-1">{errors.root.message}</p>}
 
         <div className="flex justify-end space-x-2 mt-4">
           <button
             type="button"
             className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
-            onClick={() => reset()}
+            onClick={() => {
+              reset();
+              setSelectedFile(null);
+            }}
           >
             Reset
           </button>
           <button
             type="submit"
             className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out"
-            disabled={loading}
+            disabled={loading || (!rawText && !file)}
           >
             {loading ? 'Importing...' : 'Import'}
           </button>

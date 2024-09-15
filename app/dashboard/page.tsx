@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { PlusIcon } from '@heroicons/react/24/solid';
 
-import TransactionForm from '@/components/TransactionForm';
+import TransactionForm from '@/components/forms/TransactionForm';
 
 const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

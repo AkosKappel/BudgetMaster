@@ -19,9 +19,9 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/solid';
 
-import ExportForm from '@/components/ExportForm';
-import ImportForm from '@/components/ImportForm';
-import TransactionForm from '@/components/TransactionForm';
+import ExportForm from '@/components/forms/ExportForm';
+import ImportForm from '@/components/forms/ImportForm';
+import TransactionForm from '@/components/forms/TransactionForm';
 
 type NavItem = {
   name: string;

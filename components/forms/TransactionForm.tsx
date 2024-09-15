@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 
 import Modal from '@/components/sections/Modal';
-import { TransactionData, transactionSchema } from '@/schemas/transaction';
+import { type TransactionData, transactionSchema } from '@/schemas/transaction';
 import { addTransaction, deleteTransaction, updateTransaction } from '@/store/transactionsSlice';
 
 type TransactionFormProps = {

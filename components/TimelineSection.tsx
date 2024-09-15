@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { PencilIcon } from '@heroicons/react/24/solid';
 
-import TransactionForm from '@/components/TransactionForm';
+import TransactionForm from '@/components/forms/TransactionForm';
 import { Transaction } from '@/types';
 
 type TimelineSectionProps = {
