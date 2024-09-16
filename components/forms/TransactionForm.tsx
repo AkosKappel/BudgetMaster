@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import CreatableSelect from 'react-select/creatable';
-import Switch from 'react-switch';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import InputField from '@/components/inputs/InputField';
+import MultiSelect from '@/components/inputs/MultiSelect';
+import SwitchButton from '@/components/inputs/SwitchButton';
 import Modal from '@/components/sections/Modal';
 import { useTransactionDelete } from '@/hooks/useTransactionDelete';
 import { useTransactionSubmit } from '@/hooks/useTransactionSubmit';
@@ -94,135 +95,67 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       title={transaction ? 'Edit Transaction' : 'Add Transaction'}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1 text-left">Title</label>
-          <input
-            type="text"
-            className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.title ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
-            placeholder="Transaction name"
-            {...register('title')}
+        <InputField
+          label="Title"
+          type="text"
+          placeholder="Transaction name"
+          register={register('title')}
+          error={errors.title?.message}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <InputField
+            label="Amount (€)"
+            type="number"
+            placeholder="0.00 €"
+            register={register('amount', { valueAsNumber: true })}
+            error={errors.amount?.message}
+            min={0}
+            step="0.01"
           />
-          {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-left">Amount (€)</label>
-            <input
-              type="number"
-              step="0.01"
-              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.amount ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
-              placeholder="0.00 €"
-              min={0}
-              {...register('amount', { valueAsNumber: true })}
-            />
-            {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-left">Date</label>
-            <input
-              type="date"
-              className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${errors.date ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out`}
-              {...register('date')}
-            />
-            {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
-          </div>
-          <div className="flex items-center justify-center">
-            <label className="flex items-center">
-              <span className={`mr-2 ${isExpense ? 'font-bold' : 'text-gray-500'}`}>Expense</span>
-              <Switch
-                checked={!isExpense}
-                onChange={() => setValue('isExpense', !isExpense)}
-                offColor="#f44336"
-                onColor="#4CAF50"
-                uncheckedIcon={false}
-                checkedIcon={false}
-              />
-              <span className={`ml-2 ${!isExpense ? 'font-bold' : 'text-gray-500'}`}>Income</span>
-            </label>
-          </div>
+          <InputField
+            label="Date"
+            type="date"
+            placeholder=""
+            register={register('date')}
+            error={errors.date?.message}
+          />
+          <SwitchButton
+            checked={!isExpense}
+            onChange={(checked) => setValue('isExpense', !checked)}
+            leftLabel="Expense"
+            rightLabel="Income"
+            className="mt-4"
+          />
         </div>
         <div className={`transition-all ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-full'}`}>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-left">Description</label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
-              placeholder="Details (optional)"
-              {...register('description')}
-            />
-          </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1 text-left">Labels</label>
-            <Controller
-              control={control}
-              name="labels"
-              render={({ field }) => (
-                <CreatableSelect
-                  isMulti
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  styles={{
-                    control: (provided) => ({
-                      ...provided,
-                      backgroundColor: 'white',
-                      borderColor: 'rgb(209 213 219)',
-                      borderWidth: '1px',
-                      boxShadow: 'none',
-                      '&:hover': {
-                        borderColor: 'rgb(20 184 166)',
-                        borderWidth: '1px',
-                      },
-                      '&:focus-within': {
-                        borderColor: 'rgb(20 184 166)',
-                        borderWidth: '2px',
-                      },
-                    }),
-                    placeholder: (provided) => ({
-                      ...provided,
-                      color: 'rgb(156 163 175)',
-                    }),
-                    option: (provided, state) => ({
-                      ...provided,
-                      backgroundColor: state.isFocused
-                        ? 'rgb(20 184 166)'
-                        : provided.backgroundColor,
-                      color: state.isFocused ? 'white' : provided.color,
-                    }),
-                    menuList: (provided) => ({
-                      ...provided,
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }),
-                  }}
-                  onChange={(val) => field.onChange(val ? val.map((v) => v.value) : [])}
-                  value={(field.value || []).map((label) => ({ label, value: label }))}
-                  options={uniqueLabels.map((label) => ({ label, value: label }))}
-                  placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
-                  closeMenuOnSelect={false}
-                  isClearable={true}
-                />
-              )}
-            />
-          </div>
+          <InputField
+            label="Description"
+            type="text"
+            placeholder="Details (optional)"
+            register={register('description')}
+          />
+          <MultiSelect
+            control={control}
+            name="labels"
+            label="Labels"
+            error={errors.labels?.message}
+            className="mt-4"
+            options={uniqueLabels}
+            placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
+          />
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-left">Sender</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
-                placeholder="Sender name (optional)"
-                {...register('sender')}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-left">Receiver</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 bg-white text-gray-800 rounded border border-gray-300 focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
-                placeholder="Receiver name (optional)"
-                {...register('receiver')}
-              />
-            </div>
+            <InputField
+              label="Sender"
+              type="text"
+              placeholder="Sender name (optional)"
+              register={register('sender')}
+            />
+            <InputField
+              label="Receiver"
+              type="text"
+              placeholder="Receiver name (optional)"
+              register={register('receiver')}
+            />
           </div>
         </div>
         <div className="flex justify-between items-center mt-4">
