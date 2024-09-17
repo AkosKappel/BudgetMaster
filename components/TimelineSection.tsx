@@ -32,20 +32,19 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
             className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
           >
             <div
-              className={`px-4 py-2 rounded-lg shadow-md ${isIncome ? 'bg-green-200' : 'bg-red-200'} inline-block w-full md:w-auto relative group`}
+              onClick={() => openEditModal(transaction)}
+              className={`px-4 py-2 rounded-lg shadow-md inline-block w-full md:w-auto relative group transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:bg-opacity-90 hover:cursor-pointer
+                ${isIncome ? 'bg-green-200 hover:bg-green-300' : 'bg-red-200 hover:bg-red-300'} `}
             >
-              <button
-                onClick={() => openEditModal(transaction)}
-                className="absolute top-2 right-2 p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 opacity-0 group-hover:opacity-100"
-                aria-label="Edit transaction"
+              <div
                 title="Edit transaction"
+                className="absolute top-2 right-2 p-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               >
                 <PencilIcon className="h-4 w-4 text-gray-600" />
-              </button>
+              </div>
               <div
-                className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center ${
-                  isIncome ? 'md:justify-end' : ''
-                }`}
+                className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center
+                  ${isIncome ? 'md:justify-end' : ''}`}
               >
                 <h3 className="text-gray-800 mr-0 md:mr-3 mb-2 md:mb-0">{transaction.title}</h3>
                 <span className="text-base text-gray-600 font-semibold whitespace-nowrap">

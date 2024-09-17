@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
+import {
+  ArrowPathIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import InputField from '@/components/inputs/InputField';
@@ -170,26 +177,45 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             {transaction && (
               <button
                 type="button"
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out flex items-center justify-center"
                 onClick={onDelete}
                 disabled={loading || deleting}
               >
+                {deleting ? (
+                  <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
+                ) : (
+                  <TrashIcon className="h-5 w-5 mr-2" />
+                )}
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
             )}
             <button
               type="button"
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
+              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out flex items-center justify-center"
               onClick={handleReset}
             >
+              <XMarkIcon className="h-5 w-5 mr-2" />
               Reset
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out"
+              className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out flex items-center justify-center"
               disabled={loading || deleting}
             >
-              {loading ? 'Saving...' : transaction ? 'Update' : 'Create'}
+              {loading ? (
+                <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
+              ) : transaction ? (
+                <PencilIcon className="h-5 w-5 mr-2" />
+              ) : (
+                <PlusIcon className="h-5 w-5 mr-2" />
+              )}
+              {transaction
+                ? loading
+                  ? 'Updating...'
+                  : 'Update'
+                : loading
+                  ? 'Creating...'
+                  : 'Create'}
             </button>
           </div>
         </div>
