@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { HomeIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 import TransactionForm from '@/components/forms/TransactionForm';
 
@@ -13,8 +13,12 @@ const DashboardPage = () => {
   const closeModal = () => setIsModalOpen(false);
 
   return (
-    <>
-      <div className="text-3xl min-h-screen">Dashboard</div>
+    <div className="min-h-screen p-8">
+      <h1 className="text-3xl mb-8 flex items-center">
+        <HomeIcon className="w-8 h-8 mr-2" />
+        Dashboard
+      </h1>
+
       <div className="fixed bottom-5 right-5">
         <button
           className="btn btn-secondary shadow flex items-center space-x-2"
@@ -25,7 +29,7 @@ const DashboardPage = () => {
         </button>
       </div>
       <TransactionForm isOpen={isModalOpen} onClose={closeModal} transaction={null} />
-    </>
+    </div>
   );
 };
 

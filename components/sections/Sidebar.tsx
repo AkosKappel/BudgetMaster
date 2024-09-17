@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
 
   const topNavItems: NavItem[] = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       href: '/dashboard',
       icon: <HomeIcon className="w-5 h-5" />,
       tooltip: 'View your dashboard',
@@ -84,6 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
       name: 'Actions',
       href: '#',
       icon: <CogIcon className="w-5 h-5" />,
+      tooltip: 'More actions',
       subItems: [
         {
           name: 'New Transaction',
@@ -136,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
       name: 'Settings',
       href: '/settings',
       icon: <CogIcon className="w-5 h-5" />,
-      tooltip: 'Adjust your app settings',
+      tooltip: 'Adjust your settings',
     },
   ];
 

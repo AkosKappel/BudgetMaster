@@ -14,7 +14,10 @@ const Header = () => {
             height={50}
             className="rounded-full"
           />
-          <h1 className="text-3xl font-extrabold">Budget Master</h1>
+          <div>
+            <h1 className="text-3xl font-extrabold">Budget Master</h1>
+            <p className="text-sm italic">Master Your Money, Master Your Life</p>
+          </div>
         </Link>
       </div>
     </header>

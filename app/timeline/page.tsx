@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+import { CalendarIcon } from '@heroicons/react/24/solid';
+
 import BackToTop from '@/components/BackToTop';
 import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -49,8 +51,12 @@ const TransactionsPage: React.FC = () => {
   }, [selectedDate]);
 
   return (
-    <div className="p-2">
-      <h2 className="text-2xl font-bold mb-4 text-center">Transactions history</h2>
+    <div className="min-h-screen p-8">
+      <h1 className="text-3xl mb-8 flex items-center">
+        <CalendarIcon className="w-8 h-8 mr-2" />
+        Transactions History
+      </h1>
+
       <Filters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
