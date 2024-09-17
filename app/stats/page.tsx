@@ -1,315 +1,15 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React from 'react';
 
 import { ChartPieIcon } from '@heroicons/react/24/solid';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 
+import CumulativeChart from '@/components/charts/CumulativeChart';
+import MonthlyIncomeExpenseChart from '@/components/charts/MonthlyIncomeExpenseChart';
+import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart';
+import PieChartDiagram from '@/components/charts/PieChartDiagram';
+import VerticalBarChart from '@/components/charts/VerticalBarChart';
 import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
-
-type MonthlyIncomeExpenseChartProps = {
-  data: { name: string; Income: number; Expense: number; Balance: number }[];
-  title?: string;
-  colors?: { income: string; expense: string; balance: string };
-  initial?: {
-    showIncome: boolean;
-    showExpense: boolean;
-    showBalance: boolean;
-    startDate: Date;
-    endDate: Date;
-    isCollapsed: boolean;
-  };
-  className?: string;
-};
-
-const MonthlyIncomeExpenseChart = ({
-  data,
-  title,
-  colors,
-  className,
-  initial,
-}: MonthlyIncomeExpenseChartProps) => {
-  const now = new Date();
-  const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-
-  const [startDate, setStartDate] = useState(initial?.startDate || yearAgo);
-  const [endDate, setEndDate] = useState(initial?.endDate || now);
-  const [showIncome, setShowIncome] = useState<boolean>(initial?.showIncome ?? true);
-  const [showExpense, setShowExpense] = useState<boolean>(initial?.showExpense ?? true);
-  const [showBalance, setShowBalance] = useState<boolean>(initial?.showBalance ?? false);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(initial?.isCollapsed ?? true);
-
-  const COLORS = {
-    income: colors?.income || '#00C49F',
-    expense: colors?.expense || '#FF8042',
-    balance: colors?.balance || '#8884d8',
-  };
-
-  const filteredData = data.filter((item: { name: string }) => {
-    const [month, year] = item.name.split('/');
-    const itemDate = new Date(parseInt(year), parseInt(month) - 1);
-    return itemDate >= startDate && itemDate <= endDate;
-  });
-
-  const resetFilters = () => {
-    setStartDate(yearAgo);
-    setEndDate(now);
-    setShowIncome(true);
-    setShowExpense(true);
-    setShowBalance(false);
-  };
-
-  const [minDate, maxDate] = useMemo(() => {
-    const dates = data.map((item) => {
-      const [month, year] = item.name.split('/');
-      return new Date(parseInt(year), parseInt(month) - 1);
-    });
-    return [
-      new Date(Math.min(...dates.map((d) => d.getTime()))),
-      new Date(Math.max(...dates.map((d) => d.getTime()))),
-    ];
-  }, [data]);
-
-  const showEntireRange = useCallback(() => {
-    setStartDate(minDate);
-    setEndDate(maxDate);
-  }, [minDate, maxDate, setStartDate, setEndDate]);
-
-  return (
-    <section className={`${className} shadow-lg rounded-lg border border-gray-200 p-4 bg-gray-100`}>
-      <div className="flex justify-between items-center mb-4">
-        {title && <h3 className="text-2xl text-center">{title}</h3>}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-6 h-6 flex items-center justify-center rounded-full"
-          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-          aria-expanded={!isCollapsed}
-          title={isCollapsed ? 'Expand filters' : 'Collapse filters'}
-        >
-          {isCollapsed ? '▼' : '▲'}
-        </button>
-      </div>
-      {!isCollapsed && (
-        <div className="flex flex-col items-center mb-4">
-          <div className="flex items-center mb-2">
-            <label className="mr-2">Start Date:</label>
-            <input
-              type="date"
-              value={startDate.toISOString().split('T')[0]}
-              onChange={(e) => setStartDate(new Date(e.target.value))}
-              className="mr-4 p-1 border rounded"
-            />
-            <label className="mr-2">End Date:</label>
-            <input
-              type="date"
-              value={endDate.toISOString().split('T')[0]}
-              onChange={(e) => setEndDate(new Date(e.target.value))}
-              className="p-1 border rounded"
-            />
-          </div>
-          <div className="flex space-x-4 mb-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={showIncome}
-                onChange={(e) => setShowIncome(e.target.checked)}
-                className="mr-2 form-checkbox h-5 w-5 text-teal-600"
-              />
-              <span>Show Income</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={showExpense}
-                onChange={(e) => setShowExpense(e.target.checked)}
-                className="mr-2 form-checkbox h-5 w-5 text-teal-600"
-              />
-              <span>Show Expense</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={showBalance}
-                onChange={(e) => setShowBalance(e.target.checked)}
-                className="mr-2 form-checkbox h-5 w-5 text-teal-600"
-              />
-              <span title="Balance = Income - Expense">Show Balance</span>
-            </label>
-          </div>
-          <div className="flex space-x-4">
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Reset Filters
-            </button>
-            <button
-              onClick={showEntireRange}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Show Entire Range
-            </button>
-          </div>
-        </div>
-      )}
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={filteredData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          {showIncome && <Bar dataKey="Income" fill={COLORS.income} />}
-          {showBalance && <Bar dataKey="Balance" fill={COLORS.balance} />}
-          {showExpense && <Bar dataKey="Expense" fill={COLORS.expense} />}
-        </BarChart>
-      </ResponsiveContainer>
-    </section>
-  );
-};
-
-type PieChartDiagramProps = {
-  data: { name: string; value: number }[];
-  title?: string;
-  colors?: string[];
-  className?: string;
-};
-
-const PieChartDiagram: React.FC<PieChartDiagramProps> = ({
-  data,
-  title,
-  colors = [
-    '#00C49F',
-    '#FF8042',
-    '#0088FE',
-    '#FFBB28',
-    '#FF6B6B',
-    '#4CAF50',
-    '#9C27B0',
-    '#FF9800',
-    '#03A9F4',
-    '#E91E63',
-  ],
-  className,
-}) => {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-  const [visibleSections, setVisibleSections] = useState<{ [key: string]: boolean }>(
-    data.reduce((acc, item) => ({ ...acc, [item.name]: true }), {}),
-  );
-
-  const toggleSection = (name: string) => {
-    setVisibleSections((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  const checkAll = () => {
-    setVisibleSections(data.reduce((acc, item) => ({ ...acc, [item.name]: true }), {}));
-  };
-
-  const uncheckAll = () => {
-    setVisibleSections(data.reduce((acc, item) => ({ ...acc, [item.name]: false }), {}));
-  };
-
-  const filteredData = data.filter((item) => visibleSections[item.name]);
-
-  const colorMap = data.reduce(
-    (acc, item, index) => {
-      acc[item.name] = colors[index % colors.length];
-      return acc;
-    },
-    {} as { [key: string]: string },
-  );
-
-  const total = filteredData.reduce((sum, item) => sum + item.value, 0);
-
-  return (
-    <section className={`${className} shadow-lg rounded-lg border border-gray-200 p-4 bg-gray-100`}>
-      <div className="flex justify-between items-center mb-4">
-        {title && <h3 className="text-2xl text-center">{title}</h3>}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-6 h-6 flex items-center justify-center rounded-full"
-          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-          aria-expanded={!isCollapsed}
-          title={isCollapsed ? 'Expand filters' : 'Collapse filters'}
-        >
-          {isCollapsed ? '▼' : '▲'}
-        </button>
-      </div>
-      {!isCollapsed && (
-        <div className="flex flex-col items-center mb-4">
-          <div className="flex flex-wrap justify-center gap-2 mb-2">
-            {data.map((item) => (
-              <label key={item.name} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={visibleSections[item.name]}
-                  onChange={() => toggleSection(item.name)}
-                  className="mr-2 form-checkbox h-5 w-5 shadow-sm"
-                  style={{ color: colorMap[item.name] }}
-                />
-                <span className="text-sm">{item.name}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex space-x-4 mt-2">
-            <button onClick={checkAll} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-              Check All
-            </button>
-            <button
-              onClick={uncheckAll}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Uncheck All
-            </button>
-          </div>
-        </div>
-      )}
-      <ResponsiveContainer width="100%" height={400}>
-        <PieChart>
-          <Pie
-            data={filteredData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={120}
-            fill="#8884d8"
-            dataKey="value"
-            animationBegin={0}
-            animationDuration={500}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-          >
-            {filteredData.map((entry) => (
-              <Cell
-                key={`cell-${entry.name}`}
-                fill={colorMap[entry.name]}
-                stroke="#fff"
-                strokeWidth={2}
-              />
-            ))}
-          </Pie>
-          <Tooltip formatter={(value) => `${(((value as number) / total) * 100).toFixed(2)}%`} />
-          <Legend formatter={(value) => value} />
-        </PieChart>
-      </ResponsiveContainer>
-    </section>
-  );
-};
 
 const StatsPage = () => {
   const { transactions, loading, error } = useTransactionsFetch('/api/transactions');
@@ -349,13 +49,6 @@ const StatsPage = () => {
   const pieChartData = [
     { name: 'Income', value: totalIncome },
     { name: 'Expense', value: totalExpense },
-    { name: 'Balance', value: totalIncome - totalExpense },
-    { name: 'Life Goals', value: 12000 },
-    { name: 'Vacation', value: 2000 },
-    { name: 'Car', value: 3000 },
-    { name: 'House', value: 15000 },
-    { name: 'Investments', value: 5000 },
-    { name: 'Other', value: 1000 },
   ];
 
   const labelDistribution = transactions.reduce(
@@ -382,8 +75,7 @@ const StatsPage = () => {
     .sort(
       (a, b) =>
         Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)),
-    )
-    .slice(0, 10); // Top 10 labels
+    );
 
   return (
     <div className="min-h-screen p-8">
@@ -397,49 +89,11 @@ const StatsPage = () => {
 
         <PieChartDiagram data={pieChartData} title="Total Income vs Expense" />
 
-        <section>
-          <h3 className="text-2xl mb-4">Monthly Balance Trend</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="Balance" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </section>
+        <MonthlyTrendChart data={chartData} title="Monthly Balance Trend" />
 
-        <section>
-          <h3 className="text-2xl mb-4">Cumulative Income and Expense</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area type="monotone" dataKey="Income" stackId="1" stroke="#00C49F" fill="#00C49F" />
-              <Area type="monotone" dataKey="Expense" stackId="1" stroke="#FF8042" fill="#FF8042" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </section>
+        <CumulativeChart data={chartData} title="Cumulative Income and Expense" />
 
-        <section>
-          <h3 className="text-2xl mb-4">Top 10 Labels by Income and Expense</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={labelChartData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Expense" fill="#FF8042" />
-              <Bar dataKey="Income" fill="#00C49F" />
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
+        <VerticalBarChart data={labelChartData} title="Top 10 Labels by Income and Expense" />
       </div>
     </div>
   );
