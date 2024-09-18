@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { PencilIcon } from '@heroicons/react/24/solid';
 
 import TransactionForm from '@/components/forms/TransactionForm';
+import { formatPrice } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 type TimelineSectionProps = {
@@ -48,7 +49,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
               >
                 <h3 className="text-gray-800 mr-0 md:mr-3 mb-2 md:mb-0">{transaction.title}</h3>
                 <span className="text-base text-gray-600 font-semibold whitespace-nowrap">
-                  {`${isIncome ? '+' : '-'} ${transaction.amount.toFixed(2)}`}
+                  {`${isIncome ? '+' : '-'} ${formatPrice(transaction.amount)}`}
                 </span>
               </div>
               <div className="text-gray-700 mt-1">{transaction.description}</div>

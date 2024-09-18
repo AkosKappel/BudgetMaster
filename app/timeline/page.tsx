@@ -5,13 +5,14 @@ import { useCallback, useRef, useState } from 'react';
 import { CalendarIcon } from '@heroicons/react/24/solid';
 
 import BackToTop from '@/components/BackToTop';
+import ErrorMessage from '@/components/ErrorMessage';
 import Filters from '@/components/Filters';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Timeline from '@/components/Timeline';
 import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 
 const TransactionsPage: React.FC = () => {
-  const { transactions, loading, error } = useTransactionsFetch('/api/transactions');
+  const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -27,26 +28,26 @@ const TransactionsPage: React.FC = () => {
     if (selectedDate && timelineRef.current) {
       const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
       const dateElements = timelineRef.current.querySelectorAll('[data-date]');
-      if (dateElements.length > 0) {
-        let closestDate = dateElements[0];
-        let minDiff = Math.abs(
-          new Date(closestDate.getAttribute('data-date') || '').getTime() -
+      if (dateElements.length === 0) return;
+
+      let closestDate = dateElements[0];
+      let minDiff = Math.abs(
+        new Date(closestDate.getAttribute('data-date') || '').getTime() -
+          new Date(formattedDate).getTime(),
+      );
+
+      dateElements.forEach((element) => {
+        const diff = Math.abs(
+          new Date(element.getAttribute('data-date') || '').getTime() -
             new Date(formattedDate).getTime(),
         );
+        if (diff < minDiff) {
+          closestDate = element;
+          minDiff = diff;
+        }
+      });
 
-        dateElements.forEach((element) => {
-          const diff = Math.abs(
-            new Date(element.getAttribute('data-date') || '').getTime() -
-              new Date(formattedDate).getTime(),
-          );
-          if (diff < minDiff) {
-            closestDate = element;
-            minDiff = diff;
-          }
-        });
-
-        closestDate.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      closestDate.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [selectedDate]);
 
@@ -78,7 +79,7 @@ const TransactionsPage: React.FC = () => {
         {loading ? (
           <LoadingSpinner />
         ) : error ? (
-          <div className="text-red-500 text-center">{error}</div>
+          <ErrorMessage message={error} onRetry={refetch} />
         ) : (
           <Timeline
             transactions={transactions}

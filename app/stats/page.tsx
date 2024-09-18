@@ -4,6 +4,8 @@ import React from 'react';
 
 import { ChartPieIcon } from '@heroicons/react/24/solid';
 
+import ErrorMessage from '@/components/ErrorMessage';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import CumulativeChart from '@/components/charts/CumulativeChart';
 import MonthlyIncomeExpenseChart from '@/components/charts/MonthlyIncomeExpenseChart';
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart';
@@ -12,10 +14,7 @@ import VerticalBarChart from '@/components/charts/VerticalBarChart';
 import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 
 const StatsPage = () => {
-  const { transactions, loading, error } = useTransactionsFetch('/api/transactions');
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
 
   const monthlyData = transactions.reduce(
     (acc, transaction) => {
@@ -84,17 +83,23 @@ const StatsPage = () => {
         Financial Statistics
       </h1>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <MonthlyIncomeExpenseChart data={chartData} title="Monthly Income vs Expense" />
+      {loading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorMessage message={error} onRetry={refetch} />
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <MonthlyIncomeExpenseChart data={chartData} title="Monthly Income vs Expense" />
 
-        <PieChartDiagram data={pieChartData} title="Total Income vs Expense" />
+          <PieChartDiagram data={pieChartData} title="Total Income vs Expense" />
 
-        <MonthlyTrendChart data={chartData} title="Monthly Balance Trend" />
+          <MonthlyTrendChart data={chartData} title="Monthly Balance Trend" />
 
-        <CumulativeChart data={chartData} title="Cumulative Income and Expense" />
+          <CumulativeChart data={chartData} title="Cumulative Income and Expense" />
 
-        <VerticalBarChart data={labelChartData} title="Top 10 Labels by Income and Expense" />
-      </div>
+          <VerticalBarChart data={labelChartData} title="Top Labels by Income and Expense" />
+        </div>
+      )}
     </div>
   );
 };

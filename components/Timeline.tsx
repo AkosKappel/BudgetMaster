@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import Fuse from 'fuse.js';
 
 import TimelineSection from '@/components/TimelineSection';
-import { groupByDateAndType } from '@/lib/utils';
+import { formatDate, groupByDateAndType } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 type TimelineProps = {
@@ -49,15 +49,6 @@ const Timeline: React.FC<TimelineProps> = ({
 
     const fuseResults = fuse.search(searchTerm);
     return fuseResults.map((result) => result.item).filter((t) => filteredTransactions.includes(t));
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (
