@@ -21,8 +21,8 @@ type MonthlyIncomeExpenseChartProps = {
     showIncome: boolean;
     showExpense: boolean;
     showBalance: boolean;
-    startDate: Date;
-    endDate: Date;
+    startDate: Date | null;
+    endDate: Date | null;
     isCollapsed: boolean;
   };
   className?: string;
@@ -34,18 +34,28 @@ const MonthlyIncomeExpenseChart = ({
   title,
   colors,
   className,
-  initial,
+  initial = {
+    showIncome: true,
+    showExpense: true,
+    showBalance: false,
+    startDate: null,
+    endDate: null,
+    isCollapsed: true,
+  },
   height = 400,
 }: MonthlyIncomeExpenseChartProps) => {
-  const now = new Date();
-  const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  const now = useMemo(() => new Date(), []);
+  const yearAgo = useMemo(() => {
+    return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  }, [now]);
 
-  const [startDate, setStartDate] = useState(initial?.startDate || yearAgo);
-  const [endDate, setEndDate] = useState(initial?.endDate || now);
-  const [showIncome, setShowIncome] = useState<boolean>(initial?.showIncome ?? true);
-  const [showExpense, setShowExpense] = useState<boolean>(initial?.showExpense ?? true);
-  const [showBalance, setShowBalance] = useState<boolean>(initial?.showBalance ?? false);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(initial?.isCollapsed ?? true);
+  const [startDate, setStartDate] = useState<Date | null>(initial?.startDate || yearAgo);
+  const [endDate, setEndDate] = useState<Date | null>(initial?.endDate || now);
+  const [showIncome, setShowIncome] = useState<boolean>(initial.showIncome);
+  const [showExpense, setShowExpense] = useState<boolean>(initial.showExpense);
+  const [showBalance, setShowBalance] = useState<boolean>(initial.showBalance);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(initial.isCollapsed);
+  const [selectedRange, setSelectedRange] = useState<string>('');
 
   const COLORS = {
     income: colors?.income || '#00C49F',
@@ -53,10 +63,21 @@ const MonthlyIncomeExpenseChart = ({
     balance: colors?.balance || '#8884d8',
   };
 
+  const rangeOptions = [
+    { value: 'lastMonth', label: 'Last Month' },
+    { value: 'last3Months', label: 'Last 3 Months' },
+    { value: 'last6Months', label: 'Last 6 Months' },
+    { value: 'lastYear', label: 'Last Year' },
+    { value: 'last2Years', label: 'Last 2 Years' },
+    { value: 'last3Years', label: 'Last 3 Years' },
+    { value: 'ytd', label: 'Year to Date' },
+    { value: 'entireHistory', label: 'Entire History' },
+  ];
+
   const filteredData = data.filter((item: { name: string }) => {
     const [month, year] = item.name.split('/');
     const itemDate = new Date(parseInt(year), parseInt(month) - 1);
-    return itemDate >= startDate && itemDate <= endDate;
+    return (!startDate || itemDate >= startDate) && (!endDate || itemDate <= endDate);
   });
 
   const resetFilters = () => {
@@ -65,6 +86,7 @@ const MonthlyIncomeExpenseChart = ({
     setShowIncome(true);
     setShowExpense(true);
     setShowBalance(false);
+    setSelectedRange('');
   };
 
   const [minDate, maxDate] = useMemo(() => {
@@ -78,10 +100,51 @@ const MonthlyIncomeExpenseChart = ({
     ];
   }, [data]);
 
-  const showEntireRange = useCallback(() => {
-    setStartDate(minDate);
-    setEndDate(maxDate);
-  }, [minDate, maxDate, setStartDate, setEndDate]);
+  const handleRangeChange = useCallback(
+    (range: string) => {
+      const now = new Date();
+      switch (range) {
+        case 'lastMonth':
+          setStartDate(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+          setEndDate(now);
+          break;
+        case 'last3Months':
+          setStartDate(new Date(now.getFullYear(), now.getMonth() - 3, 1));
+          setEndDate(now);
+          break;
+        case 'last6Months':
+          setStartDate(new Date(now.getFullYear(), now.getMonth() - 6, 1));
+          setEndDate(now);
+          break;
+        case 'lastYear':
+          setStartDate(new Date(now.getFullYear() - 1, now.getMonth(), 1));
+          setEndDate(now);
+          break;
+        case 'last2Years':
+          setStartDate(new Date(now.getFullYear() - 2, now.getMonth(), 1));
+          setEndDate(now);
+          break;
+        case 'last3Years':
+          setStartDate(new Date(now.getFullYear() - 3, now.getMonth(), 1));
+          setEndDate(now);
+          break;
+        case 'ytd':
+          setStartDate(new Date(now.getFullYear(), 0, 1));
+          setEndDate(now);
+          break;
+        case 'entireHistory':
+          setStartDate(minDate);
+          setEndDate(maxDate);
+          break;
+        default:
+          setStartDate(yearAgo);
+          setEndDate(now);
+          break;
+      }
+      setSelectedRange(range);
+    },
+    [minDate, maxDate, yearAgo],
+  );
 
   return (
     <section className={`${className} shadow-lg rounded-lg border border-gray-200 p-4 bg-gray-100`}>
@@ -103,15 +166,21 @@ const MonthlyIncomeExpenseChart = ({
             <label className="mr-2">Start Date:</label>
             <input
               type="date"
-              value={startDate.toISOString().split('T')[0]}
-              onChange={(e) => setStartDate(new Date(e.target.value))}
+              value={startDate ? startDate.toISOString().split('T')[0] : ''}
+              onChange={(e) => {
+                setStartDate(e.target.value ? new Date(e.target.value) : null);
+                setSelectedRange('');
+              }}
               className="mr-4 p-1 border rounded"
             />
             <label className="mr-2">End Date:</label>
             <input
               type="date"
-              value={endDate.toISOString().split('T')[0]}
-              onChange={(e) => setEndDate(new Date(e.target.value))}
+              value={endDate ? endDate.toISOString().split('T')[0] : ''}
+              onChange={(e) => {
+                setEndDate(e.target.value ? new Date(e.target.value) : null);
+                setSelectedRange('');
+              }}
               className="p-1 border rounded"
             />
           </div>
@@ -145,17 +214,23 @@ const MonthlyIncomeExpenseChart = ({
             </label>
           </div>
           <div className="flex space-x-4">
+            <select
+              value={selectedRange}
+              onChange={(e) => handleRangeChange(e.target.value)}
+              className="px-4 py-2 rounded transition-colors duration-200 cursor-pointer bg-gray-500 text-white hover:bg-gray-600"
+            >
+              <option value="">Select Range</option>
+              {rangeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <button
               onClick={resetFilters}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors duration-200"
             >
               Reset Filters
-            </button>
-            <button
-              onClick={showEntireRange}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Show Entire Range
             </button>
           </div>
         </div>

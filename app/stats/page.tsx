@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { ChartPieIcon } from '@heroicons/react/24/solid';
 
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import CumulativeChart from '@/components/charts/CumulativeChart';
+import MixedBarChart from '@/components/charts/MixBarDiagram';
 import MonthlyIncomeExpenseChart from '@/components/charts/MonthlyIncomeExpenseChart';
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart';
 import PieChartDiagram from '@/components/charts/PieChartDiagram';
@@ -16,65 +17,100 @@ import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 const StatsPage = () => {
   const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
 
-  const monthlyData = transactions.reduce(
-    (acc, transaction) => {
-      const date = new Date(transaction.date);
-      const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-      if (!acc[monthYear]) {
-        acc[monthYear] = { income: 0, expense: 0 };
-      }
-      if (transaction.isExpense) {
-        acc[monthYear].expense += transaction.amount;
+  const { totalIncome, totalExpense, monthlyAggregatedData } = useMemo(() => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+    const monthlyAggregatedData: Record<string, { income: number; expense: number }> = {};
+
+    transactions.forEach((t) => {
+      if (t.isExpense) {
+        totalExpense += t.amount;
       } else {
-        acc[monthYear].income += transaction.amount;
+        totalIncome += t.amount;
       }
-      return acc;
-    },
-    {} as Record<string, { income: number; expense: number }>,
-  );
 
-  const chartData = Object.entries(monthlyData)
-    .map(([name, data]) => ({
-      name,
-      Income: data.income,
-      Expense: data.expense,
-      Balance: data.income - data.expense,
-    }))
-    .reverse();
+      const date = new Date(t.date);
+      const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+      if (!monthlyAggregatedData[monthYear]) {
+        monthlyAggregatedData[monthYear] = { income: 0, expense: 0 };
+      }
+      if (t.isExpense) {
+        monthlyAggregatedData[monthYear].expense += t.amount;
+      } else {
+        monthlyAggregatedData[monthYear].income += t.amount;
+      }
+    });
 
-  const totalIncome = transactions.reduce((sum, t) => sum + (t.isExpense ? 0 : t.amount), 0);
-  const totalExpense = transactions.reduce((sum, t) => sum + (t.isExpense ? t.amount : 0), 0);
+    return { totalIncome, totalExpense, monthlyAggregatedData };
+  }, [transactions]);
 
-  const pieChartData = [
-    { name: 'Income', value: totalIncome },
-    { name: 'Expense', value: totalExpense },
-  ];
+  const monthlyFinanceData = useMemo(() => {
+    return Object.entries(monthlyAggregatedData)
+      .map(([name, data]) => ({
+        name,
+        Income: data.income,
+        Expense: data.expense,
+        Balance: data.income - data.expense,
+      }))
+      .reverse();
+  }, [monthlyAggregatedData]);
 
-  const labelDistribution = transactions.reduce(
-    (acc, transaction) => {
-      transaction.labels.forEach((label) => {
-        if (!acc[label]) acc[label] = { income: 0, expense: 0 };
-        if (transaction.isExpense) {
-          acc[label].expense += transaction.amount;
-        } else {
-          acc[label].income += transaction.amount;
-        }
-      });
-      return acc;
-    },
-    {} as Record<string, { income: number; expense: number }>,
-  );
+  const totalFinanceData = useMemo(() => {
+    return [
+      { name: 'Income', value: totalIncome },
+      { name: 'Expense', value: totalExpense },
+    ];
+  }, [totalIncome, totalExpense]);
 
-  const labelChartData = Object.entries(labelDistribution)
-    .map(([name, value]) => ({
-      name,
-      Income: value.income,
-      Expense: -value.expense,
-    }))
-    .sort(
-      (a, b) =>
-        Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)),
+  const labelAggregatedData = useMemo(() => {
+    return transactions.reduce(
+      (acc, transaction) => {
+        transaction.labels.forEach((label: string) => {
+          if (!acc[label]) acc[label] = { income: 0, expense: 0 };
+          if (transaction.isExpense) {
+            acc[label].expense += transaction.amount;
+          } else {
+            acc[label].income += transaction.amount;
+          }
+        });
+        return acc;
+      },
+      {} as Record<string, { income: number; expense: number }>,
     );
+  }, [transactions]);
+
+  const labelIncomeExpenseData = useMemo(() => {
+    return Object.entries(labelAggregatedData)
+      .map(([name, value]) => ({
+        name,
+        Income: value.income,
+        Expense: -value.expense,
+      }))
+      .sort(
+        (a, b) =>
+          Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)),
+      );
+  }, [labelAggregatedData]);
+
+  const dailyAggregatedLabelData = useMemo(() => {
+    const data: Record<string, Record<string, number>> = {};
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.date).toISOString().split('T')[0];
+      if (!data[date]) {
+        data[date] = {};
+      }
+      transaction.labels.forEach((label) => {
+        if (!data[date][label]) {
+          data[date][label] = 0;
+        }
+        data[date][label] += transaction.amount;
+      });
+    });
+    return Object.entries(data).map(([date, labels]) => ({
+      date,
+      ...labels,
+    }));
+  }, [transactions]);
 
   return (
     <div className="min-h-screen p-8">
@@ -89,15 +125,20 @@ const StatsPage = () => {
         <ErrorMessage message={error} onRetry={refetch} />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <MonthlyIncomeExpenseChart data={chartData} title="Monthly Income vs Expense" />
+          <MonthlyIncomeExpenseChart data={monthlyFinanceData} title="Monthly Income vs Expense" />
 
-          <PieChartDiagram data={pieChartData} title="Total Income vs Expense" />
+          <PieChartDiagram data={totalFinanceData} title="Total Income vs Expense" />
 
-          <MonthlyTrendChart data={chartData} title="Monthly Balance Trend" />
+          <MonthlyTrendChart data={monthlyFinanceData} title="Monthly Balance Trend" />
 
-          <CumulativeChart data={chartData} title="Cumulative Income and Expense" />
+          <CumulativeChart data={monthlyFinanceData} title="Cumulative Income and Expense" />
 
-          <VerticalBarChart data={labelChartData} title="Top Labels by Income and Expense" />
+          <VerticalBarChart
+            data={labelIncomeExpenseData}
+            title="Top Labels by Income and Expense"
+          />
+
+          <MixedBarChart data={dailyAggregatedLabelData} title="Daily Transactions by Label" />
         </div>
       )}
     </div>

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
+import { formatPrice } from '@/lib/utils';
+
 type PieChartDiagramProps = {
   data: { name: string; value: number }[];
   title?: string;
@@ -82,20 +84,23 @@ const PieChartDiagram: React.FC<PieChartDiagramProps> = ({
                   type="checkbox"
                   checked={visibleSections[item.name]}
                   onChange={() => toggleSection(item.name)}
-                  className="mr-2 form-checkbox h-5 w-5 shadow-sm"
+                  className="mr-2 form-checkbox h-5 w-5 text-teal-600"
                   style={{ color: colorMap[item.name] }}
                 />
-                <span className="text-sm">{item.name}</span>
+                <span>{item.name}</span>
               </label>
             ))}
           </div>
           <div className="flex space-x-4 mt-2">
-            <button onClick={checkAll} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+            <button
+              onClick={checkAll}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors duration-200"
+            >
               Check All
             </button>
             <button
               onClick={uncheckAll}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors duration-200"
             >
               Uncheck All
             </button>
@@ -115,7 +120,7 @@ const PieChartDiagram: React.FC<PieChartDiagramProps> = ({
             animationBegin={0}
             animationDuration={500}
             label={({ name, percent, value }) =>
-              `${name}: ${value.toFixed(2)} (${(percent * 100).toFixed(0)}%)`
+              `${formatPrice(value)} (${(percent * 100).toFixed(0)}%)`
             }
           >
             {filteredData.map((entry) => (
@@ -129,7 +134,7 @@ const PieChartDiagram: React.FC<PieChartDiagramProps> = ({
           </Pie>
           <Tooltip
             formatter={(value) =>
-              `${(value as number).toFixed(2)} (${(((value as number) / total) * 100).toFixed(2)}%)`
+              `${formatPrice(value as number)} (${(((value as number) / total) * 100).toFixed(2)}%)`
             }
           />
           <Legend formatter={(value) => value} />
