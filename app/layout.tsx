@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ReactNode } from 'react';
+import { ToastContainer } from 'react-toastify';
 
 import '@/app/globals.css';
 import ReduxProvider from '@/components/ReduxProvider';
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps) {
             <main className="flex-grow container mx-auto p-4 overflow-auto">{children}</main>
           </div>
           <Footer />
+          <ToastContainer position="bottom-right" autoClose={3000} />
         </ReduxProvider>
       </body>
     </html>

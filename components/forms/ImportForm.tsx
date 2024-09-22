@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import { InformationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,8 +42,10 @@ const ImportForm: React.FC<ImportFormProps> = ({ onSubmitCallback }) => {
       reset();
       setSelectedFile(null);
       onSubmitCallback();
+      toast.success('Data imported successfully');
     } catch (error) {
       console.error(error);
+      toast.error('Failed to import data');
     } finally {
       setLoading(false);
     }

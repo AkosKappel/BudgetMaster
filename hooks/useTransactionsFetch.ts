@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 import axios, { AxiosError } from 'axios';
 
@@ -37,6 +38,7 @@ export const useTransactionsFetch = (endpoint: string, initialOptions: FetchOpti
         const axiosError = error as AxiosError;
         console.error(`Error fetching transactions from ${endpoint}:`, axiosError);
         setError(`An error occurred: ${axiosError.message}`);
+        toast.error('Failed to fetch transactions');
         return false;
       } finally {
         setLoading(false);
