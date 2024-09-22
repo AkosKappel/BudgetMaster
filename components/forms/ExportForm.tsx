@@ -1,17 +1,16 @@
 import React from 'react';
 
-import Modal from '@/components/sections/Modal';
-
+// TODO: Implement export form
 type ExportFormProps = {
-  isOpen: boolean;
-  onClose: () => void;
+  onSubmitCallback: () => void;
 };
 
-const ExportForm: React.FC<ExportFormProps> = ({ isOpen, onClose }) => {
+const ExportForm: React.FC<ExportFormProps> = ({ onSubmitCallback }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Export Transactions">
-      <div>ExportForm</div>
-    </Modal>
+    <>
+      <h2 className="text-2xl font-bold mb-4">Export Transactions</h2>
+      <div>Export Form (WIP)</div>
+    </>
   );
 };
 

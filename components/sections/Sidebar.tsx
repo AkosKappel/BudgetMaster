@@ -22,6 +22,7 @@ import {
 import ExportForm from '@/components/forms/ExportForm';
 import ImportForm from '@/components/forms/ImportForm';
 import TransactionForm from '@/components/forms/TransactionForm';
+import Modal from '@/components/sections/Modal';
 
 type NavItem = {
   name: string;
@@ -43,17 +44,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
     typeof window !== 'undefined' ? window.innerWidth : 0,
   );
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   const pathname = usePathname();
 
-  const openTransactionModal = () => setIsTransactionModalOpen(true);
-  const closeTransactionModal = () => setIsTransactionModalOpen(false);
-  const openImportModal = () => setIsImportModalOpen(true);
-  const closeImportModal = () => setIsImportModalOpen(false);
-  const openExportModal = () => setIsExportModalOpen(true);
-  const closeExportModal = () => setIsExportModalOpen(false);
+  const openModal = (modalName: string) => setActiveModal(modalName);
+  const closeModal = () => setActiveModal(null);
 
   const topNavItems: NavItem[] = [
     {
@@ -90,31 +85,22 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           name: 'New Transaction',
           href: '#',
           icon: <PlusIcon className="w-5 h-5" />,
-          action: openTransactionModal,
+          action: () => openModal('transaction'),
           tooltip: 'Add a new transaction',
-          component: (
-            <TransactionForm
-              isOpen={isTransactionModalOpen}
-              onClose={closeTransactionModal}
-              transaction={null}
-            />
-          ),
         },
         {
           name: 'Import Data',
           href: '#',
           icon: <ArrowDownTrayIcon className="w-5 h-5" />,
-          action: openImportModal,
+          action: () => openModal('import'),
           tooltip: 'Import your financial data',
-          component: <ImportForm isOpen={isImportModalOpen} onClose={closeImportModal} />,
         },
         {
           name: 'Export Data',
           href: '#',
           icon: <ArrowUpTrayIcon className="w-5 h-5" />,
-          action: openExportModal,
+          action: () => openModal('export'),
           tooltip: 'Export your financial data',
-          component: <ExportForm isOpen={isExportModalOpen} onClose={closeExportModal} />,
         },
       ],
     },
@@ -259,11 +245,19 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           </ul>
         </div>
       </nav>
-      {topNavItems
-        .flatMap((item) => item.subItems || [])
-        .map((subItem) => (
-          <React.Fragment key={subItem.name}>{subItem.component}</React.Fragment>
-        ))}
+      <Modal isOpen={activeModal === 'transaction'} onClose={closeModal}>
+        <TransactionForm
+          onSubmitCallback={closeModal}
+          onDeleteCallback={closeModal}
+          transaction={null}
+        />
+      </Modal>
+      <Modal isOpen={activeModal === 'import'} onClose={closeModal}>
+        <ImportForm onSubmitCallback={closeModal} />
+      </Modal>
+      <Modal isOpen={activeModal === 'export'} onClose={closeModal}>
+        <ExportForm onSubmitCallback={closeModal} />
+      </Modal>
     </>
   );
 };

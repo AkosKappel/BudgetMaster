@@ -14,23 +14,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import InputField from '@/components/inputs/InputField';
 import MultiSelect from '@/components/inputs/MultiSelect';
 import SwitchButton from '@/components/inputs/SwitchButton';
-import Modal from '@/components/sections/Modal';
 import { useTransactionDelete } from '@/hooks/useTransactionDelete';
 import { useTransactionSubmit } from '@/hooks/useTransactionSubmit';
 import { type TransactionData, transactionSchema } from '@/schemas/transaction';
 import { RootState } from '@/store';
 
 type TransactionFormProps = {
-  isOpen: boolean;
-  onClose: () => void;
   transaction: TransactionData | null;
+  onSubmitCallback: () => void;
+  onDeleteCallback: () => void;
+  title?: string;
   startCollapsed?: boolean;
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
-  isOpen,
-  onClose,
   transaction,
+  onSubmitCallback,
+  onDeleteCallback,
+  title,
   startCollapsed = true,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
@@ -71,7 +72,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const success = await submitTransaction(data, transaction);
     if (success) {
       reset();
-      onClose();
+      onSubmitCallback();
     }
   };
 
@@ -80,7 +81,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       const success = await deleteTransactionById(transaction._id);
       if (success) {
         reset();
-        onClose();
+        onDeleteCallback();
       }
     }
   };
@@ -96,11 +97,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={transaction ? 'Edit Transaction' : 'Add Transaction'}
-    >
+    <>
+      <h2 className="text-2xl font-bold mb-4">
+        {title || (transaction ? 'Edit Transaction' : 'Add Transaction')}
+      </h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <InputField
           label="Title"
@@ -220,7 +220,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           </div>
         </div>
       </form>
-    </Modal>
+    </>
   );
 };
 

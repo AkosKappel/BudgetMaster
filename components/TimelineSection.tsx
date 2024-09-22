@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { PencilIcon } from '@heroicons/react/24/solid';
 
 import TransactionForm from '@/components/forms/TransactionForm';
+import Modal from '@/components/sections/Modal';
 import { formatPrice } from '@/lib/utils';
 import { Transaction } from '@/types';
 
@@ -87,12 +88,14 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           </div>
         ))}
       </section>
-      <TransactionForm
-        isOpen={!!currentTransaction}
-        onClose={closeEditModal}
-        transaction={currentTransaction}
-        startCollapsed={false}
-      />
+      <Modal isOpen={!!currentTransaction} onClose={closeEditModal}>
+        <TransactionForm
+          onSubmitCallback={closeEditModal}
+          onDeleteCallback={closeEditModal}
+          transaction={currentTransaction}
+          startCollapsed={false}
+        />
+      </Modal>
     </>
   );
 };

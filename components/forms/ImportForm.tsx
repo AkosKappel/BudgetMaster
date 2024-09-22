@@ -5,15 +5,13 @@ import { InformationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Tooltip from '@/components/Tooltip';
-import Modal from '@/components/sections/Modal';
 import { type ImportData, importSchema } from '@/schemas/import';
 
 type ImportFormProps = {
-  isOpen: boolean;
-  onClose: () => void;
+  onSubmitCallback: () => void;
 };
 
-const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
+const ImportForm: React.FC<ImportFormProps> = ({ onSubmitCallback }) => {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -36,15 +34,13 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
     try {
       setLoading(true);
       console.log(data);
-
-      console.log(data);
       // const response = await axios.post('/api/import', data);
       // if (response.status !== 200) {
       //   throw new Error('Failed to import data');
       // }
       reset();
       setSelectedFile(null);
-      onClose();
+      onSubmitCallback();
     } catch (error) {
       console.error(error);
     } finally {
@@ -82,7 +78,8 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Import Transactions">
+    <>
+      <h2 className="text-2xl font-bold mb-4">Import Transactions</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex items-center mb-2">
           <label className="block text-sm font-medium text-left text-gray-500">
@@ -184,7 +181,7 @@ const ImportForm: React.FC<ImportFormProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
       </form>
-    </Modal>
+    </>
   );
 };
 

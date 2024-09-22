@@ -5,11 +5,10 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -35,15 +34,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
     >
       <div
         ref={modalRef}
-        className="bg-base-200 p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col"
+        className="bg-base-200 rounded-lg shadow-lg w-full max-w-3xl flex flex-col relative"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{title}</h2>
-          <button className="btn btn-ghost btn-circle" onClick={onClose}>
-            <XMarkIcon className="w-8 h-8" />
-          </button>
-        </div>
-        <div>{children}</div>
+        <button className="btn btn-ghost btn-circle absolute top-2 right-2" onClick={onClose}>
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+        <div className="p-6">{children}</div>
       </div>
     </div>
   );
