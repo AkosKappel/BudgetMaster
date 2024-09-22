@@ -27,6 +27,14 @@ const Timeline: React.FC<TimelineProps> = ({
 }) => {
   const blocks = useMemo(() => groupByDateAndType('date', transactions), [transactions]);
 
+  const highlightText = (text: string, highlight: string) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const regex = new RegExp(`(${highlight})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  };
+
   const filterTransactions = (transactions: Transaction[]) => {
     const fuse = new Fuse(transactions, {
       keys: ['description', 'title', 'sender', 'receiver'],
@@ -48,7 +56,15 @@ const Timeline: React.FC<TimelineProps> = ({
     }
 
     const fuseResults = fuse.search(searchTerm);
-    return fuseResults.map((result) => result.item).filter((t) => filteredTransactions.includes(t));
+    return fuseResults
+      .map((result) => ({
+        ...result.item,
+        highlightedDescription: highlightText(result.item.description, searchTerm),
+        highlightedTitle: highlightText(result.item.title, searchTerm),
+        highlightedSender: highlightText(result.item.sender || '', searchTerm),
+        highlightedReceiver: highlightText(result.item.receiver || '', searchTerm),
+      }))
+      .filter((t) => filteredTransactions.includes(t));
   };
 
   return (
