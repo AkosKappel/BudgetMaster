@@ -19,8 +19,6 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/solid';
 
-import ExportForm from '@/components/forms/ExportForm';
-import ImportForm from '@/components/forms/ImportForm';
 import TransactionForm from '@/components/forms/TransactionForm';
 import Modal from '@/components/sections/Modal';
 
@@ -31,7 +29,6 @@ type NavItem = {
   subItems?: NavItem[];
   action?: () => void;
   tooltip?: string;
-  component?: React.ReactNode;
 };
 
 type SidebarProps = {
@@ -90,16 +87,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
         },
         {
           name: 'Import Data',
-          href: '#',
+          href: '/import',
           icon: <ArrowDownTrayIcon className="w-5 h-5" />,
-          action: () => openModal('import'),
           tooltip: 'Import your financial data',
         },
         {
           name: 'Export Data',
-          href: '#',
+          href: '/export',
           icon: <ArrowUpTrayIcon className="w-5 h-5" />,
-          action: () => openModal('export'),
           tooltip: 'Export your financial data',
         },
       ],
@@ -162,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           </button>
         ) : (
           <Link
-            href={item.href}
+            href={hasSubItems ? '#' : item.href}
             className={`flex items-center w-full text-base font-medium p-3 rounded-lg transition-all duration-300 min-h-[3rem] cursor-pointer whitespace-nowrap
               ${pathname === item.href ? 'text-primary bg-primary-content scale-105' : 'hover:text-primary hover:bg-primary-content hover:scale-105'}`}
             onClick={(e) => {
@@ -182,8 +177,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
             )}
           </Link>
         )}
-        {hasSubItems && isExpanded && !isCollapsed && (
-          <ul className="ml-6 mt-2 space-y-2">
+        {hasSubItems && isExpanded && (
+          <ul className={`${isCollapsed ? 'mt-2' : 'ml-6 mt-2'} space-y-2`}>
             {item.subItems!.map((subItem) => (
               <li key={subItem.name}>
                 {subItem.action ? (
@@ -194,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
                     title={subItem.tooltip}
                   >
                     {subItem.icon}
-                    <span className="truncate">{subItem.name}</span>
+                    {!isCollapsed && <span className="truncate">{subItem.name}</span>}
                   </button>
                 ) : (
                   <Link
@@ -204,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
                     title={subItem.tooltip}
                   >
                     {subItem.icon}
-                    <span className="truncate">{subItem.name}</span>
+                    {!isCollapsed && <span className="truncate">{subItem.name}</span>}
                   </Link>
                 )}
               </li>
@@ -246,17 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
         </div>
       </nav>
       <Modal isOpen={activeModal === 'transaction'} onClose={closeModal}>
-        <TransactionForm
-          onSubmitCallback={closeModal}
-          onDeleteCallback={closeModal}
-          transaction={null}
-        />
-      </Modal>
-      <Modal isOpen={activeModal === 'import'} onClose={closeModal}>
-        <ImportForm onSubmitCallback={closeModal} />
-      </Modal>
-      <Modal isOpen={activeModal === 'export'} onClose={closeModal}>
-        <ExportForm onSubmitCallback={closeModal} />
+        <TransactionForm onSubmit={closeModal} onDelete={closeModal} transaction={null} />
       </Modal>
     </>
   );

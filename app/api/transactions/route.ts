@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { connectToDb } from '@/lib/mongodb';
-import { transactionSchema } from '@/schemas/transaction';
+import { transactionSchema } from '@/schemas/transactionSchema';
 
 const DATABASE_NAME = 'BudgetMasterDB';
 const COLLECTION_NAME = 'transactions';

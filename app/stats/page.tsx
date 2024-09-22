@@ -13,10 +13,10 @@ import {
   VerticalBarChart,
 } from '@/components/charts';
 import { ErrorMessage, LoadingSpinner } from '@/components/ui';
-import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
+import { useFetchTransactions } from '@/hooks/useTransactions';
 
 const StatsPage = () => {
-  const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
+  const { transactions, loading, error, refetch } = useFetchTransactions();
 
   const { totalIncome, totalExpense, monthlyAggregatedData } = useMemo(() => {
     let totalIncome = 0;

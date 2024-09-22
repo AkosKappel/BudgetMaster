@@ -7,11 +7,11 @@ import { HomeIcon, PlusIcon } from '@heroicons/react/24/solid';
 import TransactionForm from '@/components/forms/TransactionForm';
 import Modal from '@/components/sections/Modal';
 import { ErrorMessage, LoadingSpinner } from '@/components/ui';
-import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
+import { useFetchTransactions } from '@/hooks/useTransactions';
 
 const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
+  const { transactions, loading, error, refetch } = useFetchTransactions();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -26,8 +26,13 @@ const DashboardPage = () => {
         Dashboard
       </h1>
 
-      {/* TODO: Add dashboard content here */}
-      <pre>{JSON.stringify(transactions || [], null, 2)}</pre>
+      <div className="space-y-4">
+        {transactions.map((transaction) => (
+          <div key={transaction._id} className="bg-white shadow rounded-lg p-4">
+            <TransactionForm transaction={transaction} />
+          </div>
+        ))}
+      </div>
 
       <div className="fixed bottom-5 right-5">
         <button
@@ -39,11 +44,7 @@ const DashboardPage = () => {
         </button>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <TransactionForm
-          onSubmitCallback={closeModal}
-          onDeleteCallback={closeModal}
-          transaction={null}
-        />
+        <TransactionForm onSubmit={closeModal} onDelete={closeModal} transaction={null} />
       </Modal>
     </div>
   );

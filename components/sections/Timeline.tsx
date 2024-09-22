@@ -4,7 +4,7 @@ import Fuse from 'fuse.js';
 
 import TimelineSection from '@/components/sections/TimelineSection';
 import { formatDate, groupByDateAndType } from '@/lib/utils';
-import { Transaction } from '@/types';
+import { type Transaction } from '@/types';
 
 type TimelineProps = {
   transactions: Transaction[];

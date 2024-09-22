@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import {
   ArrowPathIcon,
@@ -13,30 +12,29 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
-import { useTransactionDelete } from '@/hooks/useTransactionDelete';
-import { useTransactionSubmit } from '@/hooks/useTransactionSubmit';
-import { type TransactionData, transactionSchema } from '@/schemas/transaction';
+import { useRemoveTransaction, useTransactionSubmit } from '@/hooks/useTransactions';
+import { type TransactionData, transactionSchema } from '@/schemas/transactionSchema';
 import { RootState } from '@/store';
 
 type TransactionFormProps = {
   transaction: TransactionData | null;
-  onSubmitCallback: () => void;
-  onDeleteCallback: () => void;
+  onSubmit?: (data: TransactionData, transaction: TransactionData | null) => void;
+  onDelete?: (transaction: TransactionData) => void;
   title?: string;
   startCollapsed?: boolean;
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
   transaction,
-  onSubmitCallback,
-  onDeleteCallback,
+  onSubmit,
+  onDelete,
   title,
   startCollapsed = true,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
   const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
-  const { submitTransaction, loading } = useTransactionSubmit('/api/transactions');
-  const { deleteTransactionById, deleting } = useTransactionDelete('/api/transactions');
+  const { submitTransaction, loading } = useTransactionSubmit();
+  const { removeTransaction, loading: deleting } = useRemoveTransaction();
 
   const defaultValues = {
     date: new Date().toISOString().split('T')[0],
@@ -67,28 +65,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const isExpense = watch('isExpense', true);
 
-  const onSubmit = async (data: TransactionData) => {
+  const handleOnSubmit = async (data: TransactionData, transaction: TransactionData | null) => {
     const success = await submitTransaction(data, transaction);
     if (success) {
+      onSubmit?.(data, transaction);
       reset();
-      onSubmitCallback();
-      toast.success(
-        transaction ? 'Transaction updated successfully' : 'Transaction created successfully',
-      );
-    } else {
-      toast.error('Failed to save transaction');
     }
   };
 
-  const onDelete = async () => {
+  const handleOnDelete = async (transaction: TransactionData) => {
     if (transaction?._id) {
-      const success = await deleteTransactionById(transaction._id);
+      const success = await removeTransaction(transaction._id);
       if (success) {
+        onDelete?.(transaction);
         reset();
-        onDeleteCallback();
-        toast.success('Transaction deleted successfully');
-      } else {
-        toast.error('Failed to delete transaction');
       }
     }
   };
@@ -108,7 +98,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       <h2 className="text-2xl font-bold mb-4">
         {title || (transaction ? 'Edit Transaction' : 'Add Transaction')}
       </h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit((data) => handleOnSubmit(data, transaction))}
+        className="space-y-4"
+      >
         <InputField
           label="Title"
           type="text"
@@ -185,7 +178,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               <button
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out flex items-center justify-center"
-                onClick={onDelete}
+                onClick={() => handleOnDelete(transaction)}
                 disabled={loading || deleting}
               >
                 {deleting ? (

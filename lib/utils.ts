@@ -1,4 +1,4 @@
-import { Transaction } from '@/types';
+import { type Transaction } from '@/types';
 
 const LOCALE = 'en-DE';
 

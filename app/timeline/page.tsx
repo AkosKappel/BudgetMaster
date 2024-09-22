@@ -7,10 +7,10 @@ import { CalendarIcon } from '@heroicons/react/24/solid';
 import Filters from '@/components/sections/Filters';
 import Timeline from '@/components/sections/Timeline';
 import { BackToTop, ErrorMessage, LoadingSpinner } from '@/components/ui';
-import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
+import { useFetchTransactions } from '@/hooks/useTransactions';
 
 const TransactionsPage = () => {
-  const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
+  const { transactions, loading, error, refetch } = useFetchTransactions();
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');

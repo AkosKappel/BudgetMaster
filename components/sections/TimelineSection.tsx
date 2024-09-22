@@ -5,7 +5,7 @@ import { PencilIcon } from '@heroicons/react/24/solid';
 import TransactionForm from '@/components/forms/TransactionForm';
 import Modal from '@/components/sections/Modal';
 import { formatPrice } from '@/lib/utils';
-import { Transaction } from '@/types';
+import { type Transaction } from '@/types';
 
 type TimelineSectionProps = {
   transactions: Transaction[];
