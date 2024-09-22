@@ -4,14 +4,12 @@ import { useCallback, useRef, useState } from 'react';
 
 import { CalendarIcon } from '@heroicons/react/24/solid';
 
-import BackToTop from '@/components/BackToTop';
-import ErrorMessage from '@/components/ErrorMessage';
-import Filters from '@/components/Filters';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import Timeline from '@/components/Timeline';
+import Filters from '@/components/sections/Filters';
+import Timeline from '@/components/sections/Timeline';
+import { BackToTop, ErrorMessage, LoadingSpinner } from '@/components/ui';
 import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 
-const TransactionsPage: React.FC = () => {
+const TransactionsPage = () => {
   const { transactions, loading, error, refetch } = useTransactionsFetch('/api/transactions');
 
   // Filter states
@@ -51,6 +49,9 @@ const TransactionsPage: React.FC = () => {
     }
   }, [selectedDate]);
 
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} onRetry={refetch} />;
+
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
@@ -76,21 +77,15 @@ const TransactionsPage: React.FC = () => {
         setShowNoLabels={setShowNoLabels}
       />
       <div ref={timelineRef}>
-        {loading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorMessage message={error} onRetry={refetch} />
-        ) : (
-          <Timeline
-            transactions={transactions}
-            selectedLabels={selectedLabels}
-            searchTerm={searchTerm}
-            transactionType={transactionType}
-            minAmount={minAmount}
-            maxAmount={maxAmount}
-            showNoLabels={showNoLabels}
-          />
-        )}
+        <Timeline
+          transactions={transactions || []}
+          selectedLabels={selectedLabels}
+          searchTerm={searchTerm}
+          transactionType={transactionType}
+          minAmount={minAmount}
+          maxAmount={maxAmount}
+          showNoLabels={showNoLabels}
+        />
       </div>
       <BackToTop />
     </div>

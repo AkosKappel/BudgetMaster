@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const Home: React.FC = () => {
   const router = useRouter();

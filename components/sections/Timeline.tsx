@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import Fuse from 'fuse.js';
 
-import TimelineSection from '@/components/TimelineSection';
+import TimelineSection from '@/components/sections/TimelineSection';
 import { formatDate, groupByDateAndType } from '@/lib/utils';
 import { Transaction } from '@/types';
 

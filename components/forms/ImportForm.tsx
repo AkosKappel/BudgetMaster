@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { InformationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import Tooltip from '@/components/Tooltip';
+import Tooltip from '@/components/ui/Tooltip';
 import { type ImportData, importSchema } from '@/schemas/import';
 
 type ImportFormProps = {

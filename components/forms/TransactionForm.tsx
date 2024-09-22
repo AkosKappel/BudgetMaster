@@ -12,9 +12,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import InputField from '@/components/inputs/InputField';
-import MultiSelect from '@/components/inputs/MultiSelect';
-import SwitchButton from '@/components/inputs/SwitchButton';
+import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
 import { useTransactionDelete } from '@/hooks/useTransactionDelete';
 import { useTransactionSubmit } from '@/hooks/useTransactionSubmit';
 import { type TransactionData, transactionSchema } from '@/schemas/transaction';
@@ -74,7 +72,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     if (success) {
       reset();
       onSubmitCallback();
-      toast.success(transaction ? 'Transaction updated successfully' : 'Transaction created successfully');
+      toast.success(
+        transaction ? 'Transaction updated successfully' : 'Transaction created successfully',
+      );
     } else {
       toast.error('Failed to save transaction');
     }

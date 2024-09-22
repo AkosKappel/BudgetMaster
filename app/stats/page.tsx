@@ -4,14 +4,15 @@ import React, { useMemo } from 'react';
 
 import { ChartPieIcon } from '@heroicons/react/24/solid';
 
-import ErrorMessage from '@/components/ErrorMessage';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import CumulativeChart from '@/components/charts/CumulativeChart';
-import MixedBarChart from '@/components/charts/MixBarDiagram';
-import MonthlyIncomeExpenseChart from '@/components/charts/MonthlyIncomeExpenseChart';
-import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart';
-import PieChartDiagram from '@/components/charts/PieChartDiagram';
-import VerticalBarChart from '@/components/charts/VerticalBarChart';
+import {
+  CumulativeChart,
+  MixedBarChart,
+  MonthlyIncomeExpenseChart,
+  MonthlyTrendChart,
+  PieChartDiagram,
+  VerticalBarChart,
+} from '@/components/charts';
+import { ErrorMessage, LoadingSpinner } from '@/components/ui';
 import { useTransactionsFetch } from '@/hooks/useTransactionsFetch';
 
 const StatsPage = () => {
@@ -112,6 +113,9 @@ const StatsPage = () => {
     }));
   }, [transactions]);
 
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} onRetry={refetch} />;
+
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
@@ -119,28 +123,19 @@ const StatsPage = () => {
         Financial Statistics
       </h1>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : error ? (
-        <ErrorMessage message={error} onRetry={refetch} />
-      ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <MonthlyIncomeExpenseChart data={monthlyFinanceData} title="Monthly Income vs Expense" />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <MonthlyIncomeExpenseChart data={monthlyFinanceData} title="Monthly Income vs Expense" />
 
-          <PieChartDiagram data={totalFinanceData} title="Total Income vs Expense" />
+        <PieChartDiagram data={totalFinanceData} title="Total Income vs Expense" />
 
-          <MonthlyTrendChart data={monthlyFinanceData} title="Monthly Balance Trend" />
+        <MonthlyTrendChart data={monthlyFinanceData} title="Monthly Balance Trend" />
 
-          <CumulativeChart data={monthlyFinanceData} title="Cumulative Income and Expense" />
+        <CumulativeChart data={monthlyFinanceData} title="Cumulative Income and Expense" />
 
-          <VerticalBarChart
-            data={labelIncomeExpenseData}
-            title="Top Labels by Income and Expense"
-          />
+        <VerticalBarChart data={labelIncomeExpenseData} title="Top Labels by Income and Expense" />
 
-          <MixedBarChart data={dailyAggregatedLabelData} title="Daily Transactions by Label" />
-        </div>
-      )}
+        <MixedBarChart data={dailyAggregatedLabelData} title="Daily Transactions by Label" />
+      </div>
     </div>
   );
 };
