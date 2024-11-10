@@ -115,13 +115,23 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         {title || (transaction ? 'Edit Transaction' : 'Add Transaction')}
       </h2>
       <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-4">
-        <InputField
-          label="Title"
-          type="text"
-          placeholder="Transaction name"
-          register={register('title')}
-          error={errors.title?.message}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <InputField
+            label="Title"
+            type="text"
+            placeholder="Transaction name"
+            register={register('title')}
+            error={errors.title?.message}
+            className="sm:col-span-2"
+          />
+          <InputField
+            label="Category"
+            type="text"
+            placeholder="E.g. Groceries"
+            register={register('category')}
+            error={errors.category?.message}
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <InputField
             label="Amount (€)"
