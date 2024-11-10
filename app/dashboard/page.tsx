@@ -44,7 +44,7 @@ const DashboardPage = () => {
         </button>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <TransactionForm onSubmit={closeModal} onDelete={closeModal} transaction={null} />
+        <TransactionForm onSuccess={closeModal} transaction={null} />
       </Modal>
     </div>
   );

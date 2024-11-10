@@ -64,15 +64,8 @@ const ImportForm: React.FC<ImportFormProps> = ({ loading, onSubmit }) => {
     toast.info('File removed');
   };
 
-  const handleFormSubmit = (data: any) => {
-    handleSubmit(onSubmit)(data);
-    reset();
-    setSelectedFiles([]);
-    toast.info('Form reset');
-  };
-
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <textarea
           className={`w-full px-4 py-2 bg-white text-gray-800 rounded border ${

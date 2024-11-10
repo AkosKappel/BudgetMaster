@@ -4,10 +4,10 @@ import { useSelector } from 'react-redux';
 
 import {
   ArrowPathIcon,
+  ArrowPathRoundedSquareIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -20,6 +20,8 @@ type TransactionFormProps = {
   transaction: TransactionData | null;
   onSubmit?: (data: TransactionData, transaction: TransactionData | null) => void;
   onDelete?: (transaction: TransactionData) => void;
+  onSuccess?: (transaction: TransactionData) => void;
+  onError?: (error: string) => void;
   title?: string;
   startCollapsed?: boolean;
 };
@@ -28,6 +30,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   transaction,
   onSubmit,
   onDelete,
+  onSuccess,
+  onError,
   title,
   startCollapsed = true,
 }) => {
@@ -65,20 +69,32 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const isExpense = watch('isExpense', true);
 
-  const handleOnSubmit = async (data: TransactionData, transaction: TransactionData | null) => {
-    const success = await submitTransaction(data, transaction);
-    if (success) {
-      onSubmit?.(data, transaction);
-      reset();
+  const handleOnSubmit = async (data: TransactionData) => {
+    if (onSubmit) {
+      onSubmit(data, transaction);
+    } else {
+      const success = await submitTransaction(data, transaction);
+      if (success) {
+        reset();
+        onSuccess?.(data);
+      } else {
+        onError?.('Failed to submit transaction');
+      }
     }
   };
 
   const handleOnDelete = async (transaction: TransactionData) => {
-    if (transaction?._id) {
-      const success = await removeTransaction(transaction._id);
-      if (success) {
-        onDelete?.(transaction);
-        reset();
+    if (onDelete) {
+      onDelete(transaction);
+    } else {
+      if (transaction?._id) {
+        const success = await removeTransaction(transaction._id);
+        if (success) {
+          reset();
+          onSuccess?.(transaction);
+        } else {
+          onError?.('Failed to delete transaction');
+        }
       }
     }
   };
@@ -98,10 +114,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       <h2 className="text-2xl font-bold mb-4">
         {title || (transaction ? 'Edit Transaction' : 'Add Transaction')}
       </h2>
-      <form
-        onSubmit={handleSubmit((data) => handleOnSubmit(data, transaction))}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-4">
         <InputField
           label="Title"
           type="text"
@@ -169,7 +182,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           <button
             type="button"
             className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => setIsCollapsed((prev) => !prev)}
           >
             {isCollapsed ? '▼ Show More' : '▲ Show Less'}
           </button>
@@ -194,7 +207,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-200 ease-in-out flex items-center justify-center"
               onClick={handleReset}
             >
-              <XMarkIcon className="h-5 w-5 mr-2" />
+              <ArrowPathRoundedSquareIcon className="h-5 w-5 mr-2" />
               Reset
             </button>
             <button
@@ -209,7 +222,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               ) : (
                 <PlusIcon className="h-5 w-5 mr-2" />
               )}
-              {transaction
+              {transaction && !onSubmit
                 ? loading
                   ? 'Updating...'
                   : 'Update'

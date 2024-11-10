@@ -241,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
         </div>
       </nav>
       <Modal isOpen={activeModal === 'transaction'} onClose={closeModal}>
-        <TransactionForm onSubmit={closeModal} onDelete={closeModal} transaction={null} />
+        <TransactionForm onSuccess={closeModal} transaction={null} />
       </Modal>
     </>
   );

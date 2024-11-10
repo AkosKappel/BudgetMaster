@@ -119,6 +119,7 @@ const ImportPage: React.FC = () => {
                 <TransactionForm
                   transaction={transaction}
                   title={`Transaction ${index + 1}`}
+                  startCollapsed={false}
                   onDelete={() => handleDeleteTransaction(transaction)}
                 />
               </div>

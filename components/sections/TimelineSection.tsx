@@ -90,8 +90,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
       </section>
       <Modal isOpen={!!currentTransaction} onClose={closeEditModal}>
         <TransactionForm
-          onSubmitCallback={closeEditModal}
-          onDeleteCallback={closeEditModal}
+          onSuccess={closeEditModal}
           transaction={currentTransaction}
           startCollapsed={false}
         />
