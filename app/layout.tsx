@@ -1,32 +1,38 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ReactNode } from 'react';
 import { ToastContainer } from 'react-toastify';
 
-import '@/app/globals.css';
-import QueryProvider from '@/components/providers/QueryProvider';
-import ReduxProvider from '@/components/providers/ReduxProvider';
-import Footer from '@/components/sections/Footer';
-import Header from '@/components/sections/Header';
-import Sidebar from '@/components/sections/Sidebar';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import QueryProvider from '@/providers/QueryProvider';
+import ReduxProvider from '@/providers/ReduxProvider';
+import '@/styles/globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Budget Master',
-  description: 'Track and manage your expenses',
+  description: 'Track your finances and monitor your monthly budget effortlessly.',
 };
 
-interface LayoutProps {
-  children: ReactNode;
-}
+const providers = [QueryProvider, ReduxProvider];
 
-export default function RootLayout({ children }: LayoutProps) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen bg-base-200`}>
-        <ReduxProvider>
-          <QueryProvider>
+      <body
+        className={`${inter.className} antialiased flex flex-col min-h-screen bg-base-200 text-base-content`}
+      >
+        {providers.reduceRight(
+          (children, Provider) => (
+            <Provider>{children}</Provider>
+          ),
+          <>
             <Header />
             <div className="flex flex-grow">
               <Sidebar />
@@ -34,8 +40,8 @@ export default function RootLayout({ children }: LayoutProps) {
             </div>
             <Footer />
             <ToastContainer position="bottom-right" autoClose={5000} />
-          </QueryProvider>
-        </ReduxProvider>
+          </>,
+        )}
       </body>
     </html>
   );

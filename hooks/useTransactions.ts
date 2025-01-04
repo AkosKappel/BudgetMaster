@@ -12,7 +12,7 @@ import {
   setTransactions,
   updateTransaction as updateTransactionInStore,
 } from '@/store/transactionsSlice';
-import { type Transaction } from '@/types';
+import { type Transaction } from '@/types/data';
 
 export const getTransactions = async (): Promise<Transaction[]> => {
   const response = await axios.get<Transaction[]>('/api/transactions');

@@ -2,13 +2,15 @@ import React, { useEffect, useRef } from 'react';
 
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
-interface ModalProps {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+}: {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-}
-
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+}) {
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +45,4 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
       </div>
     </div>
   );
-};
-
-export default Modal;
+}

@@ -1,5 +1,12 @@
 import { MongoClient } from 'mongodb';
 
+// TODO: implement usage of these values
+export const DATABASE_NAME = 'BudgetMasterDB';
+export const COLLECTIONS = {
+  USER: 'users',
+  TRANSACTION: 'transactions',
+};
+
 const uri = process.env.MONGODB_URI;
 const env = process.env.NODE_ENV;
 const options = {};
@@ -36,6 +43,7 @@ process.on('SIGINT', async () => {
 
 export default clientPromise;
 
+// TODO: refactor this
 export async function connectToDb(databaseName?: string, collectionName?: string) {
   const client = await clientPromise;
   const db = databaseName ? client.db(databaseName) : null;

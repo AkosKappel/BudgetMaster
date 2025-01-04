@@ -145,7 +145,7 @@ const MonthlyTrendChart: React.FC<MonthlyTrendProps> = ({
       {!isCollapsed && (
         <div className="flex flex-col items-center mb-4">
           <div className="flex items-center mb-2">
-            <label className="mr-2">Start Date:</label>
+            <label className="mr-2">From:</label>
             <input
               type="date"
               value={startDate ? startDate.toISOString().split('T')[0] : ''}
@@ -155,7 +155,7 @@ const MonthlyTrendChart: React.FC<MonthlyTrendProps> = ({
               }}
               className="mr-4 p-1 border rounded"
             />
-            <label className="mr-2">End Date:</label>
+            <label className="mr-2">To:</label>
             <input
               type="date"
               value={endDate ? endDate.toISOString().split('T')[0] : ''}

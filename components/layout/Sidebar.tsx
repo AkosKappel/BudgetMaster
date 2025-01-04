@@ -20,26 +20,17 @@ import {
 } from '@heroicons/react/24/solid';
 
 import TransactionForm from '@/components/forms/TransactionForm';
-import Modal from '@/components/sections/Modal';
+import Modal from '@/components/layout/Modal';
+import { type NavItem } from '@/types/ui';
 
-type NavItem = {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
-  subItems?: NavItem[];
-  action?: () => void;
-  tooltip?: string;
-};
+export default function Sidebar() {
+  const collapsedWidth = 768;
 
-type SidebarProps = {
-  collapsedWidth?: number;
-};
-
-const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== 'undefined' ? window.innerWidth : 0,
   );
+
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const pathname = usePathname();
@@ -47,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
   const openModal = (modalName: string) => setActiveModal(modalName);
   const closeModal = () => setActiveModal(null);
 
-  const topNavItems: NavItem[] = [
+  const topItems: NavItem[] = [
     {
       name: 'Home',
       href: '/dashboard',
@@ -107,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
     },
   ];
 
-  const bottomNavItems: NavItem[] = [
+  const bottomItems: NavItem[] = [
     {
       name: 'About',
       href: '/about',
@@ -138,12 +129,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
 
   const renderNavItem = (item: NavItem, index: number, isTopNav: boolean) => {
     const isExpanded = expandedItem === item.name;
-    const hasSubItems = item.subItems && item.subItems.length > 0;
+    const hasSubItems = item.subItems?.length ?? 0 > 0;
 
     return (
       <li
         key={item.name}
-        className={`flex flex-col ${index < (isTopNav ? topNavItems.length : bottomNavItems.length) - 1 ? 'border-b border-base-300' : ''}`}
+        className={`flex flex-col ${index < (isTopNav ? topItems.length : bottomItems.length) - 1 ? 'border-b border-base-300' : ''}`}
       >
         {item.action ? (
           <button
@@ -229,14 +220,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
           </button>
           <div className="flex flex-col">
             <ul className="flex flex-col space-y-2">
-              {topNavItems.map((item, index) => renderNavItem(item, index, true))}
+              {topItems.map((item, index) => renderNavItem(item, index, true))}
             </ul>
           </div>
         </div>
         <hr className="my-1" />
         <div className="mt-auto">
           <ul className="flex flex-col space-y-2">
-            {bottomNavItems.map((item, index) => renderNavItem(item, index, false))}
+            {bottomItems.map((item, index) => renderNavItem(item, index, false))}
           </ul>
         </div>
       </nav>
@@ -245,6 +236,4 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsedWidth = 768 }) => {
       </Modal>
     </>
   );
-};
-
-export default Sidebar;
+}

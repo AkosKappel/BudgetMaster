@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-const Home: React.FC = () => {
+export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
@@ -17,6 +17,4 @@ const Home: React.FC = () => {
       <LoadingSpinner />
     </div>
   );
-};
-
-export default Home;
+}

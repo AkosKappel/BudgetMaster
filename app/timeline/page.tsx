@@ -4,9 +4,11 @@ import { useCallback, useRef, useState } from 'react';
 
 import { CalendarIcon } from '@heroicons/react/24/solid';
 
-import Filters from '@/components/sections/Filters';
-import Timeline from '@/components/sections/Timeline';
-import { BackToTop, ErrorMessage, LoadingSpinner } from '@/components/ui';
+import BackToTop from '@/components/ui/BackToTop';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import Filters from '@/components/ui/Filters';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Timeline from '@/components/ui/Timeline';
 import { useFetchTransactions } from '@/hooks/useTransactions';
 
 const TransactionsPage = () => {

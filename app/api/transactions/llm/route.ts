@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
       {
         date: '2024-05-01',
         amount: Number((Math.random() * 100).toFixed(2)),
+        category: 'test',
         description: 'Dummy transaction from LLM',
         labels: ['Dummy', 'Test'],
         title: 'Dummy transaction ' + Math.random().toString(36),

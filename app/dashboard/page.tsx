@@ -5,19 +5,17 @@ import React, { useState } from 'react';
 import { HomeIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 import TransactionForm from '@/components/forms/TransactionForm';
-import Modal from '@/components/sections/Modal';
-import { ErrorMessage, LoadingSpinner } from '@/components/ui';
-import { useFetchTransactions } from '@/hooks/useTransactions';
+import Modal from '@/components/layout/Modal';
 
 const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { transactions, loading, error, refetch } = useFetchTransactions();
+  // const { transactions, loading, error, refetch } = useFetchTransactions();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} onRetry={refetch} />;
+  // if (loading) return <LoadingSpinner />;
+  // if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen p-8">
@@ -26,15 +24,15 @@ const DashboardPage = () => {
         Dashboard
       </h1>
 
-      <div className="space-y-4">
+      {/* <div className="space-y-4">
         {transactions.map((transaction) => (
           <div key={transaction._id} className="bg-white shadow rounded-lg p-4">
             <TransactionForm transaction={transaction} />
           </div>
         ))}
-      </div>
+      </div> */}
 
-      <div className="fixed bottom-5 right-5">
+      <div className="fixed bottom-5 right-5 hover:scale-105 transition duration-300">
         <button
           className="btn btn-secondary shadow flex items-center space-x-2"
           onClick={openModal}

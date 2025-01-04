@@ -12,7 +12,8 @@ import {
   PieChartDiagram,
   VerticalBarChart,
 } from '@/components/charts';
-import { ErrorMessage, LoadingSpinner } from '@/components/ui';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useFetchTransactions } from '@/hooks/useTransactions';
 
 const StatsPage = () => {
@@ -100,7 +101,7 @@ const StatsPage = () => {
       if (!data[date]) {
         data[date] = {};
       }
-      transaction.labels.forEach((label) => {
+      transaction.labels.forEach((label: string) => {
         if (!data[date][label]) {
           data[date][label] = 0;
         }
