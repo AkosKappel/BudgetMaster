@@ -1,20 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
-
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-
-export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/dashboard');
-  }, [router]);
-
-  return (
-    <div className="flex justify-center items-center min-h-64">
-      <LoadingSpinner />
-    </div>
-  );
+export default function RootPage() {
+  return redirect('/dashboard');
 }

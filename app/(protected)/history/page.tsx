@@ -4,14 +4,14 @@ import { useCallback, useRef, useState } from 'react';
 
 import { CalendarIcon } from '@heroicons/react/24/solid';
 
+import Filters from '@/app/(protected)/history/Filters';
+import Timeline from '@/app/(protected)/history/Timeline';
 import BackToTop from '@/components/ui/BackToTop';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import Filters from '@/components/ui/Filters';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import Timeline from '@/components/ui/Timeline';
 import { useFetchTransactions } from '@/hooks/useTransactions';
 
-const TransactionsPage = () => {
+const HistoryPage = () => {
   const { transactions, loading, error, refetch } = useFetchTransactions();
 
   // Filter states
@@ -32,14 +32,12 @@ const TransactionsPage = () => {
 
       let closestDate = dateElements[0];
       let minDiff = Math.abs(
-        new Date(closestDate.getAttribute('data-date') || '').getTime() -
-          new Date(formattedDate).getTime(),
+        new Date(closestDate.getAttribute('data-date') || '').getTime() - new Date(formattedDate).getTime(),
       );
 
       dateElements.forEach((element) => {
         const diff = Math.abs(
-          new Date(element.getAttribute('data-date') || '').getTime() -
-            new Date(formattedDate).getTime(),
+          new Date(element.getAttribute('data-date') || '').getTime() - new Date(formattedDate).getTime(),
         );
         if (diff < minDiff) {
           closestDate = element;
@@ -94,4 +92,4 @@ const TransactionsPage = () => {
   );
 };
 
-export default TransactionsPage;
+export default HistoryPage;

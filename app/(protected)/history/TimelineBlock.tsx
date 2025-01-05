@@ -7,12 +7,7 @@ import Modal from '@/components/layout/Modal';
 import { formatPrice } from '@/lib/utils';
 import { type Transaction } from '@/types/data';
 
-type TimelineSectionProps = {
-  transactions: Transaction[];
-  isIncome: boolean;
-};
-
-const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncome }) => {
+export default function TimelineBlock({ transactions, isIncome }: { transactions: Transaction[]; isIncome: boolean }) {
   const [currentTransaction, setCurrentTransaction] = useState<Transaction | null>(null);
 
   const openEditModal = (transaction: Transaction) => {
@@ -25,9 +20,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
 
   return (
     <>
-      <section
-        className={`timeline-${isIncome ? 'start' : 'end'} ${isIncome ? 'md:text-end' : ''}`}
-      >
+      <section className={`timeline-${isIncome ? 'start' : 'end'} ${isIncome ? 'md:text-end' : ''}`}>
         {transactions.map((transaction: Transaction) => (
           <div
             key={`${transaction.title}-${transaction.date}`}
@@ -45,8 +38,7 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
                 <PencilIcon className="h-4 w-4 text-gray-600" />
               </div>
               <div
-                className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center
-                  ${isIncome ? 'md:justify-end' : ''}`}
+                className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center ${isIncome ? 'md:justify-end' : ''}`}
               >
                 <h3 className="text-gray-800 mr-0 md:mr-3 mb-2 md:mb-0">{transaction.title}</h3>
                 <span className="text-base text-gray-600 font-semibold whitespace-nowrap">
@@ -54,22 +46,17 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
                 </span>
               </div>
               <div className="text-gray-700 mt-1">{transaction.description}</div>
+
               <div
                 className={`text-sm text-gray-600 mt-2 flex flex-col md:flex-row items-start md:items-center my-2
                 ${isIncome ? 'md:justify-end' : ''}`}
               >
-                {transaction.sender && (
-                  <span className="mb-1 md:mb-0">From: {transaction.sender}</span>
-                )}
-                {transaction.sender && transaction.receiver && (
-                  <span className="hidden md:inline mx-2">|</span>
-                )}
+                {transaction.sender && <span className="mb-1 md:mb-0">From: {transaction.sender}</span>}
+                {transaction.sender && transaction.receiver && <span className="hidden md:inline mx-2">|</span>}
                 {transaction.receiver && <span>To: {transaction.receiver}</span>}
               </div>
               {transaction.labels.length > 0 && (
-                <div
-                  className={`flex flex-wrap mt-2 justify-start gap-2 ${isIncome ? 'md:justify-end' : ''}`}
-                >
+                <div className={`flex flex-wrap mt-2 justify-start gap-2 ${isIncome ? 'md:justify-end' : ''}`}>
                   {transaction.labels.map((label) => (
                     <span
                       key={`${transaction.title}-${label}`}
@@ -88,15 +75,10 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ transactions, isIncom
           </div>
         ))}
       </section>
+
       <Modal isOpen={!!currentTransaction} onClose={closeEditModal}>
-        <TransactionForm
-          onSuccess={closeEditModal}
-          transaction={currentTransaction}
-          startCollapsed={false}
-        />
+        <TransactionForm onSuccess={closeEditModal} transaction={currentTransaction} startCollapsed={false} />
       </Modal>
     </>
   );
-};
-
-export default TimelineSection;
+}

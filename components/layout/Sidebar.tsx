@@ -27,9 +27,7 @@ export default function Sidebar() {
   const collapsedWidth = 768;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== 'undefined' ? window.innerWidth : 0,
-  );
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
 
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -46,8 +44,8 @@ export default function Sidebar() {
       tooltip: 'View your dashboard',
     },
     {
-      name: 'Timeline',
-      href: '/timeline',
+      name: 'History',
+      href: '/history',
       icon: <CalendarIcon className="w-5 h-5" />,
       tooltip: 'See your transaction history',
     },
@@ -212,11 +210,7 @@ export default function Sidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {isCollapsed ? (
-              <ChevronRightIcon className="w-6 h-6" />
-            ) : (
-              <ChevronLeftIcon className="w-6 h-6" />
-            )}
+            {isCollapsed ? <ChevronRightIcon className="w-6 h-6" /> : <ChevronLeftIcon className="w-6 h-6" />}
           </button>
           <div className="flex flex-col">
             <ul className="flex flex-col space-y-2">

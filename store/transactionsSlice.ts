@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 import { toTitleCase } from '@/lib/utils';
-import { type Transaction } from '@/types';
+import { type Transaction } from '@/types/data';
 
 interface TransactionsState {
   transactions: Transaction[]; // transaction items

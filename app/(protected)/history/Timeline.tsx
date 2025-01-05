@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import Fuse from 'fuse.js';
 
-import TimelineSection from '@/components/ui/TimelineSection';
+import TimelineBlock from '@/app/(protected)/history/TimelineBlock';
 import { formatDate, groupByDateAndType } from '@/lib/utils';
 import { type Transaction } from '@/types/data';
 
@@ -79,16 +79,10 @@ const Timeline: React.FC<TimelineProps> = ({
           <li key={date} data-date={date}>
             <hr />
             <div className="timeline-middle">
-              <time className="font-mono text-gray-500 italic block mb-1 mx-2">
-                {formatDate(date)}
-              </time>
+              <time className="font-mono text-gray-500 italic block mb-1 mx-2">{formatDate(date)}</time>
             </div>
-            {transactionType !== 'expense' && (
-              <TimelineSection transactions={filteredIncomes} isIncome={true} />
-            )}
-            {transactionType !== 'income' && (
-              <TimelineSection transactions={filteredExpenses} isIncome={false} />
-            )}
+            {transactionType !== 'expense' && <TimelineBlock transactions={filteredIncomes} isIncome={true} />}
+            {transactionType !== 'income' && <TimelineBlock transactions={filteredExpenses} isIncome={false} />}
             <hr className="my-8" />
           </li>
         );
