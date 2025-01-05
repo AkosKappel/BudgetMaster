@@ -7,11 +7,12 @@ const protectedRoutes = ['/dashboard', '/history', '/stats', '/savings', '/repor
 const publicRoutes = ['/login', '/signup'];
 
 export default async function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
-  const isProtectedRoute = protectedRoutes.includes(path);
-  const isPublicRoute = publicRoutes.includes(path);
+  const currentPath = req.nextUrl.pathname;
+  const isProtectedRoute = protectedRoutes.includes(currentPath);
+  const isPublicRoute = publicRoutes.includes(currentPath);
 
-  const cookie = (await cookies()).get('session')?.value;
+  const cookieStore = await cookies();
+  const cookie = cookieStore.get('session')?.value;
   const session = await decrypt(cookie);
 
   if (isProtectedRoute && !session?.userId) {
