@@ -9,7 +9,7 @@ export default async function Header() {
   const appName = 'Budget Master';
   const appSlogan = 'Master Your Money, Master Your Life';
 
-  const { isAuth } = await verifySession();
+  const session = await verifySession();
 
   return (
     <header className="bg-primary text-primary-content shadow-lg flex justify-between">
@@ -21,7 +21,7 @@ export default async function Header() {
         </div>
       </Link>
 
-      {isAuth && <LogoutButton />}
+      {session.isAuth && <LogoutButton />}
     </header>
   );
 }

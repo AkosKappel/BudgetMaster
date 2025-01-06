@@ -48,12 +48,11 @@ const Filters: React.FC<FiltersProps> = ({
     { value: 'income', label: 'Income Only' },
     { value: 'expense', label: 'Expenses Only' },
   ];
-  const uniqueLabels = useSelector((state: RootState) => state.transactions.uniqueLabels);
+  // const uniqueLabels = useSelector((state: RootState) => state.transactions.uniqueLabels);
+  const uniqueLabels = [] as string[];
 
   const handleLabelToggle = (label: string) => {
-    setSelectedLabels((prev: string[]) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
-    );
+    setSelectedLabels((prev: string[]) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]));
   };
 
   const handleDateKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

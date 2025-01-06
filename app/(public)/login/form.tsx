@@ -34,7 +34,7 @@ export default function LoginForm() {
           id="email"
           name="email"
           type="email"
-          placeholder="m@example.com"
+          placeholder="john@example.com"
           className="input input-bordered focus:outline-none focus:border-teal-500 focus:border-2 hover:border-teal-500 transition-colors duration-200 ease-in-out"
           value={formData.email}
           onChange={handleInputChange}

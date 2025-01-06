@@ -54,12 +54,9 @@ export async function login(state: FormState, formData: FormData): Promise<FormS
     password: formData.get('password'),
   });
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
+  if (!validatedFields.success) return { errors: validatedFields.error.flatten().fieldErrors };
 
+  await connectToDb();
   const user = await User.findOne({ email: validatedFields.data.email });
   if (!user) return { message: 'Invalid login credentials.' };
 

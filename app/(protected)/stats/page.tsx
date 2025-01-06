@@ -14,17 +14,20 @@ import {
 } from '@/components/charts';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useFetchTransactions } from '@/hooks/useTransactions';
+import { useUserTransactions } from '@/hooks/transactions';
 
 const StatsPage = () => {
-  const { transactions, loading, error, refetch } = useFetchTransactions();
+  const { data: transactions, isLoading, isError, error, refetch } = useUserTransactions();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <ErrorMessage message={error.message} onRetry={refetch} />;
 
   const { totalIncome, totalExpense, monthlyAggregatedData } = useMemo(() => {
     let totalIncome = 0;
     let totalExpense = 0;
     const monthlyAggregatedData: Record<string, { income: number; expense: number }> = {};
 
-    transactions.forEach((t) => {
+    transactions?.forEach((t) => {
       if (t.isExpense) {
         totalExpense += t.amount;
       } else {
@@ -65,7 +68,7 @@ const StatsPage = () => {
   }, [totalIncome, totalExpense]);
 
   const labelAggregatedData = useMemo(() => {
-    return transactions.reduce(
+    return transactions?.reduce(
       (acc, transaction) => {
         transaction.labels.forEach((label: string) => {
           if (!acc[label]) acc[label] = { income: 0, expense: 0 };
@@ -81,22 +84,19 @@ const StatsPage = () => {
     );
   }, [transactions]);
 
-  const labelIncomeExpenseData = useMemo(() => {
-    return Object.entries(labelAggregatedData)
-      .map(([name, value]) => ({
-        name,
-        Income: value.income,
-        Expense: -value.expense,
-      }))
-      .sort(
-        (a, b) =>
-          Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)),
-      );
-  }, [labelAggregatedData]);
+  // const labelIncomeExpenseData = useMemo(() => {
+  //   return Object.entries(labelAggregatedData)
+  //     .map(([name, value]) => ({
+  //       name,
+  //       Income: value.income,
+  //       Expense: -value.expense,
+  //     }))
+  //     .sort((a, b) => Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)));
+  // }, [labelAggregatedData]);
 
   const dailyAggregatedLabelData = useMemo(() => {
     const data: Record<string, Record<string, number>> = {};
-    transactions.forEach((transaction) => {
+    transactions?.forEach((transaction) => {
       const date = new Date(transaction.date).toISOString().split('T')[0];
       if (!data[date]) {
         data[date] = {};
@@ -114,9 +114,6 @@ const StatsPage = () => {
     }));
   }, [transactions]);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} onRetry={refetch} />;
-
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
@@ -133,7 +130,7 @@ const StatsPage = () => {
 
         <CumulativeChart data={monthlyFinanceData} title="Cumulative Income and Expense" />
 
-        <VerticalBarChart data={labelIncomeExpenseData} title="Top Labels by Income and Expense" />
+        {/* <VerticalBarChart data={labelIncomeExpenseData} title="Top Labels by Income and Expense" /> */}
 
         <MixedBarChart data={dailyAggregatedLabelData} title="Daily Transactions by Label" />
       </div>

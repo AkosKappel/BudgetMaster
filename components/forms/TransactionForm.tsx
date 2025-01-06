@@ -2,17 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
-import {
-  ArrowPathIcon,
-  ArrowPathRoundedSquareIcon,
-  PencilIcon,
-  PlusIcon,
-  TrashIcon,
-} from '@heroicons/react/24/solid';
+import { ArrowPathIcon, ArrowPathRoundedSquareIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
-import { useRemoveTransaction, useTransactionSubmit } from '@/hooks/useTransactions';
+// import { useRemoveTransaction, useTransactionSubmit } from '@/hooks/useTransactions';
 import { type TransactionData, transactionSchema } from '@/schemas/transactionSchema';
 import { RootState } from '@/store';
 
@@ -36,9 +30,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   startCollapsed = true,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
-  const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
-  const { submitTransaction, loading } = useTransactionSubmit();
-  const { removeTransaction, loading: deleting } = useRemoveTransaction();
+  // const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
+  const uniqueLabels = [] as string[];
+  // const { submitTransaction, loading } = useTransactionSubmit();
+  // const { removeTransaction, loading: deleting } = useRemoveTransaction();
+  const loading = false;
+  const deleting = false;
 
   const defaultValues = {
     date: new Date().toISOString().split('T')[0],
@@ -73,7 +70,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     if (onSubmit) {
       onSubmit(data, transaction);
     } else {
-      const success = await submitTransaction(data, transaction);
+      // const success = await submitTransaction(data, transaction);
+      const success = true;
       if (success) {
         reset();
         onSuccess?.(data);
@@ -88,7 +86,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       onDelete(transaction);
     } else {
       if (transaction?._id) {
-        const success = await removeTransaction(transaction._id);
+        // const success = await removeTransaction(transaction._id);
+        const success = true;
         if (success) {
           reset();
           onSuccess?.(transaction);
@@ -111,9 +110,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-4">
-        {title || (transaction ? 'Edit Transaction' : 'Add Transaction')}
-      </h2>
+      <h2 className="text-2xl font-bold mb-4">{title || (transaction ? 'Edit Transaction' : 'Add Transaction')}</h2>
       <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <InputField
@@ -174,12 +171,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
           />
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <InputField
-              label="Sender"
-              type="text"
-              placeholder="Sender name (optional)"
-              register={register('sender')}
-            />
+            <InputField label="Sender" type="text" placeholder="Sender name (optional)" register={register('sender')} />
             <InputField
               label="Receiver"
               type="text"
@@ -232,13 +224,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               ) : (
                 <PlusIcon className="h-5 w-5 mr-2" />
               )}
-              {transaction && !onSubmit
-                ? loading
-                  ? 'Updating...'
-                  : 'Update'
-                : loading
-                  ? 'Creating...'
-                  : 'Create'}
+              {transaction && !onSubmit ? (loading ? 'Updating...' : 'Update') : loading ? 'Creating...' : 'Create'}
             </button>
           </div>
         </div>

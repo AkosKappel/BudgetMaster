@@ -9,20 +9,19 @@ import Timeline from '@/app/(protected)/history/Timeline';
 import BackToTop from '@/components/ui/BackToTop';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useFetchTransactions } from '@/hooks/useTransactions';
+import { useUserTransactions } from '@/hooks/transactions';
 
 const HistoryPage = () => {
-  const { transactions, loading, error, refetch } = useFetchTransactions();
+  const { data: transactions, isLoading, isError, error, refetch } = useUserTransactions();
 
-  // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(Infinity);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [showNoLabels, setShowNoLabels] = useState<boolean>(false);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   const handleDateJump = useCallback(() => {
     if (selectedDate && timelineRef.current) {
@@ -49,8 +48,8 @@ const HistoryPage = () => {
     }
   }, [selectedDate]);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} onRetry={refetch} />;
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <ErrorMessage message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen p-8">
