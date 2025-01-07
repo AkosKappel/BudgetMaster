@@ -2,16 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 type VerticalBarChartProps = {
   data: { name: string; Income: number; Expense: number }[];
@@ -41,7 +32,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
   const [showExpense, setShowExpense] = useState<boolean>(initial.showExpense);
 
   const filteredData = useMemo(() => {
-    let sortedData = [...data];
+    const sortedData = [...data];
     if (showIncome && !showExpense) {
       sortedData.sort((a, b) => b.Income - a.Income);
     } else if (showExpense && !showIncome) {
