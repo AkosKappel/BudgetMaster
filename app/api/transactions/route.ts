@@ -9,8 +9,12 @@ export async function GET(req: NextRequest) {
     const { userId } = await verifySession();
     if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
+    const url = new URL(req.url);
+    const limitParam = url.searchParams.get('limit');
+    const limit = limitParam ? Number(limitParam) : 50;
+
     await connectToDb();
-    const transactions = await Transaction.find({ ownerId: userId }).sort({ date: -1 });
+    const transactions = await Transaction.find({ ownerId: userId }).sort({ date: 'desc' }).limit(limit);
 
     return NextResponse.json(transactions, { status: 200 });
   } catch (error) {

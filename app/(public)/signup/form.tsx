@@ -96,9 +96,6 @@ export default function SignupForm() {
       >
         {isPending ? 'Submitting...' : 'Sign Up'}
       </button>
-      <button type="button" className="btn btn-secondary w-full mt-2">
-        Use Demo Account
-      </button>
     </form>
   );
 }

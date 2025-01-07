@@ -17,7 +17,7 @@ export default function LogoutButton() {
       <div className="flex mx-4 my-6">
         <button
           type="button"
-          onClick={() => alert('User Profile is not implemented yet!')}
+          onClick={() => alert('User profile is not implemented yet!')}
           className="btn btn-tertiary btn-sm hover:bg-teal-700 hover:text-white transition-colors duration-200 ease-in-out border-0 rounded-r-md flex items-center px-4"
         >
           <span className="text-sm font-bold">{user?.name}</span>

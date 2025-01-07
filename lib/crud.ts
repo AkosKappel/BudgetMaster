@@ -9,8 +9,8 @@ export async function getLoggedInUser(): Promise<User> {
   return response.data;
 }
 
-export async function getTransactions(): Promise<Transaction[]> {
-  const response = await axios.get(`/api/transactions`);
+export async function getTransactions(limit?: number): Promise<Transaction[]> {
+  const response = await axios.get(`/api/transactions` + (limit ? `?limit=${limit}` : ''));
   if (response.status !== 200) throw new Error('Failed to fetch user transactions');
   return response.data;
 }

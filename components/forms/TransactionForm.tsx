@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 
 import { ArrowPathIcon, ArrowPathRoundedSquareIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
 import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from '@/hooks/transactions';
 import { type Transaction, transactionSchema } from '@/schemas/transactionSchema';
+import { RootState } from '@/store';
 
 export default function TransactionForm({
   transaction,
@@ -21,7 +23,7 @@ export default function TransactionForm({
 }) {
   const isEdit = !!transaction; // create or edit
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
-  const uniqueLabels = [] as string[];
+  const uniqueLabels = useSelector((state: RootState) => state.transactions.existingLabels);
 
   const { create, isLoading: isCreating } = useCreateTransaction(onSuccess, onError);
   const { update, isLoading: isUpdating } = useUpdateTransaction(onSuccess, onError);

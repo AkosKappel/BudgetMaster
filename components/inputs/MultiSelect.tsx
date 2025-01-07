@@ -20,7 +20,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options
       name={name}
       render={({ field }) => (
         <CreatableSelect
-          isMulti
+          isMulti={true}
           className={`react-select-container ${error ? 'border-red-500' : ''}`}
           classNamePrefix="react-select"
           styles={{
@@ -58,7 +58,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options
           value={(field.value || []).map((label: string) => ({ label, value: label }))}
           options={options.map((option: string) => ({ label: option, value: option }))}
           placeholder={placeholder}
-          closeMenuOnSelect={false}
+          closeMenuOnSelect={true}
           isClearable={true}
         />
       )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useActionState } from 'react';
 
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -16,8 +16,14 @@ export default function LoginForm() {
   const [state, loginAction, isPending] = useActionState(login, undefined);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({ email: '', password: '' });
+  const loginRef = useRef<HTMLButtonElement>(null);
 
   const isFormValid = !!(formData.email && formData.password);
+
+  const loginToDemoAccount = async () => {
+    setFormData({ email: 'test@test3.com', password: 'Qwerty123!' }); // TODO: use env variables
+    setTimeout(() => loginRef.current?.click(), 100);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,13 +72,19 @@ export default function LoginForm() {
         {state?.errors?.password && <p className="mt-1 text-sm text-error">{state.errors.password}</p>}
       </div>
       {state?.message && <p className="mt-1 text-sm text-error">{state.message}</p>}
+
       <button
         aria-disabled={!isFormValid || isPending}
+        ref={loginRef}
         type="submit"
         className="btn btn-primary w-full"
         disabled={!isFormValid || isPending}
       >
         {isPending ? 'Submitting...' : 'Login'}
+      </button>
+
+      <button type="button" className="btn btn-secondary w-full mt-2" onClick={loginToDemoAccount}>
+        Use Demo Account
       </button>
     </form>
   );
