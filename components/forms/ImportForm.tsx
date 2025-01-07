@@ -6,11 +6,11 @@ import { InformationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Tooltip from '@/components/ui/Tooltip';
-import { type ImportData, importSchema } from '@/schemas/importSchema';
+import { type BulkImport, bulkImportSchema } from '@/schemas/impexSchema';
 
 type ImportFormProps = {
   loading: boolean;
-  onSubmit: (data: ImportData) => void;
+  onSubmit: (data: BulkImport) => void;
 };
 
 const ImportForm: React.FC<ImportFormProps> = ({ loading, onSubmit }) => {
@@ -24,8 +24,8 @@ const ImportForm: React.FC<ImportFormProps> = ({ loading, onSubmit }) => {
     reset,
     setValue,
     watch,
-  } = useForm<ImportData>({
-    resolver: zodResolver(importSchema),
+  } = useForm<BulkImport>({
+    resolver: zodResolver(bulkImportSchema),
   });
 
   const rawText = watch('rawText');
@@ -116,10 +116,7 @@ const ImportForm: React.FC<ImportFormProps> = ({ loading, onSubmit }) => {
             ))}
           </div>
         ) : (
-          <label
-            htmlFor="file-upload"
-            className="cursor-pointer flex flex-col items-center justify-center"
-          >
+          <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center">
             <svg
               className="w-10 h-10 text-gray-400"
               fill="none"
@@ -134,9 +131,7 @@ const ImportForm: React.FC<ImportFormProps> = ({ loading, onSubmit }) => {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               ></path>
             </svg>
-            <p className="mt-2 text-sm text-gray-500">
-              Drag and drop files here, or click here to select files
-            </p>
+            <p className="mt-2 text-sm text-gray-500">Drag and drop files here, or click here to select files</p>
           </label>
         )}
       </div>

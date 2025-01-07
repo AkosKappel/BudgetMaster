@@ -45,8 +45,6 @@ export const toRandomCase = (str: string): string =>
     .map((char) => (Math.random() < 0.5 ? char.toUpperCase() : char.toLowerCase()))
     .join('');
 
-export const nullify = (val: any): any | null => val || null;
-
 export const isFile = (value: unknown): value is File => typeof File !== 'undefined' && value instanceof File;
 
 export const groupBy = <T extends Record<string, any>>(

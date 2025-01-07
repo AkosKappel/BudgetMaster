@@ -14,10 +14,10 @@ import {
 } from '@/components/charts';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useUserTransactions } from '@/hooks/transactions';
+import { useTransactions } from '@/hooks/transactions';
 
 const StatsPage = () => {
-  const { data: transactions, isLoading, isError, error, refetch } = useUserTransactions();
+  const { data: transactions, isLoading, isError, error, refetch } = useTransactions();
 
   if (isLoading) return <LoadingSpinner />;
   if (isError) return <ErrorMessage message={error.message} onRetry={refetch} />;

@@ -9,10 +9,10 @@ import Timeline from '@/app/(protected)/history/Timeline';
 import BackToTop from '@/components/ui/BackToTop';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useUserTransactions } from '@/hooks/transactions';
+import { useTransactions } from '@/hooks/transactions';
 
 const HistoryPage = () => {
-  const { data: transactions, isLoading, isError, error, refetch } = useUserTransactions();
+  const { data: transactions, isLoading, isError, error, refetch } = useTransactions();
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');

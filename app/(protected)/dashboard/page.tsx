@@ -29,7 +29,7 @@ const DashboardPage = () => {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <TransactionForm onSuccess={closeModal} transaction={null} />
+        <TransactionForm onSuccess={closeModal} transaction={null} startCollapsed={true} />
       </Modal>
     </div>
   );

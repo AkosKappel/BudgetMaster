@@ -1,60 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React, { useActionState, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSelector } from 'react-redux';
 
 import { ArrowPathIcon, ArrowPathRoundedSquareIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+// import { createTransaction } from '@/actions/transaction';
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
-// import { useRemoveTransaction, useTransactionSubmit } from '@/hooks/useTransactions';
+import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from '@/hooks/transactions';
 import { type Transaction, transactionSchema } from '@/schemas/transactionSchema';
-import { RootState } from '@/store';
 
-type TransactionFormProps = {
-  transaction: Transaction | null;
-  onSubmit?: (data: Transaction, transaction: Transaction | null) => void;
-  onDelete?: (transaction: Transaction) => void;
-  onSuccess?: (transaction: Transaction) => void;
-  onError?: (error: string) => void;
-  title?: string;
-  startCollapsed?: boolean;
-};
-
-const TransactionForm: React.FC<TransactionFormProps> = ({
+export default function TransactionForm({
   transaction,
-  onSubmit,
-  onDelete,
+  startCollapsed = false,
   onSuccess,
   onError,
-  title,
-  startCollapsed = true,
-}) => {
+}: {
+  transaction: Transaction | null;
+  startCollapsed?: boolean;
+  onSuccess?: () => void;
+  onError?: () => void;
+}) {
+  const isEdit = !!transaction; // create or edit
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
-  // const { uniqueLabels } = useSelector((state: RootState) => state.transactions);
   const uniqueLabels = [] as string[];
-  // const { submitTransaction, loading } = useTransactionSubmit();
-  // const { removeTransaction, loading: deleting } = useRemoveTransaction();
-  const loading = false;
-  const deleting = false;
+
+  const { mutate, isPending } = isEdit
+    ? useUpdateTransaction({ onSuccess, onError })
+    : useCreateTransaction({ onSuccess, onError });
+  const { mutate: deleteMutate, isPending: isDeleting } = useDeleteTransaction({ onSuccess, onError });
 
   const defaultValues = {
     date: new Date().toISOString().split('T')[0],
     isExpense: true,
     labels: [],
   };
-
   const {
     register,
-    handleSubmit,
-    formState: { errors },
     reset,
     control,
     setValue,
     watch,
+    handleSubmit: submitForm,
+    formState: { errors },
   } = useForm<Transaction>({
     resolver: zodResolver(transactionSchema),
     defaultValues,
   });
+  const isExpense = watch('isExpense', true);
 
   useEffect(() => {
     if (transaction) {
@@ -64,61 +56,36 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   }, [transaction, setValue]);
 
-  const isExpense = watch('isExpense', true);
-
-  const handleOnSubmit = async (data: Transaction) => {
-    if (onSubmit) {
-      onSubmit(data, transaction);
-    } else {
-      // const success = await submitTransaction(data, transaction);
-      const success = true;
-      if (success) {
-        reset();
-        onSuccess?.(data);
-      } else {
-        onError?.('Failed to submit transaction');
-      }
-    }
+  const handleSubmit = async (data: Transaction) => {
+    mutate(data);
   };
 
-  const handleOnDelete = async (transaction: Transaction) => {
-    if (onDelete) {
-      onDelete(transaction);
-    } else {
-      if (transaction?._id) {
-        // const success = await removeTransaction(transaction._id);
-        const success = true;
-        if (success) {
-          reset();
-          onSuccess?.(transaction);
-        } else {
-          onError?.('Failed to delete transaction');
-        }
-      }
-    }
+  const handleDelete = async (data: Transaction) => {
+    deleteMutate(data);
   };
 
   const handleReset = () => {
-    if (transaction) {
+    if (isEdit) {
+      // reset to initial values
       Object.entries(transaction).forEach(([key, value]) => {
         setValue(key as keyof Transaction, value);
       });
     } else {
-      reset();
+      reset(); // reset to empty form
     }
   };
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-4">{title || (transaction ? 'Edit Transaction' : 'Add Transaction')}</h2>
-      <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-4">
+      <h2 className="text-2xl font-bold mb-4">{transaction ? 'Edit' : 'Add'} Transaction</h2>
+      <form onSubmit={submitForm(handleSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <InputField
             label="Title"
             type="text"
             placeholder="Transaction name"
             register={register('title')}
-            error={errors.title?.message}
+            error={errors?.title?.message}
             className="sm:col-span-2"
           />
           <InputField
@@ -126,7 +93,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             type="text"
             placeholder="E.g. Groceries"
             register={register('category')}
-            error={errors.category?.message}
+            error={errors?.category?.message}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -135,7 +102,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             type="number"
             placeholder="0.00 €"
             register={register('amount', { valueAsNumber: true })}
-            error={errors.amount?.message}
+            error={errors?.amount?.message}
             min={0}
             step="0.01"
           />
@@ -144,11 +111,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             type="date"
             placeholder=""
             register={register('date')}
-            error={errors.date?.message}
+            error={errors?.date?.message}
           />
           <SwitchButton
             checked={!isExpense}
             onChange={(checked) => setValue('isExpense', !checked)}
+            register={register('isExpense')}
             leftLabel="Expense"
             rightLabel="Income"
             className="mt-4"
@@ -165,7 +133,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             control={control}
             name="labels"
             label="Labels"
-            error={errors.labels?.message}
+            error={errors?.labels?.message}
             className="mt-4"
             options={uniqueLabels}
             placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
@@ -189,19 +157,19 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             {isCollapsed ? '▼ Show More' : '▲ Show Less'}
           </button>
           <div className="flex space-x-2">
-            {transaction && (
+            {isEdit && (
               <button
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out flex items-center justify-center"
-                onClick={() => handleOnDelete(transaction)}
-                disabled={loading || deleting}
+                onClick={() => handleDelete(transaction)}
+                disabled={isPending || isDeleting}
               >
-                {deleting ? (
+                {isDeleting ? (
                   <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
                 ) : (
                   <TrashIcon className="h-5 w-5 mr-2" />
                 )}
-                {deleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
             )}
             <button
@@ -215,22 +183,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <button
               type="submit"
               className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out flex items-center justify-center"
-              disabled={loading || deleting}
+              disabled={isPending}
             >
-              {loading ? (
+              {isPending ? (
                 <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
-              ) : transaction ? (
+              ) : isEdit ? (
                 <PencilIcon className="h-5 w-5 mr-2" />
               ) : (
                 <PlusIcon className="h-5 w-5 mr-2" />
               )}
-              {transaction && !onSubmit ? (loading ? 'Updating...' : 'Update') : loading ? 'Creating...' : 'Create'}
+              {isPending ? 'Saving...' : isEdit ? 'Update' : 'Save'}
             </button>
           </div>
         </div>
       </form>
     </>
   );
-};
-
-export default TransactionForm;
+}

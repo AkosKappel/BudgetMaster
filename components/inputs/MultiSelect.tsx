@@ -12,15 +12,7 @@ type MultiSelectProps = {
   className?: string;
 };
 
-const MultiSelect: React.FC<MultiSelectProps> = ({
-  control,
-  name,
-  label,
-  options,
-  placeholder,
-  error,
-  className,
-}) => (
+const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options, placeholder, error, className }) => (
   <div className={className}>
     {label && <label className="block text-sm font-medium mb-1 text-left">{label}</label>}
     <Controller
@@ -35,11 +27,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             control: (provided, state) => ({
               ...provided,
               backgroundColor: 'white',
-              borderColor: error
-                ? 'rgb(239 68 68)'
-                : state.isFocused
-                  ? 'rgb(20 184 166)'
-                  : 'rgb(209 213 219)',
+              borderColor: error ? 'rgb(239 68 68)' : state.isFocused ? 'rgb(20 184 166)' : 'rgb(209 213 219)',
               borderWidth: state.isFocused ? '2px' : '1px',
               boxShadow: 'none',
               '&:hover': {

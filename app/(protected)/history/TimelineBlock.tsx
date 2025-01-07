@@ -77,7 +77,7 @@ export default function TimelineBlock({ transactions, isIncome }: { transactions
       </section>
 
       <Modal isOpen={!!currentTransaction} onClose={closeEditModal}>
-        <TransactionForm onSuccess={closeEditModal} transaction={currentTransaction} startCollapsed={false} />
+        <TransactionForm onSuccess={closeEditModal} transaction={currentTransaction} />
       </Modal>
     </>
   );

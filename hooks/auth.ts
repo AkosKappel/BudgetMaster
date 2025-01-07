@@ -8,7 +8,7 @@ export const useAuth = () => {
   const dispatch = useDispatch();
 
   const fetchUser = async () => {
-    const response = await axios.get('/api/user/auth');
+    const response = await axios.get('/api/me');
 
     if (response.status === 200) {
       dispatch(setUser(response.data));

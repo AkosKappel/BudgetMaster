@@ -3,6 +3,7 @@ import Switch from 'react-switch';
 type SwitchButtonProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
+  register: any;
   leftLabel: string;
   rightLabel: string;
   offColor?: string;
@@ -13,6 +14,7 @@ type SwitchButtonProps = {
 const SwitchButton: React.FC<SwitchButtonProps> = ({
   checked,
   onChange,
+  register,
   leftLabel,
   rightLabel,
   offColor = '#f44336',
@@ -32,6 +34,7 @@ const SwitchButton: React.FC<SwitchButtonProps> = ({
       />
       <span className={`ml-2 ${checked ? 'font-bold' : 'text-gray-500'}`}>{rightLabel}</span>
     </label>
+    <input type="hidden" {...register} />
   </div>
 );
 
