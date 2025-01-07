@@ -1,3 +1,9 @@
+export type User = {
+  _id?: string;
+  email: string;
+  name: string;
+};
+
 export type Transaction = {
   _id?: string;
   title: string;

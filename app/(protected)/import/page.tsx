@@ -10,7 +10,7 @@ import axios from 'axios';
 import ImportForm from '@/components/forms/ImportForm';
 import TransactionForm from '@/components/forms/TransactionForm';
 import { type ImportData } from '@/schemas/importSchema';
-import { type Transaction } from '@/types/data';
+import type { Transaction } from '@/schemas/transactionSchema';
 
 const ImportPage: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);

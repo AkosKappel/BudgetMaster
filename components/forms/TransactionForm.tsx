@@ -7,14 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
 // import { useRemoveTransaction, useTransactionSubmit } from '@/hooks/useTransactions';
-import { type TransactionData, transactionSchema } from '@/schemas/transactionSchema';
+import { type Transaction, transactionSchema } from '@/schemas/transactionSchema';
 import { RootState } from '@/store';
 
 type TransactionFormProps = {
-  transaction: TransactionData | null;
-  onSubmit?: (data: TransactionData, transaction: TransactionData | null) => void;
-  onDelete?: (transaction: TransactionData) => void;
-  onSuccess?: (transaction: TransactionData) => void;
+  transaction: Transaction | null;
+  onSubmit?: (data: Transaction, transaction: Transaction | null) => void;
+  onDelete?: (transaction: Transaction) => void;
+  onSuccess?: (transaction: Transaction) => void;
   onError?: (error: string) => void;
   title?: string;
   startCollapsed?: boolean;
@@ -51,7 +51,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     control,
     setValue,
     watch,
-  } = useForm<TransactionData>({
+  } = useForm<Transaction>({
     resolver: zodResolver(transactionSchema),
     defaultValues,
   });
@@ -59,14 +59,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   useEffect(() => {
     if (transaction) {
       Object.entries(transaction).forEach(([key, value]) => {
-        setValue(key as keyof TransactionData, value);
+        setValue(key as keyof Transaction, value);
       });
     }
   }, [transaction, setValue]);
 
   const isExpense = watch('isExpense', true);
 
-  const handleOnSubmit = async (data: TransactionData) => {
+  const handleOnSubmit = async (data: Transaction) => {
     if (onSubmit) {
       onSubmit(data, transaction);
     } else {
@@ -81,7 +81,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   };
 
-  const handleOnDelete = async (transaction: TransactionData) => {
+  const handleOnDelete = async (transaction: Transaction) => {
     if (onDelete) {
       onDelete(transaction);
     } else {
@@ -101,7 +101,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const handleReset = () => {
     if (transaction) {
       Object.entries(transaction).forEach(([key, value]) => {
-        setValue(key as keyof TransactionData, value);
+        setValue(key as keyof Transaction, value);
       });
     } else {
       reset();

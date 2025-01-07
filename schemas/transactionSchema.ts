@@ -11,11 +11,11 @@ export const transactionSchema = z.object({
     .number()
     .positive('Amount must be positive')
     .refine((val) => !isNaN(val), { message: 'Amount must be a valid number' }),
-  description: z.string().trim().optional(),
+  description: z.string().trim().default(''),
   category: z.string().trim().transform(toTitleCase),
   labels: z.array(z.string().trim().transform(toTitleCase)).default([]),
   sender: z.string().trim().transform(nullify).nullish(),
   receiver: z.string().trim().transform(nullify).nullish(),
 });
 
-export type TransactionData = z.infer<typeof transactionSchema>;
+export type Transaction = z.infer<typeof transactionSchema>;

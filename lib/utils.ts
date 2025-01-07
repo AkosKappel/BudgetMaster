@@ -1,4 +1,4 @@
-import { type Transaction } from '@/types/data';
+import type { Transaction } from '@/schemas/transactionSchema';
 
 const LOCALE = 'en-DE';
 
@@ -6,10 +6,7 @@ export const formatPrice = (price: number, options?: Intl.NumberFormatOptions): 
   return price.toLocaleString(LOCALE, { style: 'currency', currency: 'EUR', ...options });
 };
 
-export const formatDate = (
-  dateString: string | Date,
-  options?: Intl.DateTimeFormatOptions,
-): string =>
+export const formatDate = (dateString: string | Date, options?: Intl.DateTimeFormatOptions): string =>
   new Date(dateString).toLocaleDateString(LOCALE, {
     year: 'numeric',
     month: 'short',
@@ -17,20 +14,14 @@ export const formatDate = (
     ...options,
   });
 
-export const formatTime = (
-  timeString: string | Date,
-  options?: Intl.DateTimeFormatOptions,
-): string =>
+export const formatTime = (timeString: string | Date, options?: Intl.DateTimeFormatOptions): string =>
   new Date(timeString).toLocaleTimeString(LOCALE, {
     hour: '2-digit',
     minute: '2-digit',
     ...options,
   });
 
-export const formatDateTime = (
-  dateTimeString: string | Date,
-  options?: Intl.DateTimeFormatOptions,
-): string =>
+export const formatDateTime = (dateTimeString: string | Date, options?: Intl.DateTimeFormatOptions): string =>
   new Date(dateTimeString).toLocaleString(LOCALE, {
     year: 'numeric',
     month: 'short',
@@ -44,10 +35,7 @@ export const toTitleCase = (str: string): string =>
   str
     .split(' ')
     .map(
-      (word) =>
-        word !== word.toUpperCase()
-          ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-          : word, // Keep acronyms like "API" or "HTML" in uppercase
+      (word) => (word !== word.toUpperCase() ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word), // Keep acronyms like "API" or "HTML" in uppercase
     )
     .join(' ');
 
@@ -59,8 +47,7 @@ export const toRandomCase = (str: string): string =>
 
 export const nullify = (val: any): any | null => val || null;
 
-export const isFile = (value: unknown): value is File =>
-  typeof File !== 'undefined' && value instanceof File;
+export const isFile = (value: unknown): value is File => typeof File !== 'undefined' && value instanceof File;
 
 export const groupBy = <T extends Record<string, any>>(
   key: keyof T,

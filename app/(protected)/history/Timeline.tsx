@@ -4,7 +4,7 @@ import Fuse from 'fuse.js';
 
 import TimelineBlock from '@/app/(protected)/history/TimelineBlock';
 import { formatDate, groupByDateAndType } from '@/lib/utils';
-import { type Transaction } from '@/types/data';
+import type { Transaction } from '@/schemas/transactionSchema';
 
 type TimelineProps = {
   transactions: Transaction[];

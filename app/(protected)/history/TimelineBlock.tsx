@@ -5,7 +5,7 @@ import { PencilIcon } from '@heroicons/react/24/solid';
 import TransactionForm from '@/components/forms/TransactionForm';
 import Modal from '@/components/layout/Modal';
 import { formatPrice } from '@/lib/utils';
-import { type Transaction } from '@/types/data';
+import type { Transaction } from '@/schemas/transactionSchema';
 
 export default function TimelineBlock({ transactions, isIncome }: { transactions: Transaction[]; isIncome: boolean }) {
   const [currentTransaction, setCurrentTransaction] = useState<Transaction | null>(null);
