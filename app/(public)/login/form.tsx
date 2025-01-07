@@ -21,7 +21,10 @@ export default function LoginForm() {
   const isFormValid = !!(formData.email && formData.password);
 
   const loginToDemoAccount = async () => {
-    setFormData({ email: process.env.DEMO_EMAIL || '', password: process.env.DEMO_PASSWORD || '' });
+    setFormData({
+      email: process.env.DEMO_EMAIL || 'demo@test.com',
+      password: process.env.DEMO_PASSWORD || 'Qwerty123!',
+    });
     setTimeout(() => loginRef.current?.click(), 100);
   };
 
