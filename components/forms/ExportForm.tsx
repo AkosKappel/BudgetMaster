@@ -2,11 +2,8 @@ import React from 'react';
 import { toast } from 'react-toastify';
 
 // TODO: Implement export form
-type ExportFormProps = {
-  onSubmitCallback: () => void;
-};
 
-const ExportForm: React.FC<ExportFormProps> = ({ onSubmitCallback }) => {
+export default function ExportForm({ onSubmitCallback }: { onSubmitCallback: () => void }) {
   const handleExport = () => {
     // Implement export logic here
     // For now, we'll just show a success message
@@ -23,6 +20,4 @@ const ExportForm: React.FC<ExportFormProps> = ({ onSubmitCallback }) => {
       </button>
     </>
   );
-};
-
-export default ExportForm;
+}

@@ -16,11 +16,8 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useTransactions } from '@/hooks/transactions';
 
-const StatsPage = () => {
-  const { data: transactions, isLoading, isError, error, refetch } = useTransactions();
-
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) return <ErrorMessage message={error.message} onRetry={refetch} />;
+export default function StatsPage() {
+  const { transactions, isLoading, isError, error, refetch } = useTransactions();
 
   const { totalIncome, totalExpense, monthlyAggregatedData } = useMemo(() => {
     let totalIncome = 0;
@@ -84,15 +81,15 @@ const StatsPage = () => {
     );
   }, [transactions]);
 
-  // const labelIncomeExpenseData = useMemo(() => {
-  //   return Object.entries(labelAggregatedData)
-  //     .map(([name, value]) => ({
-  //       name,
-  //       Income: value.income,
-  //       Expense: -value.expense,
-  //     }))
-  //     .sort((a, b) => Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)));
-  // }, [labelAggregatedData]);
+  const labelIncomeExpenseData = useMemo(() => {
+    return Object.entries(labelAggregatedData)
+      .map(([name, value]) => ({
+        name,
+        Income: value.income,
+        Expense: -value.expense,
+      }))
+      .sort((a, b) => Math.abs(b.Income) + Math.abs(b.Expense) - (Math.abs(a.Income) + Math.abs(a.Expense)));
+  }, [labelAggregatedData]);
 
   const dailyAggregatedLabelData = useMemo(() => {
     const data: Record<string, Record<string, number>> = {};
@@ -114,6 +111,9 @@ const StatsPage = () => {
     }));
   }, [transactions]);
 
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <ErrorMessage message={error!.message} onRetry={refetch} />;
+
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
@@ -130,12 +130,10 @@ const StatsPage = () => {
 
         <CumulativeChart data={monthlyFinanceData} title="Cumulative Income and Expense" />
 
-        {/* <VerticalBarChart data={labelIncomeExpenseData} title="Top Labels by Income and Expense" /> */}
+        <VerticalBarChart data={labelIncomeExpenseData} title="Top Labels by Income and Expense" />
 
         <MixedBarChart data={dailyAggregatedLabelData} title="Daily Transactions by Label" />
       </div>
     </div>
   );
-};
-
-export default StatsPage;
+}

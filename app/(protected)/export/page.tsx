@@ -4,7 +4,7 @@ import React from 'react';
 
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
-const ExportPage = () => {
+export default function ExportPage() {
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
@@ -13,6 +13,4 @@ const ExportPage = () => {
       </h1>
     </div>
   );
-};
-
-export default ExportPage;
+}

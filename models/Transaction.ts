@@ -3,7 +3,7 @@ import mongoose, { Document, Schema, Types } from 'mongoose';
 export interface ITransaction extends Document {
   ownerId: Types.ObjectId;
   title: string;
-  date: Date;
+  date: string;
   isExpense: boolean;
   amount: number;
   description: string;
@@ -16,7 +16,7 @@ export interface ITransaction extends Document {
 const TransactionSchema = new Schema<ITransaction>({
   ownerId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   title: { type: String, required: true },
-  date: { type: Date, required: true, default: Date.now },
+  date: { type: String, required: true, default: new Date().toISOString().split('T')[0] },
   isExpense: { type: Boolean, required: true },
   amount: { type: Number, required: true, min: 0 },
   description: { type: String, default: '', trim: true },
@@ -26,6 +26,5 @@ const TransactionSchema = new Schema<ITransaction>({
   receiver: { type: String },
 });
 
-const Transaction =
-  mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);
+const Transaction = mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);
 export default Transaction;

@@ -1,4 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { set } from 'mongoose';
 
 type UserState = {
   id?: string;
@@ -16,18 +17,27 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<UserState>) {
-      return {
-        id: action.payload.id,
-        email: action.payload.email,
-        name: action.payload.name,
-      };
+    setUser(state: UserState, action: PayloadAction<UserState>) {
+      state.id = action.payload.id;
+      state.email = action.payload.email;
+      state.name = action.payload.name;
     },
-    clearUser(state) {
-      return { ...initialState };
+    setId(state: UserState, action: PayloadAction<string>) {
+      state.id = action.payload;
+    },
+    setEmail(state: UserState, action: PayloadAction<string>) {
+      state.email = action.payload;
+    },
+    setName(state: UserState, action: PayloadAction<string>) {
+      state.name = action.payload;
+    },
+    clearUser(state: UserState) {
+      state.id = initialState.id;
+      state.email = initialState.email;
+      state.name = initialState.name;
     },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, setId, setEmail, setName, clearUser } = userSlice.actions;
 export default userSlice.reducer;

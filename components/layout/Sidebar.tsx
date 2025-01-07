@@ -88,12 +88,12 @@ export default function Sidebar() {
         },
       ],
     },
-    {
-      name: 'Reports',
-      href: '/reports',
-      icon: <DocumentTextIcon className="w-5 h-5" />,
-      tooltip: 'Generate financial reports',
-    },
+    // {
+    //   name: 'Reports',
+    //   href: '/reports',
+    //   icon: <DocumentTextIcon className="w-5 h-5" />,
+    //   tooltip: 'Generate financial reports',
+    // },
   ];
 
   const bottomItems: NavItem[] = [
@@ -202,7 +202,7 @@ export default function Sidebar() {
   return (
     <>
       <nav
-        className={`overflow-x-hidden overflow-y-auto bg-base-100 shadow-md p-4 transition-all duration-300 ${isCollapsed ? 'min-w-20' : 'min-w-64'} h-screen sticky top-0 flex flex-col justify-between`}
+        className={`overflow-x-hidden overflow-y-auto bg-base-100 shadow-md p-4 h-screen sticky top-0 flex flex-col justify-between transition-all duration-300 ${isCollapsed ? 'min-w-20' : 'min-w-64'}`}
       >
         <div>
           <button
@@ -225,6 +225,7 @@ export default function Sidebar() {
           </ul>
         </div>
       </nav>
+
       <Modal isOpen={activeModal === 'transaction'} onClose={closeModal}>
         <TransactionForm onSuccess={closeModal} transaction={null} />
       </Modal>

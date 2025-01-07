@@ -1,19 +1,43 @@
-import { useDispatch } from 'react-redux';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import axios from 'axios';
-
+import { getLoggedInUser } from '@/lib/crud';
+import { RootState } from '@/store';
 import { setUser } from '@/store/userSlice';
 
-export const useAuth = () => {
+export const useCurrentUser = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
 
-  const fetchUser = async () => {
-    const response = await axios.get('/api/me');
+  const refetch = useCallback(
+    async (force: boolean = false) => {
+      if (isLoading) return;
+      if (!force && user.id) return;
 
-    if (response.status === 200) {
-      dispatch(setUser(response.data));
-    }
-  };
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
 
-  return { fetchUser };
+      try {
+        const loggedInUser = await getLoggedInUser();
+        dispatch(setUser({ ...loggedInUser, id: loggedInUser._id }));
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading],
+  );
+
+  useEffect(() => {
+    refetch(true);
+  }, []);
+
+  return { user, isLoading, isError, error, refetch };
 };

@@ -6,13 +6,14 @@ import { CalendarIcon } from '@heroicons/react/24/solid';
 
 import Filters from '@/app/(protected)/history/Filters';
 import Timeline from '@/app/(protected)/history/Timeline';
-import BackToTop from '@/components/ui/BackToTop';
+import AddTransactionButton from '@/components/ui/AddTransactionButton';
+import BackToTopButton from '@/components/ui/BackToTopButton';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useTransactions } from '@/hooks/transactions';
 
-const HistoryPage = () => {
-  const { data: transactions, isLoading, isError, error, refetch } = useTransactions();
+export default function HistoryPage() {
+  const { transactions, isLoading, isError, error, refetch } = useTransactions();
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
@@ -49,14 +50,18 @@ const HistoryPage = () => {
   }, [selectedDate]);
 
   if (isLoading) return <LoadingSpinner />;
-  if (isError) return <ErrorMessage message={error.message} onRetry={refetch} />;
+  if (isError) return <ErrorMessage message={error!.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen p-8">
-      <h1 className="text-3xl mb-8 flex items-center">
-        <CalendarIcon className="w-8 h-8 mr-2" />
-        Transactions History
-      </h1>
+      <div className="flex justify-between">
+        <h1 className="text-3xl mb-8 flex items-center">
+          <CalendarIcon className="w-8 h-8 mr-2" />
+          Transactions History
+        </h1>
+
+        <AddTransactionButton className="mb-8" />
+      </div>
 
       <Filters
         searchTerm={searchTerm}
@@ -86,9 +91,7 @@ const HistoryPage = () => {
           showNoLabels={showNoLabels}
         />
       </div>
-      <BackToTop />
+      <BackToTopButton />
     </div>
   );
-};
-
-export default HistoryPage;
+}

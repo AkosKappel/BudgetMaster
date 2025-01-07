@@ -1,148 +1,198 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-
+import { createTransaction, deleteTransaction, getTransactions, updateTransaction } from '@/lib/crud';
 import type { Transaction } from '@/schemas/transactionSchema';
+import type { RootState } from '@/store';
+import { clearTransactions, setTransactions } from '@/store/transactionsSlice';
 
 export const useTransactions = () => {
-  return useQuery<Transaction[]>({
-    queryKey: ['userTransactions'],
-    queryFn: () => getTransactions(),
-    // refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<Transaction[]>([]);
+
+  const { transactions } = useSelector((state: RootState) => state.transactions);
+  const dispatch = useDispatch();
+
+  const refetch = useCallback(
+    async (force: boolean = false) => {
+      if (isLoading) return;
+      if (!force && transactions.length > 0) {
+        setData(transactions);
+        return;
+      }
+
+      dispatch(clearTransactions());
+
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        const fetchedTransactions = await getTransactions();
+        setData(fetchedTransactions);
+
+        dispatch(setTransactions(fetchedTransactions));
+        toast.success('Loaded transactions');
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+        toast.error('Failed to load transactions');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, transactions],
+  );
+
+  useEffect(() => {
+    refetch(true);
+  }, []);
+
+  return {
+    transactions,
+    isLoading,
+    isError,
+    error,
+    data,
+    refetch,
+  };
 };
 
-export const useCreateTransaction = (params: {}) => {
-  return useMutation({
-    mutationFn: createTransaction,
-    ...params,
-  });
+export const useCreateTransaction = (successCallback?: () => void, errorCallback?: () => void) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const { transactions } = useSelector((state: RootState) => state.transactions);
+  const dispatch = useDispatch();
+
+  const create = useCallback(
+    async (transaction: Transaction) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        const createdTransaction = await createTransaction(transaction);
+        dispatch(setTransactions([...transactions, createdTransaction]));
+        toast.success('Transaction saved');
+        successCallback?.();
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+        toast.error('Failed to save transaction');
+        errorCallback?.();
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading, transactions],
+  );
+
+  return {
+    create,
+    isLoading,
+    isError,
+    error,
+  };
 };
 
-export const useUpdateTransaction = (params: {}) => {
-  return useMutation({
-    mutationFn: updateTransaction,
-    ...params,
-  });
+export const useUpdateTransaction = (successCallback?: () => void, errorCallback?: () => void) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const { transactions } = useSelector((state: RootState) => state.transactions);
+  const dispatch = useDispatch();
+
+  const update = useCallback(
+    async (transaction: Transaction) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        const updatedTransaction = await updateTransaction(transaction);
+        dispatch(setTransactions(transactions.map((t) => (t._id === transaction._id ? updatedTransaction : t))));
+        toast.success('Transaction updated');
+        successCallback?.();
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+        toast.error('Failed to update transaction');
+        errorCallback?.();
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading, transactions],
+  );
+
+  return {
+    update,
+    isLoading,
+    isError,
+    error,
+  };
 };
 
-export const useDeleteTransaction = (params: {}) => {
-  return useMutation({
-    mutationFn: deleteTransaction,
-    ...params,
-  });
+export const useDeleteTransaction = (successCallback?: () => void, errorCallback?: () => void) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const { transactions } = useSelector((state: RootState) => state.transactions);
+  const dispatch = useDispatch();
+
+  const remove = useCallback(
+    async (transaction: Transaction) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        await remove(transaction);
+        dispatch(setTransactions(transactions.filter((t) => t._id !== transaction._id)));
+        toast.success('Transaction deleted');
+        successCallback?.();
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+        toast.error('Failed to delete transaction');
+        errorCallback?.();
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading, transactions],
+  );
+
+  return {
+    remove,
+    isLoading,
+    isError,
+    error,
+  };
 };
 
-export const useCategories = () => {
-  return useQuery<string[]>({
-    queryKey: ['userCategories'],
-    queryFn: () => getCategories(),
-    refetchOnWindowFocus: false,
-  });
-};
+// export const useCategories = () => {
+//   return useQuery<string[]>({
+//     queryKey: ['userCategories'],
+//     queryFn: () => getCategories(),
+//     refetchOnWindowFocus: false,
+//   });
+// };
 
-export const useLabels = () => {
-  return useQuery<string[]>({
-    queryKey: ['userLabels'],
-    queryFn: () => getLabels(),
-    refetchOnWindowFocus: false,
-  });
-};
-
-export async function getTransactions(): Promise<Transaction[]> {
-  try {
-    const response = await axios.get(`/api/transactions`);
-    if (response.status !== 200) {
-      throw new Error('Failed to fetch user transactions');
-    }
-    toast.success('Fetched user transactions');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return [];
-  }
-}
-
-export async function createTransaction(transaction: Transaction): Promise<Transaction | null> {
-  try {
-    const response = await axios.post(`/api/transactions`, transaction);
-    if (response.status !== 201) {
-      throw new Error('Failed to create transaction');
-    }
-    toast.success('New transaction saved');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return null;
-  }
-}
-
-export async function updateTransaction(transaction: Transaction): Promise<Transaction | null> {
-  try {
-    if (!transaction._id) {
-      throw new Error('Missing transaction ID');
-    }
-    const response = await axios.put(`/api/transactions/${transaction._id}`, transaction);
-    if (response.status !== 200) {
-      throw new Error('Failed to update transaction');
-    }
-    toast.success('Transaction updated');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return null;
-  }
-}
-
-export async function deleteTransaction(transaction: Transaction): Promise<Transaction | null> {
-  try {
-    if (!transaction._id) {
-      throw new Error('Missing transaction ID');
-    }
-    const response = await axios.delete(`/api/transactions/${transaction._id}`);
-    if (response.status !== 200) {
-      throw new Error('Failed to delete transaction');
-    }
-    toast.success('Transaction deleted');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return null;
-  }
-}
-
-export async function getCategories(): Promise<string[]> {
-  try {
-    const response = await axios.get(`/api/categories`);
-    if (response.status !== 200) {
-      throw new Error('Failed to fetch user categories');
-    }
-    toast.success('Fetched user categories');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return [];
-  }
-}
-
-export const getLabels = async () => {
-  try {
-    const response = await axios.get(`/api/labels`);
-    if (response.status !== 200) {
-      throw new Error('Failed to fetch user labels');
-    }
-    toast.success('Fetched user labels');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    toast.error((error as Error).message);
-    return [];
-  }
-};
+// export const useLabels = () => {
+//   return useQuery<string[]>({
+//     queryKey: ['userLabels'],
+//     queryFn: () => getLabels(),
+//     refetchOnWindowFocus: false,
+//   });
+// };

@@ -1,10 +1,9 @@
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ArrowPathIcon, ArrowPathRoundedSquareIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-// import { createTransaction } from '@/actions/transaction';
 import { InputField, MultiSelect, SwitchButton } from '@/components/inputs';
 import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from '@/hooks/transactions';
 import { type Transaction, transactionSchema } from '@/schemas/transactionSchema';
@@ -24,10 +23,10 @@ export default function TransactionForm({
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
   const uniqueLabels = [] as string[];
 
-  const { mutate, isPending } = isEdit
-    ? useUpdateTransaction({ onSuccess, onError })
-    : useCreateTransaction({ onSuccess, onError });
-  const { mutate: deleteMutate, isPending: isDeleting } = useDeleteTransaction({ onSuccess, onError });
+  const { create, isLoading: isCreating } = useCreateTransaction(onSuccess, onError);
+  const { update, isLoading: isUpdating } = useUpdateTransaction(onSuccess, onError);
+  const { remove, isLoading: isDeleting } = useDeleteTransaction(onSuccess, onError);
+  const isPending = isCreating || isUpdating || isDeleting;
 
   const defaultValues = {
     date: new Date().toISOString().split('T')[0],
@@ -57,11 +56,11 @@ export default function TransactionForm({
   }, [transaction, setValue]);
 
   const handleSubmit = async (data: Transaction) => {
-    mutate(data);
+    isEdit ? update(data) : create(data);
   };
 
   const handleDelete = async (data: Transaction) => {
-    deleteMutate(data);
+    remove(data);
   };
 
   const handleReset = () => {
@@ -162,7 +161,7 @@ export default function TransactionForm({
                 type="button"
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 ease-in-out flex items-center justify-center"
                 onClick={() => handleDelete(transaction)}
-                disabled={isPending || isDeleting}
+                disabled={isPending}
               >
                 {isDeleting ? (
                   <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
@@ -185,14 +184,14 @@ export default function TransactionForm({
               className="px-4 py-2 rounded btn btn-primary transition-colors duration-200 ease-in-out flex items-center justify-center"
               disabled={isPending}
             >
-              {isPending ? (
+              {isCreating || isUpdating ? (
                 <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
               ) : isEdit ? (
                 <PencilIcon className="h-5 w-5 mr-2" />
               ) : (
                 <PlusIcon className="h-5 w-5 mr-2" />
               )}
-              {isPending ? 'Saving...' : isEdit ? 'Update' : 'Save'}
+              {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update' : 'Save'}
             </button>
           </div>
         </div>

@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 
-type TooltipProps = {
-  content: string;
-  children: React.ReactNode;
-};
-
-const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+export default function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -20,6 +15,4 @@ const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
       )}
     </div>
   );
-};
-
-export default Tooltip;
+}
