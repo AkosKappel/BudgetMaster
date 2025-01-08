@@ -14,7 +14,13 @@ export default async function Header() {
   return (
     <header className="bg-primary text-primary-content shadow-lg flex justify-between">
       <Link href="/" className="flex items-center m-4">
-        <Image src="/logo.jpg" alt="Budget Master Logo" width={50} height={50} className="rounded-full mr-2" />
+        <Image
+          src="/BudgetMaster/logo.jpg"
+          alt="Budget Master Logo"
+          width={50}
+          height={50}
+          className="rounded-full mr-2"
+        />
         <div>
           <h1 className="text-3xl font-extrabold">{appName}</h1>
           <p className="text-sm italic">{appSlogan}</p>
