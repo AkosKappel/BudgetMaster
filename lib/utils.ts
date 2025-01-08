@@ -62,10 +62,10 @@ export const groupBy = <T extends Record<string, any>>(
   return Object.entries(grouped).map(([key, items]) => ({ [key]: items }));
 };
 
-export const groupByDateAndType = (key: keyof Transaction, transactions: Transaction[]) => {
+export const groupByDateAndType = (transactions: Transaction[]) => {
   const grouped = transactions.reduce(
     (acc: { [key: string]: { expenses: Transaction[]; incomes: Transaction[] } }, transaction) => {
-      const groupKey = transaction[key]?.toString() ?? 'other';
+      const groupKey = transaction['date']?.toString() ?? 'other';
       if (!acc[groupKey]) acc[groupKey] = { expenses: [], incomes: [] };
       const type = transaction.isExpense ? 'expenses' : 'incomes';
       acc[groupKey][type].push(transaction);

@@ -40,21 +40,27 @@ export default function TimelineBlock({ transactions, isIncome }: { transactions
               <div
                 className={`text-lg font-semibold flex flex-col md:flex-row items-start md:items-center ${isIncome ? 'md:justify-end' : ''}`}
               >
-                <h3 className="text-gray-800 mr-0 md:mr-3 mb-2 md:mb-0">{transaction.title}</h3>
+                <h3
+                  className="text-gray-800 mr-0 md:mr-3 mb-2 md:mb-0"
+                  dangerouslySetInnerHTML={{ __html: transaction.title }}
+                />
                 <span className="text-base text-gray-600 font-semibold whitespace-nowrap">
                   {`${isIncome ? '+' : '-'} ${formatPrice(transaction.amount)}`}
                 </span>
+                <h4 className="text-sm text-gray-800 ml-3" dangerouslySetInnerHTML={{ __html: transaction.category }} />
               </div>
-              <div className="text-gray-700 mt-1">{transaction.description}</div>
+              <div className="text-gray-700 mt-1" dangerouslySetInnerHTML={{ __html: transaction.description }} />
 
               <div
-                className={`text-sm text-gray-600 mt-2 flex flex-col md:flex-row items-start md:items-center my-2
-                ${isIncome ? 'md:justify-end' : ''}`}
+                className={`${isIncome ? 'md:justify-end' : ''} text-sm text-gray-600 mt-2 flex flex-col md:flex-row items-start md:items-center my-2`}
               >
-                {transaction.sender && <span className="mb-1 md:mb-0">From: {transaction.sender}</span>}
+                {transaction.sender && (
+                  <span className="mb-1 md:mb-0" dangerouslySetInnerHTML={{ __html: `From: ${transaction.sender}` }} />
+                )}
                 {transaction.sender && transaction.receiver && <span className="hidden md:inline mx-2">|</span>}
-                {transaction.receiver && <span>To: {transaction.receiver}</span>}
+                {transaction.receiver && <span dangerouslySetInnerHTML={{ __html: `To: ${transaction.receiver}` }} />}
               </div>
+
               {transaction.labels.length > 0 && (
                 <div className={`flex flex-wrap mt-2 justify-start gap-2 ${isIncome ? 'md:justify-end' : ''}`}>
                   {transaction.labels.map((label) => (

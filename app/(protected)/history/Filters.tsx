@@ -48,6 +48,7 @@ const Filters: React.FC<FiltersProps> = ({
     { value: 'income', label: 'Income Only' },
     { value: 'expense', label: 'Expenses Only' },
   ];
+  const uniqueCategories = useSelector((state: RootState) => state.transactions.existingCategories); // TODO
   const uniqueLabels = useSelector((state: RootState) => state.transactions.existingLabels);
 
   const handleLabelToggle = (label: string) => {

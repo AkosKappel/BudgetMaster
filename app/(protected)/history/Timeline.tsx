@@ -25,23 +25,15 @@ const Timeline: React.FC<TimelineProps> = ({
   maxAmount,
   showNoLabels,
 }) => {
-  const blocks = useMemo(() => groupByDateAndType('date', transactions), [transactions]);
+  const blocks = useMemo(() => groupByDateAndType(transactions), [transactions]);
 
   const highlightText = (text: string, highlight: string) => {
-    if (!highlight.trim()) {
-      return text;
-    }
+    if (!highlight.trim()) return text;
     const regex = new RegExp(`(${highlight})`, 'gi');
     return text.replace(regex, '<mark>$1</mark>');
   };
 
   const filterTransactions = (transactions: Transaction[]) => {
-    const fuse = new Fuse(transactions, {
-      keys: ['description', 'title', 'sender', 'receiver'],
-      threshold: 0.4,
-      includeScore: true,
-    });
-
     const filteredTransactions = transactions.filter(
       (t) =>
         ((selectedLabels.length === 0 && !showNoLabels) ||
@@ -51,20 +43,22 @@ const Timeline: React.FC<TimelineProps> = ({
         t.amount <= maxAmount,
     );
 
-    if (searchTerm === '') {
-      return filteredTransactions;
-    }
+    if (searchTerm === '') return filteredTransactions;
 
-    const fuseResults = fuse.search(searchTerm);
-    return fuseResults
-      .map((result) => ({
-        ...result.item,
-        highlightedDescription: highlightText(result.item.description, searchTerm),
-        highlightedTitle: highlightText(result.item.title, searchTerm),
-        highlightedSender: highlightText(result.item.sender || '', searchTerm),
-        highlightedReceiver: highlightText(result.item.receiver || '', searchTerm),
-      }))
-      .filter((t) => filteredTransactions.includes(t));
+    const fuse = new Fuse(filteredTransactions, {
+      keys: ['title', 'category', 'description', 'sender', 'receiver'],
+      threshold: 0.4,
+      includeScore: true,
+    });
+
+    return fuse.search(searchTerm).map((result) => ({
+      ...result.item,
+      title: highlightText(result.item.title, searchTerm),
+      category: highlightText(result.item.category, searchTerm),
+      description: highlightText(result.item.description, searchTerm),
+      sender: highlightText(result.item.sender || '', searchTerm),
+      receiver: highlightText(result.item.receiver || '', searchTerm),
+    }));
   };
 
   return (
