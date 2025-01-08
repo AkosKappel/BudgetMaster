@@ -21,10 +21,9 @@ export default function LoginForm() {
   const isFormValid = !!(formData.email && formData.password);
 
   const loginToDemoAccount = async () => {
-    setFormData({
-      email: process.env.DEMO_EMAIL || 'demo@email.com',
-      password: process.env.DEMO_PASSWORD || 'Qwerty123!@#',
-    });
+    const email = process.env.NEXT_PUBLIC_DEMO_EMAIL || '';
+    const password = process.env.NEXT_PUBLIC_DEMO_PASSWORD || '';
+    setFormData({ email, password });
     setTimeout(() => loginRef.current?.click(), 100);
   };
 

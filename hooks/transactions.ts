@@ -2,10 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { createTransaction, deleteTransaction, getTransactions, updateTransaction } from '@/lib/crud';
+import {
+  createTransaction,
+  deleteTransaction,
+  getCategories,
+  getLabels,
+  getTransactions,
+  updateTransaction,
+} from '@/lib/crud';
 import type { Transaction } from '@/schemas/transactionSchema';
 import type { RootState } from '@/store';
-import { clearTransactions, setTransactions } from '@/store/transactionsSlice';
+import {
+  clearCategories,
+  clearLabels,
+  clearTransactions,
+  setCategories,
+  setLabels,
+  setTransactions,
+} from '@/store/transactionsSlice';
 
 export const useTransactions = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -19,7 +33,7 @@ export const useTransactions = () => {
   const refetch = useCallback(
     async (force: boolean = false) => {
       if (isLoading) return;
-      if (!force && transactions.length > 0) {
+      if (!force && transactions.length) {
         setData(transactions);
         return;
       }
@@ -44,7 +58,7 @@ export const useTransactions = () => {
         setIsLoading(false);
       }
     },
-    [dispatch, transactions],
+    [dispatch, isLoading, transactions],
   );
 
   useEffect(() => {
@@ -90,7 +104,7 @@ export const useCreateTransaction = (successCallback?: () => void, errorCallback
         setIsLoading(false);
       }
     },
-    [dispatch, isLoading, transactions],
+    [dispatch, isLoading, transactions, successCallback, errorCallback],
   );
 
   return {
@@ -130,7 +144,7 @@ export const useUpdateTransaction = (successCallback?: () => void, errorCallback
         setIsLoading(false);
       }
     },
-    [dispatch, isLoading, transactions],
+    [dispatch, isLoading, transactions, successCallback, errorCallback],
   );
 
   return {
@@ -157,7 +171,7 @@ export const useDeleteTransaction = (successCallback?: () => void, errorCallback
       setError(null);
 
       try {
-        await remove(transaction);
+        await deleteTransaction(transaction);
         dispatch(setTransactions(transactions.filter((t) => t._id !== transaction._id)));
         toast.success('Transaction deleted');
         successCallback?.();
@@ -170,7 +184,7 @@ export const useDeleteTransaction = (successCallback?: () => void, errorCallback
         setIsLoading(false);
       }
     },
-    [dispatch, isLoading, transactions],
+    [dispatch, isLoading, transactions, successCallback, errorCallback],
   );
 
   return {
@@ -181,18 +195,100 @@ export const useDeleteTransaction = (successCallback?: () => void, errorCallback
   };
 };
 
-// export const useCategories = () => {
-//   return useQuery<string[]>({
-//     queryKey: ['userCategories'],
-//     queryFn: () => getCategories(),
-//     refetchOnWindowFocus: false,
-//   });
-// };
+export const useCategories = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<string[]>([]);
 
-// export const useLabels = () => {
-//   return useQuery<string[]>({
-//     queryKey: ['userLabels'],
-//     queryFn: () => getLabels(),
-//     refetchOnWindowFocus: false,
-//   });
-// };
+  const categories = useSelector((state: RootState) => state.transactions.existingCategories);
+  const dispatch = useDispatch();
+
+  const refetch = useCallback(
+    async (force: boolean = false) => {
+      if (isLoading) return;
+      if (!force && categories.length) {
+        setData(categories);
+        return;
+      }
+
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        const existingCategories = await getCategories();
+        setData(existingCategories);
+        dispatch(setCategories(existingCategories));
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading, categories],
+  );
+
+  useEffect(() => {
+    refetch(true);
+  }, []);
+
+  return {
+    categories,
+    isLoading,
+    isError,
+    error,
+    data,
+    refetch,
+  };
+};
+
+export const useLabels = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<string[]>([]);
+
+  const labels = useSelector((state: RootState) => state.transactions.existingLabels);
+  const dispatch = useDispatch();
+
+  const refetch = useCallback(
+    async (force: boolean = false) => {
+      if (isLoading) return;
+      if (!force && labels.length) {
+        setData(labels);
+        return;
+      }
+
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+
+      try {
+        const existingLabels = await getLabels();
+        setData(existingLabels);
+        dispatch(setLabels(existingLabels));
+      } catch (error) {
+        setIsError(true);
+        setError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, isLoading, labels],
+  );
+
+  useEffect(() => {
+    refetch(true);
+  }, []);
+
+  return {
+    labels,
+    isLoading,
+    isError,
+    error,
+    data,
+    refetch,
+  };
+};

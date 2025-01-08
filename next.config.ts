@@ -1,8 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  // basePath: '/BudgetMaster',
+  basePath: '/BudgetMaster',
+  assetPrefix: '/BudgetMaster',
 };
 
 export default nextConfig;

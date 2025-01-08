@@ -15,15 +15,25 @@ const initialState: TransactionsState = {
   existingLabels: [],
 };
 
-const updateUniqueLabels = (state: TransactionsState) => {
-  state.existingLabels = Array.from(new Set(state.transactions.flatMap((t) => t.labels)))
-    .map(toTitleCase)
+const updateUniqueCategories = (state: TransactionsState) => {
+  state.existingCategories = Array.from(
+    new Set(
+      ...state.existingCategories,
+      state.transactions.map((t) => t.category),
+    ),
+  )
+    .map((c) => c.toUpperCase())
     .sort((a, b) => a.localeCompare(b));
 };
 
-const updateUniqueCategories = (state: TransactionsState) => {
-  state.existingCategories = Array.from(new Set(state.transactions.map((t) => t.category)))
-    .map((c) => c.toUpperCase())
+const updateUniqueLabels = (state: TransactionsState) => {
+  state.existingLabels = Array.from(
+    new Set(
+      ...state.existingLabels,
+      state.transactions.flatMap((t) => t.labels),
+    ),
+  )
+    .map(toTitleCase)
     .sort((a, b) => a.localeCompare(b));
 };
 

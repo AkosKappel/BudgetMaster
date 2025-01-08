@@ -7,11 +7,14 @@ import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 
 import { logout } from '@/actions/auth';
 import { useCurrentUser } from '@/hooks/auth';
+import { useCategories, useLabels } from '@/hooks/transactions';
 
 export default function LogoutButton() {
   const [state, logoutAction] = useActionState(logout, undefined);
 
   const { user } = useCurrentUser();
+  useLabels();
+  useCategories();
 
   const navigateToSettings = () => {
     redirect('/settings');

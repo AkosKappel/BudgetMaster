@@ -23,7 +23,7 @@ export default function TimelineBlock({ transactions, isIncome }: { transactions
       <section className={`timeline-${isIncome ? 'start' : 'end'} ${isIncome ? 'md:text-end' : ''}`}>
         {transactions.map((transaction: Transaction) => (
           <div
-            key={`${transaction.title}-${transaction.date}`}
+            key={`${transaction._id}-${transaction.date}`}
             className={`mb-4 flex justify-start ${isIncome ? 'md:justify-end' : ''}`}
           >
             <div
@@ -63,9 +63,9 @@ export default function TimelineBlock({ transactions, isIncome }: { transactions
 
               {transaction.labels.length > 0 && (
                 <div className={`flex flex-wrap mt-2 justify-start gap-2 ${isIncome ? 'md:justify-end' : ''}`}>
-                  {transaction.labels.map((label) => (
+                  {transaction.labels.map((label: string) => (
                     <span
-                      key={`${transaction.title}-${label}`}
+                      key={`${transaction._id}-${label}`}
                       className={
                         isIncome
                           ? 'bg-green-400 text-green-800 text-xs px-2 py-1 rounded font-semibold'
