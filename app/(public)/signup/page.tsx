@@ -4,7 +4,7 @@ import SignupForm from '@/app/(public)/signup/form';
 
 export default function SignupPage() {
   return (
-    <div className="flex flex-col items-center min-h-screen bg-base-200 mt-12">
+    <div className="flex flex-col items-center min-h-screen bg-base-200 mt-24">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-primary">Create an account</h2>
