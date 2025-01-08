@@ -28,7 +28,7 @@ const Timeline: React.FC<TimelineProps> = ({
   const blocks = useMemo(() => groupByDateAndType(transactions), [transactions]);
 
   const highlightText = (text: string, highlight: string) => {
-    if (!highlight.trim()) return text;
+    if (!highlight || !highlight.trim()) return text;
     const regex = new RegExp(`(${highlight})`, 'gi');
     return text.replace(regex, '<mark>$1</mark>');
   };
@@ -56,8 +56,8 @@ const Timeline: React.FC<TimelineProps> = ({
       title: highlightText(result.item.title, searchTerm),
       category: highlightText(result.item.category, searchTerm),
       description: highlightText(result.item.description, searchTerm),
-      sender: highlightText(result.item.sender || '', searchTerm),
-      receiver: highlightText(result.item.receiver || '', searchTerm),
+      sender: highlightText(result.item.sender, searchTerm),
+      receiver: highlightText(result.item.receiver, searchTerm),
     }));
   };
 

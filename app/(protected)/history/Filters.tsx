@@ -1,10 +1,6 @@
 import { useSelector } from 'react-redux';
 
-import DatePicker from '@/components/inputs/DatePicker';
-import Dropdown from '@/components/inputs/Dropdown';
-import OptionsSelector from '@/components/inputs/OptionsSelector';
-import RangeSelector from '@/components/inputs/RangeSelector';
-import SearchFilter from '@/components/inputs/SearchField';
+import { DatePicker, Dropdown, OptionsSelector, RangeSelector, SearchField } from '@/components/inputs';
 import { RootState } from '@/store';
 
 type FiltersProps = {
@@ -74,7 +70,7 @@ const Filters: React.FC<FiltersProps> = ({
   return (
     <>
       <div className="mb-4 grid grid-cols-12 gap-4 w-full">
-        <SearchFilter
+        <SearchField
           value={searchTerm}
           setValue={setSearchTerm}
           placeholder="Search for title, description, sender, or receiver..."
