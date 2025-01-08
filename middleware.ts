@@ -19,7 +19,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/BudgetMaster/login', req.nextUrl));
   }
 
-  if (isPublicRoute && session?.userId && !req.nextUrl.pathname.startsWith('/dashboard')) {
+  if (isPublicRoute && session?.userId) {
     return NextResponse.redirect(new URL('/BudgetMaster/dashboard', req.nextUrl));
   }
 
