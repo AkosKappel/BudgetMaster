@@ -117,7 +117,7 @@ export default function StatsPage() {
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
-        <ChartPieIcon className="w-8 h-8 mr-2" />
+        <ChartPieIcon className="w-8 h-8 mr-2 text-primary" />
         Financial Statistics
       </h1>
 

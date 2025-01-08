@@ -23,7 +23,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
-        <HomeIcon className="w-8 h-8 mr-2" />
+        <HomeIcon className="w-8 h-8 mr-2 text-primary" />
         Dashboard
       </h1>
 

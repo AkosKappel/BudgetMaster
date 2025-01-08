@@ -32,7 +32,7 @@ export const useCurrentUser = () => {
         setIsLoading(false);
       }
     },
-    [dispatch, isLoading],
+    [dispatch, isLoading, user.id],
   );
 
   useEffect(() => {

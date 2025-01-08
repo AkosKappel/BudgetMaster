@@ -1,9 +1,8 @@
 import axios from 'axios';
 
 import type { Transaction } from '@/schemas/transactionSchema';
-import type { User } from '@/types/data';
 
-export async function getLoggedInUser(): Promise<User> {
+export async function getLoggedInUser(): Promise<{ _id: string; name: string; email: string }> {
   const response = await axios.get(`/api/me`);
   if (response.status !== 200) throw new Error('Failed to fetch user');
   return response.data;

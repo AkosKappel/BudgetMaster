@@ -90,7 +90,7 @@ export default function ImportPage() {
   return (
     <div className="min-h-screen p-8">
       <h1 className="text-3xl mb-8 flex items-center">
-        <ArrowDownTrayIcon className="w-8 h-8 mr-2" />
+        <ArrowDownTrayIcon className="w-8 h-8 mr-2 text-primary" />
         Import Transactions
       </h1>
       <ImportForm loading={isImporting} onSubmit={onSubmit} />

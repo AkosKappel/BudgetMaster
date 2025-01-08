@@ -56,7 +56,7 @@ export default function HistoryPage() {
     <div className="min-h-screen p-8">
       <div className="flex justify-between">
         <h1 className="text-3xl mb-8 flex items-center">
-          <CalendarIcon className="w-8 h-8 mr-2" />
+          <CalendarIcon className="w-8 h-8 mr-2 text-primary" />
           Transactions History
         </h1>
 
