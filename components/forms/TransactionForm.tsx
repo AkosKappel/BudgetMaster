@@ -23,6 +23,8 @@ export default function TransactionForm({
 }) {
   const isEdit = !!transaction; // create or edit
   const [isCollapsed, setIsCollapsed] = useState<boolean>(startCollapsed);
+
+  const uniqueCategories = useSelector((state: RootState) => state.transactions.existingCategories);
   const uniqueLabels = useSelector((state: RootState) => state.transactions.existingLabels);
 
   const { create, isLoading: isCreating } = useCreateTransaction(onSuccess, onError);
@@ -89,12 +91,14 @@ export default function TransactionForm({
             error={errors?.title?.message}
             className="sm:col-span-2"
           />
-          <InputField
+          <MultiSelect
+            options={uniqueCategories}
+            control={control}
+            name="category"
             label="Category"
-            type="text"
             placeholder="E.g. Groceries"
-            register={register('category')}
             error={errors?.category?.message}
+            isMulti={false}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -131,13 +135,13 @@ export default function TransactionForm({
             register={register('description')}
           />
           <MultiSelect
+            options={uniqueLabels}
             control={control}
             name="labels"
             label="Labels"
-            error={errors?.labels?.message}
-            className="mt-4"
-            options={uniqueLabels}
             placeholder="Add labels such as 'Shopping', 'Salary', 'Cinema'..."
+            className="mt-4"
+            error={errors?.labels?.message}
           />
           <div className="grid grid-cols-2 gap-4 mt-4">
             <InputField label="Sender" type="text" placeholder="Sender name (optional)" register={register('sender')} />

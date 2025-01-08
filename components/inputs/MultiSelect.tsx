@@ -3,16 +3,26 @@ import { Controller } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
 
 type MultiSelectProps = {
+  options: string[];
   control: any;
   name: string;
   label: string;
-  options: string[];
   placeholder: string;
   error?: string;
   className?: string;
+  isMulti?: boolean;
 };
 
-const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options, placeholder, error, className }) => (
+const MultiSelect: React.FC<MultiSelectProps> = ({
+  options,
+  control,
+  name,
+  label,
+  placeholder,
+  error,
+  className,
+  isMulti = true,
+}) => (
   <div className={className}>
     {label && <label className="block text-sm font-medium mb-1 text-left">{label}</label>}
     <Controller
@@ -20,7 +30,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options
       name={name}
       render={({ field }) => (
         <CreatableSelect
-          isMulti={true}
+          isMulti={isMulti}
           className={`react-select-container ${error ? 'border-red-500' : ''}`}
           classNamePrefix="react-select"
           styles={{
@@ -45,8 +55,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options
             }),
             option: (provided, state) => ({
               ...provided,
-              backgroundColor: state.isFocused ? 'rgb(20 184 166)' : provided.backgroundColor,
-              color: state.isFocused ? 'white' : provided.color,
+              backgroundColor: state.isSelected
+                ? 'rgb(51, 145, 134)'
+                : state.isFocused
+                  ? 'rgb(20 184 166)'
+                  : provided.backgroundColor,
+              color: state.isSelected ? 'white' : state.isFocused ? 'white' : provided.color,
             }),
             menuList: (provided) => ({
               ...provided,
@@ -54,8 +68,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ control, name, label, options
               overflowY: 'auto',
             }),
           }}
-          onChange={(val: any) => field.onChange(val ? val.map((v: any) => v.value) : [])}
-          value={(field.value || []).map((label: string) => ({ label, value: label }))}
+          onChange={(val: any) =>
+            field.onChange(isMulti ? (val ? val.map((v: any) => v.value) : []) : val ? val.value : null)
+          }
+          value={
+            isMulti
+              ? (field.value || []).map((label: string) => ({ label, value: label }))
+              : field.value
+                ? { label: field.value, value: field.value }
+                : null
+          }
           options={options.map((option: string) => ({ label: option, value: option }))}
           placeholder={placeholder}
           closeMenuOnSelect={true}

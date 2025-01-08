@@ -21,32 +21,44 @@ const updateUniqueLabels = (state: TransactionsState) => {
     .sort((a, b) => a.localeCompare(b));
 };
 
+const updateUniqueCategories = (state: TransactionsState) => {
+  state.existingCategories = Array.from(new Set(state.transactions.map((t) => t.category)))
+    .map((c) => c.toUpperCase())
+    .sort((a, b) => a.localeCompare(b));
+};
+
 const transactionsSlice = createSlice({
   name: 'transactions',
   initialState,
   reducers: {
+    resetState: () => initialState,
     // Transactions
     setTransactions: (state, action: PayloadAction<Transaction[]>) => {
       state.transactions = action.payload.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      updateUniqueCategories(state);
       updateUniqueLabels(state);
     },
     addTransactions: (state, action: PayloadAction<Transaction[]>) => {
       state.transactions = [...state.transactions, ...action.payload];
+      updateUniqueCategories(state);
       updateUniqueLabels(state);
     },
     addTransaction: (state, action: PayloadAction<Transaction>) => {
       state.transactions.push(action.payload);
+      updateUniqueCategories(state);
       updateUniqueLabels(state);
     },
     updateTransaction: (state, action: PayloadAction<Transaction>) => {
       const index = state.transactions.findIndex((t) => t._id === action.payload._id);
       if (index !== -1) {
         state.transactions[index] = action.payload;
+        updateUniqueCategories(state);
         updateUniqueLabels(state);
       }
     },
     deleteTransaction: (state, action: PayloadAction<string>) => {
       state.transactions = state.transactions.filter((t) => t._id !== action.payload);
+      updateUniqueCategories(state);
       updateUniqueLabels(state);
     },
     clearTransactions: (state) => {
@@ -108,6 +120,7 @@ const transactionsSlice = createSlice({
 });
 
 export const {
+  resetState,
   setTransactions,
   addTransactions,
   addTransaction,
