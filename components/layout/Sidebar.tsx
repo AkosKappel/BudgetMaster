@@ -129,7 +129,6 @@ export default function Sidebar() {
             ))}
           </ul>
         </div>
-        <hr className="my-1" />
         <ul className="flex flex-col space-y-2">
           {bottomItems.map((item) => (
             <SidebarItem
