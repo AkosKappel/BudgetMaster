@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { connectToDb } from '@/lib/mongodb';
 import { verifySession } from '@/lib/session';
+import { rounded } from '@/lib/utils';
 import Transaction from '@/models/Transaction';
 
 export async function GET(req: NextRequest) {
@@ -24,11 +25,22 @@ export async function GET(req: NextRequest) {
         $gte: new Date(year, month - 1).toISOString().split('T')[0],
         $lt: new Date(year, month).toISOString().split('T')[0],
       },
-    })
-      .sort({ date: 'asc' })
-      .exec();
+    }).exec();
 
-    return NextResponse.json(transactions, { status: 200 });
+    const aggregated = transactions.reduce(
+      (acc, t) => {
+        if (t.isExpense) {
+          acc.expense = rounded(acc.expense + t.amount, 2);
+        } else {
+          acc.income = rounded(acc.income + t.amount, 2);
+        }
+        return acc;
+      },
+      { income: 0, expense: 0, balance: 0 },
+    );
+    aggregated.balance = rounded(aggregated.income - aggregated.expense, 2);
+
+    return NextResponse.json({ transactions, aggregated }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error }, { status: 500 });

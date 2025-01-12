@@ -2,6 +2,8 @@ import type { Transaction } from '@/schemas/transactionSchema';
 
 const LOCALE = 'en-DE';
 
+export const rounded = (num: number, precision = 2) => Math.round(num * 10 ** precision) / 10 ** precision;
+
 export const formatPrice = (price: number, options?: Intl.NumberFormatOptions): string => {
   return price.toLocaleString(LOCALE, { style: 'currency', currency: 'EUR', ...options });
 };

@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+import { Cashflow } from '@/schemas/cashflowSchema';
 import type { Transaction } from '@/schemas/transactionSchema';
 
 const API_BASE = '/BudgetMaster/api';
@@ -45,5 +46,16 @@ export async function getCategories(): Promise<string[]> {
 export const getLabels = async (): Promise<string[]> => {
   const response = await axios.get(`${API_BASE}/labels`);
   if (response.status !== 200) throw new Error('Failed to fetch user labels');
+  return response.data;
+};
+
+export const getMonthlyTransactions = async (
+  month?: number,
+  year?: number,
+): Promise<{ transactions: Transaction[]; aggregated: Cashflow }> => {
+  const response = await axios.get(
+    `${API_BASE}/charts/monthly` + (month ? `?month=${month}` : '') + (year ? `&year=${year}` : ''),
+  );
+  if (response.status !== 200) throw new Error('Failed to fetch user transactions');
   return response.data;
 };

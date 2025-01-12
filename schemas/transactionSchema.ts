@@ -12,7 +12,7 @@ export const transactionSchema = z.object({
     .positive('Amount must be positive')
     .refine((val) => !isNaN(val), { message: 'Amount must be a valid number' }),
   description: z.string().trim().default(''),
-  category: z.string().min(1, 'Category is required').trim().transform(toTitleCase),
+  category: z.string().trim().transform(toTitleCase),
   labels: z.array(z.string().trim().transform(toTitleCase)).default([]),
   sender: z.string().trim().default(''),
   receiver: z.string().trim().default(''),

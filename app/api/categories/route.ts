@@ -10,7 +10,9 @@ export async function GET(req: NextRequest) {
     if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     await connectToDb();
-    const categories = await Transaction.distinct('category', { ownerId: userId }).sort({ category: 'asc' });
+    const categories = await Transaction.distinct('category', { ownerId: userId, category: { $ne: '' } })
+      .sort({ category: 'asc' })
+      .exec();
 
     return NextResponse.json(categories, { status: 200 });
   } catch (error) {
