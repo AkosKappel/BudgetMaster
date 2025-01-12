@@ -11,10 +11,17 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const limitParam = url.searchParams.get('limit');
-    const limit = limitParam ? Number(limitParam) : 50;
+    const offsetParam = url.searchParams.get('offset');
+
+    const limit = limitParam ? Number(limitParam) : 100;
+    const offset = offsetParam ? Number(offsetParam) : 0;
 
     await connectToDb();
-    const transactions = await Transaction.find({ ownerId: userId }).sort({ date: 'desc' }).limit(limit);
+    const transactions = await Transaction.find({ ownerId: userId })
+      .sort({ date: 'desc' })
+      .skip(offset)
+      .limit(limit)
+      .exec();
 
     return NextResponse.json(transactions, { status: 200 });
   } catch (error) {
