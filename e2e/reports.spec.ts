@@ -52,3 +52,14 @@ test('net worth today matches the wallet balances, and the calendar is filled', 
     page.getByText(/days without spending in the last 27 weeks/),
   ).toBeVisible()
 })
+
+test('money flow and category trends describe last month', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/reports')
+  const flow = page.getByRole('region', { name: "Last month's money flow" })
+  await expect(flow.getByText(/came in and .* went out/)).toBeVisible()
+  await flow.getByText('Show as table').click()
+  await expect(flow.locator('tbody tr').first()).toBeVisible()
+  const trends = page.getByRole('region', { name: 'Spending by category' })
+  await expect(trends.getByRole('listitem').first()).toBeVisible()
+})

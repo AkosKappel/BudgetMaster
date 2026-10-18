@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, between, eq, inArray, lte, sql, sum } from 'drizzle-orm'
 
 import { db } from '@/db'
-import { transaction, wallet } from '@/db/schema'
+import { category, transaction, wallet } from '@/db/schema'
 import { addDays, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
@@ -168,3 +168,83 @@ export const getSpendingCalendar = createServerFn({ method: 'GET' })
   })
 
 export type SpendingCalendar = Awaited<ReturnType<typeof getSpendingCalendar>>
+
+const TREND_MONTHS = 6
+
+// Income and spending per top-level category (subcategories rolled into their parent) for
+// each of the last six budget months, oldest first; the current month is still running.
+export const getCategoryTrends = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const today = currentDay()
+    const periods = [budgetPeriod(today, space.budgetMonthStartDay)]
+    while (periods.length < TREND_MONTHS) {
+      periods.unshift(
+        budgetPeriod(addDays(periods[0].start, -1), space.budgetMonthStartDay),
+      )
+    }
+
+    const [categories, rows] = await Promise.all([
+      db
+        .select({
+          id: category.id,
+          name: category.name,
+          type: category.type,
+          color: category.color,
+          parentId: category.parentId,
+        })
+        .from(category)
+        .where(eq(category.spaceId, space.id)),
+      db
+        .select({
+          categoryId: transaction.categoryId,
+          date: transaction.date,
+          total: sum(transaction.amount).mapWith(Number),
+        })
+        .from(transaction)
+        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .where(
+          and(
+            eq(transaction.spaceId, space.id),
+            eq(wallet.currency, space.baseCurrency),
+            inArray(transaction.type, ['income', 'expense']),
+            between(transaction.date, periods[0].start, today),
+          ),
+        )
+        .groupBy(transaction.categoryId, transaction.date),
+    ])
+
+    const topOf = (id: string | null) => {
+      const found = categories.find((c) => c.id === id)
+      return found?.parentId ?? found?.id ?? null
+    }
+    const series = categories
+      .filter((c) => !c.parentId)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        color: c.color,
+        totals: periods.map((p) =>
+          rows
+            .filter(
+              (r) =>
+                topOf(r.categoryId) === c.id &&
+                r.date >= p.start &&
+                r.date <= p.end,
+            )
+            .reduce((s, r) => s + r.total, 0),
+        ),
+      }))
+      .filter((c) => c.totals.some((t) => t > 0))
+      .sort(
+        (a, b) =>
+          b.totals.reduce((s, t) => s + t, 0) -
+          a.totals.reduce((s, t) => s + t, 0),
+      )
+    return { periods, categories: series, currency: space.baseCurrency }
+  })
+
+export type CategoryTrends = Awaited<ReturnType<typeof getCategoryTrends>>

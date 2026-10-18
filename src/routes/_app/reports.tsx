@@ -3,10 +3,13 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
 
 import { CashFlowChart } from '@/components/cash-flow-chart'
+import { CategoryTrends } from '@/components/category-trends'
+import { MoneyFlow } from '@/components/money-flow'
 import { NetWorthChart } from '@/components/net-worth-chart'
 import { SpendingCalendar } from '@/components/spending-calendar'
 import {
   cashFlowQuery,
+  categoryTrendsQuery,
   netWorthQuery,
   spendingCalendarQuery,
   useActiveSpace,
@@ -20,6 +23,9 @@ export const Route = createFileRoute('/_app/reports')({
       context.queryClient.ensureQueryData(
         spendingCalendarQuery(context.activeSpaceId),
       ),
+      context.queryClient.ensureQueryData(
+        categoryTrendsQuery(context.activeSpaceId),
+      ),
     ]),
   head: () => ({ meta: [{ title: 'Reports | BudgetMaster' }] }),
   component: Reports,
@@ -30,6 +36,7 @@ function Reports() {
   const { data } = useSuspenseQuery(cashFlowQuery(space.id))
   const { data: netWorth } = useSuspenseQuery(netWorthQuery(space.id))
   const { data: calendar } = useSuspenseQuery(spendingCalendarQuery(space.id))
+  const { data: trends } = useSuspenseQuery(categoryTrendsQuery(space.id))
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,6 +53,21 @@ function Reports() {
           Income and spending
         </h2>
         <CashFlowChart {...data} />
+      </section>
+      <section aria-labelledby="money-flow" className="flex flex-col gap-3">
+        <h2 id="money-flow" className="font-semibold text-lg">
+          Last month's money flow
+        </h2>
+        <MoneyFlow {...trends} />
+      </section>
+      <section aria-labelledby="trends" className="flex flex-col gap-3">
+        <h2 id="trends" className="font-semibold text-lg">
+          Spending by category
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          The last five complete months; the amount is last month's.
+        </p>
+        <CategoryTrends {...trends} />
       </section>
       <section aria-labelledby="net-worth" className="flex flex-col gap-3">
         <h2 id="net-worth" className="font-semibold text-lg">
