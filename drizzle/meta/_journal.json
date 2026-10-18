@@ -8,6 +8,13 @@
       "when": 1792305745216,
       "tag": "0000_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792306151791,
+      "tag": "0001_finance",
+      "breakpoints": true
     }
   ]
 }
