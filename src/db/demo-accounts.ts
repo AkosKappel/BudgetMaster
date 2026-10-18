@@ -11,6 +11,7 @@ import {
   wallet,
 } from '@/db/schema'
 import { createSpace, soleMemberSpaces } from '@/db/spaces'
+import { currentDay } from '@/lib/today'
 
 // Server-only. "Try the demo" signs a visitor in as an anonymous user (Better Auth plugin)
 // with a private copy of the demo data, so visitors never see each other's changes.
@@ -30,7 +31,7 @@ export function createDemoSpace(userId: string) {
       personal: true,
       budgetMonthStartDay: 25,
     })
-    await seedPersonalDemo(created.id, userId)
+    await seedPersonalDemo(created.id, userId, currentDay())
   })
   queue = run.catch(() => {})
   return run

@@ -1155,18 +1155,24 @@ export async function addPersonalBudgets(alex: Ledger) {
   ])
 }
 
-// Restarts the generator for today. The data depends on the order of `random()` calls,
-// so callers seed one space at a time (the CLI does, the demo sign-in queues).
-export function resetDemoClock() {
+// Restarts the generator for a day (the visitor's, for demos). The data depends on the
+// order of `random()` calls, so callers seed one space at a time (the CLI does, the demo
+// sign-in queues).
+export function resetDemoClock(day = todayIso()) {
   seed = 2026
-  today = todayIso()
+  today = day
   thisMonth = `${today.slice(0, 7)}-01`
   start = monthStart(14)
 }
 
-// Fills a new personal space with Alex's data: what "Try the demo" gives each visitor.
-export async function seedPersonalDemo(spaceId: string, userId: string) {
-  resetDemoClock()
+// Fills a new personal space with Alex's data: what "Try the demo" gives each visitor,
+// relative to their own today, so nothing shows up as tomorrow's.
+export async function seedPersonalDemo(
+  spaceId: string,
+  userId: string,
+  day: string,
+) {
+  resetDemoClock(day)
   const ledger = new Ledger(spaceId)
   await seedAlex(ledger, userId)
   await ledger.insert()
