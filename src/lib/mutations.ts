@@ -6,6 +6,8 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { notifyOtherTabs } from '@/components/app-sync'
+
 import { overviewQuery, transactionsQuery } from '@/lib/queries'
 import type { LedgerTransaction, TransactionCursor } from '@/server/ledger'
 import {
@@ -186,9 +188,11 @@ export function useDeleteWithUndo(spaceId: string) {
           restore()
           toast.error(error.message || 'Could not delete. Try again.')
         })
-        .finally(() =>
-          queryClient.invalidateQueries({ queryKey: ['space', spaceId] }),
-        )
+        .finally(() => {
+          queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
+          // Not a useMutation, so CrossTabSync does not see it.
+          notifyOtherTabs()
+        })
     }
 
     toast('Transaction deleted', {

@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Suspense } from 'react'
 
 import { Sidebar, TabBar } from '@/components/app-nav'
+import { CrossTabSync, OfflineNotice } from '@/components/app-sync'
 import { CommandPalette, SearchButton } from '@/components/command-palette'
 import { DemoBanner } from '@/components/demo-banner'
 import { QuickAddDrawer } from '@/components/quick-add'
@@ -39,6 +40,7 @@ function AppShell() {
           <SpaceSwitcher className="min-w-0 flex-1" />
           <SearchButton compact />
         </header>
+        <OfflineNotice />
         <DemoBanner />
         <Suspense fallback={<PageSkeleton />}>
           <Outlet />
@@ -47,6 +49,7 @@ function AppShell() {
       <TabBar />
       <QuickAddDrawer />
       <CommandPalette />
+      <CrossTabSync />
     </div>
   )
 }
