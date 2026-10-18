@@ -1,4 +1,6 @@
-import { ArrowLeftRight, Repeat } from 'lucide-react'
+import { ArrowLeftRight, Repeat, Trash2 } from 'lucide-react'
+import { animate, motion, type PanInfo, useMotionValue } from 'motion/react'
+import { useRef } from 'react'
 
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
@@ -10,9 +12,23 @@ interface Props {
   today: string
   // In shared spaces, show who entered it.
   showAuthor?: boolean
+  onSelect?: (transaction: LedgerTransaction) => void
+  // Enables swipe left to delete on touch screens.
+  onDelete?: (transaction: LedgerTransaction) => void
 }
 
-export function TransactionRow({ transaction: t, today, showAuthor }: Props) {
+const ACTION_WIDTH = 96
+const spring = { type: 'spring', stiffness: 500, damping: 40 } as const
+
+export function TransactionRow({
+  transaction: t,
+  today,
+  showAuthor,
+  onSelect,
+  onDelete,
+}: Props) {
+  const x = useMotionValue(0)
+  const dragged = useRef(false)
   const isTransfer = t.type === 'transfer'
   const Icon = isTransfer ? ArrowLeftRight : iconFor(t.category?.icon)
   const color = t.category?.color ?? 'var(--muted-foreground)'
@@ -24,8 +40,13 @@ export function TransactionRow({ transaction: t, today, showAuthor }: Props) {
   const planned = t.date > today
   const currency = t.wallet.currency
 
-  return (
-    <li className={cn('flex items-start gap-3 py-3', planned && 'opacity-70')}>
+  const settle = (_: unknown, info: PanInfo) => {
+    const open = info.offset.x < -ACTION_WIDTH / 2 || info.velocity.x < -500
+    animate(x, open ? -ACTION_WIDTH : 0, spring)
+  }
+
+  const content = (
+    <>
       <span
         className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full"
         style={{
@@ -35,8 +56,8 @@ export function TransactionRow({ transaction: t, today, showAuthor }: Props) {
       >
         <Icon className="size-5" strokeWidth={1.75} />
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 font-medium">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="flex items-center gap-1.5 font-medium">
           <span className="truncate">{title}</span>
           {t.recurringRuleId && (
             <Repeat
@@ -44,15 +65,15 @@ export function TransactionRow({ transaction: t, today, showAuthor }: Props) {
               aria-label="Recurring"
             />
           )}
-        </p>
-        <p className="truncate text-muted-foreground text-sm">
+        </span>
+        <span className="truncate text-muted-foreground text-sm">
           {planned && 'Planned, '}
           {details.filter(Boolean).join(', ')}
-        </p>
+        </span>
         {t.tags.length > 0 && (
-          <ul className="mt-1.5 flex flex-wrap gap-1.5" aria-label="Tags">
+          <span className="mt-1.5 flex flex-wrap gap-1.5">
             {t.tags.map(({ tag }) => (
-              <li
+              <span
                 key={tag.id}
                 className="flex items-center gap-1 rounded-sm bg-muted px-1.5 py-0.5 text-xs"
               >
@@ -61,29 +82,91 @@ export function TransactionRow({ transaction: t, today, showAuthor }: Props) {
                   style={{ backgroundColor: tag.color }}
                 />
                 {tag.name}
-              </li>
+              </span>
             ))}
-          </ul>
+          </span>
         )}
-      </div>
-      <div className="shrink-0 text-right">
-        <p className={cn('font-medium', t.type === 'income' && 'text-income')}>
+      </span>
+      <span className="flex shrink-0 flex-col text-right">
+        <span
+          className={cn('font-medium', t.type === 'income' && 'text-income')}
+        >
           {isTransfer
             ? formatMoney(t.amount, currency)
             : formatSignedMoney(
                 t.type === 'income' ? t.amount : -t.amount,
                 currency,
               )}
-        </p>
+        </span>
         {isTransfer &&
           t.toAmount !== null &&
           t.toWallet &&
           t.toWallet.currency !== currency && (
-            <p className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-sm">
               {formatMoney(t.toAmount, t.toWallet.currency)}
-            </p>
+            </span>
           )}
-      </div>
-    </li>
+      </span>
+    </>
+  )
+
+  return (
+    <motion.li
+      layout="position"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.2 }}
+      className={cn('relative overflow-hidden', planned && 'opacity-70')}
+    >
+      {onDelete && (
+        // Touch shortcut only; keyboard and screen reader users delete in the edit sheet.
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => onDelete(t)}
+          className="absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 bg-destructive font-medium text-destructive-foreground text-sm"
+          style={{ width: ACTION_WIDTH }}
+        >
+          <Trash2 className="size-4" />
+          Delete
+        </button>
+      )}
+      <motion.div
+        drag={onDelete ? 'x' : false}
+        dragDirectionLock
+        dragConstraints={{ left: -ACTION_WIDTH, right: 0 }}
+        dragElastic={0.05}
+        onDragStart={() => {
+          dragged.current = true
+        }}
+        onDragEnd={settle}
+        style={{ x }}
+        className="relative bg-background"
+      >
+        {onSelect ? (
+          <button
+            type="button"
+            onClick={() => {
+              // A swipe ends with a click; ignore it, and close an open row on tap.
+              if (dragged.current) {
+                dragged.current = false
+                return
+              }
+              if (x.get() !== 0) {
+                animate(x, 0, spring)
+                return
+              }
+              onSelect(t)
+            }}
+            className="flex w-full items-start gap-3 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            {content}
+          </button>
+        ) : (
+          <div className="flex items-start gap-3 py-3">{content}</div>
+        )}
+      </motion.div>
+    </motion.li>
   )
 }

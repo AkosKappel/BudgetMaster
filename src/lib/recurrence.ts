@@ -83,3 +83,6 @@ export function budgetPeriod(date: string, startDay: number) {
 
 // Today as a calendar date in UTC, the same clock the seed uses.
 export const todayIso = () => new Date().toISOString().slice(0, 10)
+
+// Today on the user's own clock, for form defaults ("sv" formats as YYYY-MM-DD).
+export const localTodayIso = () => new Date().toLocaleDateString('sv')

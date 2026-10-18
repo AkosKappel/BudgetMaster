@@ -13,6 +13,7 @@ import {
   type TransactionCursor,
 } from '@/server/ledger'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
+import { getFormOptions, suggestPayees } from '@/server/transactions'
 
 export const sessionQuery = queryOptions({
   queryKey: ['session'],
@@ -39,6 +40,20 @@ export const transactionsQuery = (spaceId: string) =>
       listTransactions({ data: { spaceId, cursor: pageParam } }),
     initialPageParam: undefined as TransactionCursor | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
+  })
+
+export const formOptionsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'form-options'],
+    queryFn: () => getFormOptions({ data: { spaceId } }),
+    staleTime: 60_000,
+  })
+
+export const payeesQuery = (spaceId: string, query: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'payees', query],
+    queryFn: () => suggestPayees({ data: { spaceId, query } }),
+    staleTime: 60_000,
   })
 
 export function useSpaces() {

@@ -1,6 +1,7 @@
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { ReceiptText } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
 import { useEffect, useRef } from 'react'
 
 import { EmptyState } from '@/components/empty-state'
@@ -8,9 +9,11 @@ import { TransactionRow } from '@/components/transaction-row'
 import { Button } from '@/components/ui/button'
 import { formatDayHeading } from '@/lib/format-date'
 import { formatSignedMoney } from '@/lib/money'
+import { useDeleteWithUndo } from '@/lib/mutations'
 import { transactionsQuery, useActiveSpace } from '@/lib/queries'
 import { todayIso } from '@/lib/recurrence'
 import type { LedgerTransaction } from '@/server/ledger'
+import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/activity')({
   loader: ({ context }) =>
@@ -38,6 +41,8 @@ function Activity() {
   const items = data.pages.flatMap((page) => page.items)
   const today = todayIso()
   const sentinel = useRef<HTMLDivElement>(null)
+  const openEdit = useQuickAdd((s) => s.openEdit)
+  const deleteWithUndo = useDeleteWithUndo(space.id)
 
   // Load the next page shortly before the end of the list comes into view.
   useEffect(() => {
@@ -92,14 +97,18 @@ function Activity() {
                   )}
                 </div>
                 <ul className="divide-y">
-                  {group.items.map((t) => (
-                    <TransactionRow
-                      key={t.id}
-                      transaction={t}
-                      today={today}
-                      showAuthor={space.memberCount > 1}
-                    />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {group.items.map((t) => (
+                      <TransactionRow
+                        key={t.id}
+                        transaction={t}
+                        today={today}
+                        showAuthor={space.memberCount > 1}
+                        onSelect={openEdit}
+                        onDelete={deleteWithUndo}
+                      />
+                    ))}
+                  </AnimatePresence>
                 </ul>
               </section>
             )

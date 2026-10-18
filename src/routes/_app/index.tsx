@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ReceiptText } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
 
 import { EmptyState } from '@/components/empty-state'
 import { Guilloche } from '@/components/guilloche'
@@ -10,6 +11,7 @@ import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
 import { overviewQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/')({
   loader: ({ context }) =>
@@ -23,6 +25,7 @@ const daysBetween = (from: string, to: string) =>
 function Home() {
   const space = useActiveSpace()
   const { data } = useSuspenseQuery(overviewQuery(space.id))
+  const openEdit = useQuickAdd((s) => s.openEdit)
   const money = (minor: number) => formatMoney(minor, space.baseCurrency)
   const daysLeft = daysBetween(data.today, data.period.end) + 1
   const daysText = `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left.`
@@ -92,14 +95,17 @@ function Home() {
           </EmptyState>
         ) : (
           <ul className="divide-y">
-            {data.recent.map((t) => (
-              <TransactionRow
-                key={t.id}
-                transaction={t}
-                today={data.today}
-                showAuthor={space.memberCount > 1}
-              />
-            ))}
+            <AnimatePresence initial={false}>
+              {data.recent.map((t) => (
+                <TransactionRow
+                  key={t.id}
+                  transaction={t}
+                  today={data.today}
+                  showAuthor={space.memberCount > 1}
+                  onSelect={openEdit}
+                />
+              ))}
+            </AnimatePresence>
           </ul>
         )}
       </section>

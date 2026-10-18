@@ -55,7 +55,7 @@ function TabLink({ to, label, icon: Icon }: NavItem) {
 }
 
 export function TabBar() {
-  const setQuickAddOpen = useQuickAdd((s) => s.setOpen)
+  const openNew = useQuickAdd((s) => s.openNew)
   const [first, second, ...rest] = NAV_ITEMS
 
   return (
@@ -72,7 +72,7 @@ export function TabBar() {
         <li className="flex items-center justify-center">
           <motion.button
             type="button"
-            onClick={() => setQuickAddOpen(true)}
+            onClick={() => openNew()}
             whileTap={{ scale: 0.9 }}
             aria-label="Add transaction"
             className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] shadow-primary/40 outline-none ring-4 ring-background focus-visible:ring-ring"
@@ -91,7 +91,7 @@ export function TabBar() {
 }
 
 export function Sidebar() {
-  const setQuickAddOpen = useQuickAdd((s) => s.setOpen)
+  const openNew = useQuickAdd((s) => s.openNew)
   const { user } = useRouteContext({ from: '/_app' })
   const signOut = useSignOut()
 
@@ -101,11 +101,7 @@ export function Sidebar() {
         BudgetMaster
       </Link>
       <SpaceSwitcher className="-my-4 w-full" />
-      <Button
-        size="lg"
-        onClick={() => setQuickAddOpen(true)}
-        className="justify-start"
-      >
+      <Button size="lg" onClick={() => openNew()} className="justify-start">
         <Plus />
         Add transaction
       </Button>

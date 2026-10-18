@@ -5,7 +5,7 @@ import { Sidebar, TabBar } from '@/components/app-nav'
 import { QuickAddDrawer } from '@/components/quick-add'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Skeleton } from '@/components/ui/skeleton'
-import { sessionQuery, spacesQuery } from '@/lib/queries'
+import { formOptionsQuery, sessionQuery, spacesQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
@@ -16,6 +16,12 @@ export const Route = createFileRoute('/_app')({
     const { activeId } = await context.queryClient.ensureQueryData(spacesQuery)
     if (!activeId) throw new Error('This account has no space.')
     return { user: session.user, activeSpaceId: activeId }
+  },
+  // Not awaited: the quick add sheet usually opens later, and suspends if it is faster.
+  loader: ({ context }) => {
+    void context.queryClient.prefetchQuery(
+      formOptionsQuery(context.activeSpaceId),
+    )
   },
   component: AppShell,
 })
