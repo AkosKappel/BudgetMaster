@@ -43,6 +43,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Node majors move together with CI, local development and the README, not alone.
+    ignore:
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /

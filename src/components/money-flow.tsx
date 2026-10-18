@@ -67,7 +67,10 @@ export function MoneyFlow({ periods, categories, currency }: CategoryTrends) {
       </figcaption>
       <div className="h-96 w-full" aria-hidden="true">
         <ResponsiveContainer>
+          {/* The summary and the table carry the content; a focusable chart inside an
+              aria-hidden wrapper is an accessibility error (Recharts 3.10 made it focusable). */}
           <Sankey
+            accessibilityLayer={false}
             data={{ nodes, links }}
             nodePadding={18}
             nodeWidth={10}
