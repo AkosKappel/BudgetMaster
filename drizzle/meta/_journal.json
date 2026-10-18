@@ -15,6 +15,13 @@
       "when": 1792307286693,
       "tag": "0001_finance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792327033691,
+      "tag": "0002_gifted_typhoid_mary",
+      "breakpoints": true
     }
   ]
 }

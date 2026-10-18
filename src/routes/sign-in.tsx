@@ -1,4 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { FlaskConical } from 'lucide-react'
 
 import {
   AuthPage,
@@ -18,7 +19,9 @@ export const Route = createFileRoute('/sign-in')({
   validateSearch: redirectSearch,
   beforeLoad: async ({ context, search }) => {
     const session = await context.queryClient.ensureQueryData(sessionQuery)
-    if (session) throw redirect({ to: search.redirect ?? '/' })
+    // A demo user may sign up (keeping the demo data) or sign in to a real account.
+    if (session && !session.user.demoExpiresAt)
+      throw redirect({ to: search.redirect ?? '/' })
   },
   head: () => ({ meta: [{ title: 'Sign in | BudgetMaster' }] }),
   component: SignIn,
@@ -80,23 +83,40 @@ function SignIn() {
         <h2 id="demo" className="font-medium">
           Try it with demo data
         </h2>
-        <ul className="flex flex-col divide-y rounded-lg border bg-card">
-          {DEMO_ACCOUNTS.map((account) => (
-            <li key={account.email}>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => signIn(account.email, DEMO_PASSWORD)}
-                className="flex w-full flex-col items-start px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50"
-              >
-                <span className="font-medium">{account.name}</span>
-                <span className="text-muted-foreground text-sm">
-                  {account.description}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <p className="text-muted-foreground text-sm">
+          Get a private copy of 14 months of sample data, no sign-up needed. It
+          is deleted after 48 hours unless you create an account.
+        </p>
+        <Button
+          variant="outline"
+          size="lg"
+          disabled={pending}
+          onClick={() => run(() => authClient.signIn.anonymous())}
+        >
+          <FlaskConical />
+          Try the demo
+        </Button>
+        {/* Shared logins from `pnpm db:seed`, for development only: in production every
+            visitor gets a private demo instead. */}
+        {import.meta.env.DEV && (
+          <ul className="flex flex-col divide-y rounded-lg border bg-card">
+            {DEMO_ACCOUNTS.map((account) => (
+              <li key={account.email}>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => signIn(account.email, DEMO_PASSWORD)}
+                  className="flex w-full flex-col items-start px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50"
+                >
+                  <span className="font-medium">{account.name}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {account.description}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </AuthPage>
   )

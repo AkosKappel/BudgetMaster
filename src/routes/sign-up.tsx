@@ -17,7 +17,9 @@ export const Route = createFileRoute('/sign-up')({
   validateSearch: redirectSearch,
   beforeLoad: async ({ context, search }) => {
     const session = await context.queryClient.ensureQueryData(sessionQuery)
-    if (session) throw redirect({ to: search.redirect ?? '/' })
+    // A demo user may sign up (keeping the demo data) or sign in to a real account.
+    if (session && !session.user.demoExpiresAt)
+      throw redirect({ to: search.redirect ?? '/' })
   },
   head: () => ({ meta: [{ title: 'Create account | BudgetMaster' }] }),
   component: SignUp,

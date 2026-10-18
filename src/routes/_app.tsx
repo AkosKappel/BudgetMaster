@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 
 import { Sidebar, TabBar } from '@/components/app-nav'
 import { CommandPalette, SearchButton } from '@/components/command-palette'
+import { DemoBanner } from '@/components/demo-banner'
 import { QuickAddDrawer } from '@/components/quick-add'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -36,6 +37,7 @@ function AppShell() {
           <SpaceSwitcher className="min-w-0 flex-1" />
           <SearchButton compact />
         </header>
+        <DemoBanner />
         <Suspense fallback={<PageSkeleton />}>
           <Outlet />
         </Suspense>

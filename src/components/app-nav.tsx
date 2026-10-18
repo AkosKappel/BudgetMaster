@@ -12,6 +12,7 @@ import { motion } from 'motion/react'
 
 import { useSignOut } from '@/components/auth-page'
 import { SearchButton } from '@/components/command-palette'
+import { accountLabel } from '@/components/demo-banner'
 import { Logo } from '@/components/logo'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Button } from '@/components/ui/button'
@@ -141,7 +142,9 @@ export function Sidebar() {
       <div className="mt-auto flex items-center gap-2 border-t pt-4">
         <div className="min-w-0 flex-1 px-3">
           <p className="truncate font-medium text-sm">{user.name}</p>
-          <p className="truncate text-muted-foreground text-xs">{user.email}</p>
+          <p className="truncate text-muted-foreground text-xs">
+            {accountLabel(user)}
+          </p>
         </div>
         <Button
           variant="ghost"

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { ChevronRight, Ellipsis, LogOut, Shapes, Users } from 'lucide-react'
 
 import { useSignOut } from '@/components/auth-page'
+import { accountLabel } from '@/components/demo-banner'
 import { EmptyState } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 
@@ -23,7 +24,9 @@ function More() {
       >
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{user.name}</p>
-          <p className="truncate text-muted-foreground text-sm">{user.email}</p>
+          <p className="truncate text-muted-foreground text-sm">
+            {accountLabel(user)}
+          </p>
         </div>
         <Button variant="outline" onClick={() => signOut()}>
           <LogOut />
