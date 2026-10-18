@@ -8,14 +8,15 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
   async () => {
     const session = await auth.api.getSession({ headers: getRequestHeaders() })
     if (!session) return null
-    const { id, name, email, isAnonymous, createdAt } = session.user
+    const { id, name, email, emailVerified, isAnonymous, createdAt } =
+      session.user
     // A demo user's data is deleted after DEMO_LIFETIME_HOURS (src/db/demo-accounts.ts).
     const demoExpiresAt = isAnonymous
       ? new Date(
           createdAt.getTime() + DEMO_LIFETIME_HOURS * 3_600_000,
         ).toISOString()
       : null
-    return { user: { id, name, email, demoExpiresAt } }
+    return { user: { id, name, email, emailVerified, demoExpiresAt } }
   },
 )
 

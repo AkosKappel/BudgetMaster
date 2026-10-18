@@ -22,7 +22,8 @@ checkout can change branches, rebuild and reset its database without touching it
    cp deploy/tailscale/serve.json ~/deploy/budgetmaster/tailscale/
    cp deploy/.env.example ~/deploy/budgetmaster/.env
    ```
-3. Fill in `.env` (new secrets, `IMAGE_TAG` from the latest green CI run on `main`) and put the
+3. Fill in `.env` (new secrets, `IMAGE_TAG` from the latest green CI run on `main`, the
+   `RESEND_API_KEY` from the development `.env`) and put the
    Tailscale auth key into `tailscale/ts.env` (`TS_AUTHKEY=...`, the same reusable key as the
    other apps). `chmod 600` both files.
 4. Start it: `cd ~/deploy/budgetmaster && docker compose up -d`. The `migrate` container runs

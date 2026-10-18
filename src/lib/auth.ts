@@ -10,12 +10,44 @@ import { createDemoSpace, keepDemoData } from '@/db/demo-accounts'
 import * as schema from '@/db/schema'
 import { createSpace, soleMemberSpaces } from '@/db/spaces'
 import { env } from '@/env'
+import { linkEmail } from '@/lib/email'
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, { provider: 'pg', schema }),
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    // Not awaited: answering at once whether or not the address exists avoids leaking it
+    // through response times.
+    sendResetPassword: async ({ user, url }) => {
+      void linkEmail({
+        to: user.email,
+        subject: 'Reset your BudgetMaster password',
+        intro: `Hi ${user.name}, someone asked to reset the password of your BudgetMaster account.`,
+        action: 'Choose a new password',
+        url,
+        outro:
+          'The link works for one hour. If it was not you, ignore this email; your password stays the same.',
+      })
+    },
+    revokeSessionsOnPasswordReset: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      void linkEmail({
+        to: user.email,
+        subject: 'Confirm your email for BudgetMaster',
+        intro: `Hi ${user.name}, confirm that this is your email address, so you can reset your password if you ever forget it.`,
+        action: 'Confirm email',
+        url,
+        outro:
+          'If you did not create a BudgetMaster account, ignore this email.',
+      })
+    },
+  },
   user: {
     // The client confirms with the password, so a stolen open session alone cannot do it.
     deleteUser: { enabled: true, beforeDelete: removeOwnSpaces },
@@ -40,7 +72,12 @@ export const auth = betterAuth({
   // Only enforced in production. Each demo seeds hundreds of rows, so starting one is
   // limited per IP address.
   rateLimit: {
-    customRules: { '/sign-in/anonymous': { window: 3600, max: 5 } },
+    customRules: {
+      '/sign-in/anonymous': { window: 3600, max: 5 },
+      // Each one sends an email.
+      '/request-password-reset': { window: 3600, max: 5 },
+      '/send-verification-email': { window: 3600, max: 5 },
+    },
   },
   plugins: [
     anonymous({

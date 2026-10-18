@@ -27,6 +27,11 @@ export default defineConfig({
     url: `http://localhost:${port}/api/health`,
     reuseExistingServer: !process.env.CI,
     // Not production mode, so Better Auth's per-IP rate limits do not block the tests.
-    env: { PORT: String(port), BETTER_AUTH_URL: `http://localhost:${port}` },
+    // An empty key keeps test sign-ups from sending real emails through Resend.
+    env: {
+      PORT: String(port),
+      BETTER_AUTH_URL: `http://localhost:${port}`,
+      RESEND_API_KEY: '',
+    },
   },
 })

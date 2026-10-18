@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 
 import { AccountData } from '@/components/account-data'
+import { AccountSecurity } from '@/components/account-security'
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -167,6 +168,7 @@ function More() {
           </Link>
         </li>
       </ul>
+      <AccountSecurity />
       <ThemeSwitch />
       <AccountData />
     </div>

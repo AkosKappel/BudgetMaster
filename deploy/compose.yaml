@@ -63,6 +63,8 @@ services:
       DATABASE_URL: postgres://budgetmaster:${DB_PASSWORD}@db:5432/budgetmaster
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in .env}
+      RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY in .env}
+      EMAIL_FROM: ${EMAIL_FROM:-BudgetMaster <onboarding@resend.dev>}
     ports:
       - "127.0.0.1:${APP_PORT:-8085}:3000"
     depends_on:

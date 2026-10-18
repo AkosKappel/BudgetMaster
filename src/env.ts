@@ -8,6 +8,13 @@ const schema = z.object({
     .string()
     .min(32, 'Use at least 32 characters, e.g. `openssl rand -base64 32`.'),
   BETTER_AUTH_URL: z.url(),
+  // Optional: without it, emails are printed to the console (development and CI).
+  RESEND_API_KEY: z.preprocess(
+    (value) => value || undefined,
+    z.string().startsWith('re_').optional(),
+  ),
+  // Must be on a domain verified in Resend; onboarding@resend.dev only reaches the account owner.
+  EMAIL_FROM: z.string().default('BudgetMaster <onboarding@resend.dev>'),
 })
 
 const result = schema.safeParse(process.env)

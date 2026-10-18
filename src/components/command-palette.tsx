@@ -25,7 +25,7 @@ import {
   WalletCards,
   Wand,
 } from 'lucide-react'
-import { useRef, useState, useSyncExternalStore } from 'react'
+import { useRef, useState } from 'react'
 
 import { useSignOut } from '@/components/auth-page'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/components/ui/command'
+import { useIsClient } from '@/hooks/use-is-client'
 import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatSignedMoney } from '@/lib/money'
@@ -63,14 +64,6 @@ export const SHORTCUTS = [
   { keys: HELP_HOTKEY, action: 'Show these shortcuts' },
   { keys: 'Escape', action: 'Close a sheet or dialog' },
 ] as const
-
-// The platform (Ctrl or ⌘) is only known in the browser, so the hint renders after hydration.
-const useIsClient = () =>
-  useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  )
 
 export function CommandPalette() {
   const { open, setOpen, returnFocus } = useCommandPalette()
