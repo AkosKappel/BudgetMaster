@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ChevronRight, Ellipsis, LogOut, Shapes, Users } from 'lucide-react'
 
+import { AccountData } from '@/components/account-data'
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
 import { EmptyState } from '@/components/empty-state'
@@ -65,6 +66,7 @@ function More() {
           </Link>
         </li>
       </ul>
+      <AccountData />
       <EmptyState icon={Ellipsis}>
         Wallets, tags, recurring payments and settings will live here too.
       </EmptyState>

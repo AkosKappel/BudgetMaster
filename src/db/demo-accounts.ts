@@ -1,12 +1,4 @@
-import {
-  and,
-  eq,
-  inArray,
-  lt,
-  notInArray,
-  type SQL,
-  type SQLWrapper,
-} from 'drizzle-orm'
+import { and, eq, inArray, lt } from 'drizzle-orm'
 
 import { db } from '@/db'
 import { seedPersonalDemo } from '@/db/demo-data'
@@ -18,7 +10,7 @@ import {
   user,
   wallet,
 } from '@/db/schema'
-import { createSpace } from '@/db/spaces'
+import { createSpace, soleMemberSpaces } from '@/db/spaces'
 
 // Server-only. "Try the demo" signs a visitor in as an anonymous user (Better Auth plugin)
 // with a private copy of the demo data, so visitors never see each other's changes.
@@ -54,18 +46,6 @@ async function deleteExpiredDemos() {
     .where(and(eq(user.isAnonymous, true), lt(user.createdAt, cutoff)))
   await db.delete(space).where(soleMemberSpaces(expired))
   await db.delete(user).where(inArray(user.id, expired))
-}
-
-// Spaces outlive their members, so the spaces only these users belong to are removed with
-// them. `users` is a user id or a subquery of ids.
-function soleMemberSpaces(users: string | SQLWrapper) {
-  const ids = typeof users === 'string' ? [users] : users
-  const spacesOf = (members: SQL) =>
-    db.select({ id: spaceMember.spaceId }).from(spaceMember).where(members)
-  return and(
-    inArray(space.id, spacesOf(inArray(spaceMember.userId, ids))),
-    notInArray(space.id, spacesOf(notInArray(spaceMember.userId, ids))),
-  )
 }
 
 // Better Auth calls this when a demo user signs up or signs in, then deletes the demo user.
