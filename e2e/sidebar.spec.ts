@@ -20,7 +20,8 @@ test('the desktop sidebar collapses, remembers it and toggles with Ctrl+B', asyn
   // Rendered collapsed on the server, so the reload does not jump.
   const html = await (await page.request.get('/')).text()
   expect(html).toContain('md:grid-cols-[3.5rem_1fr]')
-  await page.reload()
+  // The server already renders it collapsed; wait for hydration before using the hotkey.
+  await page.reload({ waitUntil: 'networkidle' })
   await expect.poll(width).toBeLessThan(80)
 
   await page.keyboard.press('ControlOrMeta+b')
