@@ -1,7 +1,6 @@
 allowBuilds:
   esbuild: true
   lightningcss: true
-  unrs-resolver: false
 minimumReleaseAgeExclude:
   - '@tanstack/query-core@5.104.4'
   - '@tanstack/query-devtools@5.104.4'

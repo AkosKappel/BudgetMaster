@@ -13,7 +13,7 @@ Status: early development.
 - [TanStack Query](https://tanstack.com/query) for server state, [Zustand](https://zustand.docs.pmnd.rs/) for client state
 - [shadcn/ui](https://ui.shadcn.com/) on Tailwind CSS 4
 - [Motion](https://motion.dev/) (formerly Framer Motion) for animations
-- ESLint and Prettier
+- [Biome](https://biomejs.dev/) for linting and formatting
 
 ## Getting started
 
@@ -34,9 +34,10 @@ The app runs on http://localhost:3000.
 | `pnpm build`     | Production build into `.output/`        |
 | `pnpm preview`   | Preview the production build            |
 | `pnpm typecheck` | Type-check with `tsc`                   |
-| `pnpm lint`      | Lint with ESLint                        |
-| `pnpm check`     | Check formatting with Prettier          |
-| `pnpm format`    | Format with Prettier and fix lint rules |
+| `pnpm lint`      | Lint with Biome                         |
+| `pnpm format`    | Format with Biome                       |
+| `pnpm check`     | Lint, format and import order check     |
+| `pnpm check:fix` | Apply all safe Biome fixes              |
 
 ## UI components
 

@@ -13,8 +13,8 @@ function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <h1 className="text-3xl font-semibold tracking-tight">BudgetMaster</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="font-semibold text-3xl tracking-tight">BudgetMaster</h1>
+        <p className="mt-2 text-muted-foreground">
           Track your income and expenses. Work in progress.
         </p>
       </motion.div>
