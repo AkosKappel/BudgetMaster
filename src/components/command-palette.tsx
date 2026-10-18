@@ -17,6 +17,7 @@ import {
   Search,
   Settings2,
   Shapes,
+  Tag,
   User,
   Users,
   WalletCards,
@@ -226,6 +227,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/wallets' }))}>
             <WalletCards />
             Manage wallets
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/tags' }))}>
+            <Tag />
+            Manage tags
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/categories' }))}>
             <Shapes />

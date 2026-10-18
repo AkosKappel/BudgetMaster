@@ -23,6 +23,7 @@ test('app pages have no axe violations', async ({ page }) => {
     ['/wallets', 'Wallets'],
     ['/recurring', 'Recurring'],
     ['/reports', 'Reports'],
+    ['/tags', 'Tags'],
     ['/spaces', 'Spaces'],
     ['/more', 'More'],
   ] as const) {

@@ -2,10 +2,10 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   ChartColumn,
   ChevronRight,
-  Ellipsis,
   LogOut,
   Repeat,
   Shapes,
+  Tag,
   Users,
   WalletCards,
 } from 'lucide-react'
@@ -13,7 +13,6 @@ import {
 import { AccountData } from '@/components/account-data'
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
-import { EmptyState } from '@/components/empty-state'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 
@@ -120,12 +119,24 @@ function More() {
             <ChevronRight className="size-4 text-muted-foreground" />
           </Link>
         </li>
+        <li>
+          <Link
+            to="/tags"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Tag className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Tags</span>
+              <span className="text-muted-foreground text-sm">
+                Trips, projects and anything across categories
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
       </ul>
       <ThemeSwitch />
       <AccountData />
-      <EmptyState icon={Ellipsis}>
-        Tags and more settings will live here too.
-      </EmptyState>
     </div>
   )
 }
