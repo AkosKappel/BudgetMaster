@@ -1,0 +1,10 @@
+# The app itself is private; only the public pages are worth indexing.
+User-agent: *
+Allow: /about
+Allow: /faq
+Allow: /privacy
+Allow: /terms
+Allow: /security
+Allow: /sign-in
+Allow: /sign-up
+Disallow: /

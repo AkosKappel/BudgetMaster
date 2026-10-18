@@ -42,6 +42,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         title: 'BudgetMaster',
       },
+      {
+        name: 'description',
+        content:
+          'Track income, expenses and budgets on your phone, alone or with a partner. Try the demo without signing up.',
+      },
     ],
     links: [
       {

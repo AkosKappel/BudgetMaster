@@ -25,6 +25,8 @@ export const Route = createFileRoute('/_app')({
       formOptionsQuery(context.activeSpaceId),
     )
   },
+  // Personal data: keep every app page out of search engines (robots.txt also says so).
+  head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
   component: AppShell,
 })
 
