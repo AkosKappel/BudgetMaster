@@ -13,6 +13,15 @@ RUN pnpm build \
     && cp -rL node_modules/drizzle-orm node_modules/postgres /migrate/node_modules/
 
 FROM node:24-slim
+# Security patches newer than the base image, and no package managers at runtime: the app
+# never installs anything, and npm, yarn and corepack carried their own vulnerable
+# dependencies (found by the Trivy scan in CI).
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+        /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+        /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
