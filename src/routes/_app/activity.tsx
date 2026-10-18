@@ -12,7 +12,7 @@ import { formatDayHeading } from '@/lib/format-date'
 import { formatSignedMoney } from '@/lib/money'
 import { useDeleteWithUndo } from '@/lib/mutations'
 import { transactionsQuery, useActiveSpace } from '@/lib/queries'
-import { todayIso } from '@/lib/recurrence'
+import { currentDay } from '@/lib/today'
 import {
   activeFilterCount,
   transactionFiltersSchema,
@@ -68,7 +68,7 @@ function Activity() {
     navigate({ search: {}, replace: true }).then(() =>
       setClearCount((count) => count + 1),
     )
-  const today = todayIso()
+  const today = currentDay()
   const sentinel = useRef<HTMLDivElement>(null)
   const { openEdit, openNew } = useQuickAdd()
   const deleteWithUndo = useDeleteWithUndo(space.id)

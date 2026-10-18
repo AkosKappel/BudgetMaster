@@ -18,7 +18,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { useActiveSpace } from '@/lib/queries'
-import { todayIso } from '@/lib/recurrence'
+import { localTodayIso } from '@/lib/recurrence'
 import { exportAllData, exportTransactionsCsv } from '@/server/account'
 
 function download(name: string, type: string, content: string) {
@@ -48,14 +48,14 @@ export function AccountData() {
       if (kind === 'json') {
         const data = await exportAllData()
         download(
-          `budgetmaster-${todayIso()}.json`,
+          `budgetmaster-${localTodayIso()}.json`,
           'application/json',
           JSON.stringify(data, null, 2),
         )
       } else {
         const csv = await exportTransactionsCsv({ data: { spaceId: space.id } })
         download(
-          `budgetmaster-${fileName(space.name)}-${todayIso()}.csv`,
+          `budgetmaster-${fileName(space.name)}-${localTodayIso()}.csv`,
           'text/csv',
           csv,
         )

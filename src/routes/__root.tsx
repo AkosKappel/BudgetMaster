@@ -7,8 +7,10 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
+import { useEffect } from 'react'
 
 import { Toaster } from '@/components/ui/sonner'
+import { TIME_ZONE_COOKIE } from '@/lib/today'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -55,6 +57,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <TimeZoneCookie />
         <MotionConfig reducedMotion="user">{children}</MotionConfig>
         <Toaster />
         <TanStackDevtools
@@ -73,4 +76,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   )
+}
+
+// Lets the server compute "today" on the user's clock (src/lib/today.ts).
+function TimeZoneCookie() {
+  useEffect(() => {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    // biome-ignore lint/suspicious/noDocumentCookie: a plain preference cookie, read on the server
+    document.cookie = `${TIME_ZONE_COOKIE}=${encodeURIComponent(zone)}; path=/; max-age=31536000; samesite=lax`
+  }, [])
+  return null
 }

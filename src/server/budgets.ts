@@ -4,7 +4,8 @@ import { z } from 'zod'
 
 import { db } from '@/db'
 import { budget, category, transaction, wallet } from '@/db/schema'
-import { addDays, addMonths, budgetPeriod, todayIso } from '@/lib/recurrence'
+import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
+import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -20,7 +21,7 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
   .validator(spaceInput.extend({ offset: z.int().min(-36).max(0) }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const today = todayIso()
+    const today = currentDay()
     const startDay = space.budgetMonthStartDay
     const current = budgetPeriod(today, startDay)
     const period = budgetPeriod(addMonths(current.start, data.offset), startDay)

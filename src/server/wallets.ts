@@ -6,7 +6,8 @@ import { db } from '@/db'
 import { transaction, wallet, walletType } from '@/db/schema'
 import { CURRENCIES } from '@/lib/currencies'
 import { ICONS } from '@/lib/icons'
-import { todayIso } from '@/lib/recurrence'
+
+import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -25,7 +26,7 @@ export const listWallets = createServerFn({ method: 'GET' })
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const wallets = await walletBalances(space.id, todayIso(), {
+    const wallets = await walletBalances(space.id, currentDay(), {
       includeArchived: true,
     })
     return {

@@ -7,6 +7,7 @@ import {
   nextOccurrence,
   nthOccurrence,
   occurrencesUntil,
+  todayIn,
 } from './recurrence.ts'
 
 test('addMonths clamps to the end of shorter months', () => {
@@ -89,4 +90,12 @@ test('budgetPeriod follows the start day across months and years', () => {
     start: '2026-02-28',
     end: '2026-03-27',
   })
+})
+
+test('todayIn uses the time zone and falls back to UTC', () => {
+  // 23:30 UTC on 31 Dec is already 1 Jan in Bratislava and still 31 Dec in New York.
+  const now = new Date('2026-12-31T23:30:00Z')
+  assert.equal(todayIn('Europe/Bratislava', now), '2027-01-01')
+  assert.equal(todayIn('America/New_York', now), '2026-12-31')
+  assert.equal(todayIn('Not/AZone', now), '2026-12-31')
 })

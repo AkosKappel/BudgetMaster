@@ -24,7 +24,8 @@ import {
   wallet,
 } from '@/db/schema'
 import { currencyDigits } from '@/lib/money'
-import { budgetPeriod, todayIso } from '@/lib/recurrence'
+import { budgetPeriod } from '@/lib/recurrence'
+import { currentDay } from '@/lib/today'
 import {
   type TransactionFilters,
   transactionFiltersSchema,
@@ -63,7 +64,7 @@ export const getOverview = createServerFn({ method: 'GET' })
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const today = todayIso()
+    const today = currentDay()
     const period = budgetPeriod(today, space.budgetMonthStartDay)
 
     // Totals only count wallets in the base currency until exchange rates exist (I-05).
