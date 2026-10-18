@@ -13,6 +13,7 @@ import {
   searchTransactions,
   type TransactionCursor,
 } from '@/server/ledger'
+import { getInvite, getSpaceDetails } from '@/server/space-admin'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
 import { getFormOptions, suggestPayees } from '@/server/transactions'
 
@@ -63,6 +64,18 @@ export const searchQuery = (spaceId: string, query: string) =>
     queryFn: () => searchTransactions({ data: { spaceId, query } }),
     enabled: query.length >= 2,
     staleTime: 30_000,
+  })
+
+export const spaceDetailsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'details'],
+    queryFn: () => getSpaceDetails({ data: { spaceId } }),
+  })
+
+export const inviteQuery = (token: string) =>
+  queryOptions({
+    queryKey: ['invite', token],
+    queryFn: () => getInvite({ data: { token } }),
   })
 
 export function useSpaces() {

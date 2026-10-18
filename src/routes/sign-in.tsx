@@ -1,7 +1,11 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { z } from 'zod'
 
-import { AuthPage, FormError, useAuthSubmit } from '@/components/auth-page'
+import {
+  AuthPage,
+  FormError,
+  redirectSearch,
+  useAuthSubmit,
+} from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,17 +14,8 @@ import { authClient } from '@/lib/auth-client'
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/demo'
 import { sessionQuery } from '@/lib/queries'
 
-// Only same-site paths, never `//other.site`.
-const searchSchema = z.object({
-  redirect: z
-    .string()
-    .regex(/^\/(?!\/)/)
-    .optional()
-    .catch(undefined),
-})
-
 export const Route = createFileRoute('/sign-in')({
-  validateSearch: searchSchema,
+  validateSearch: redirectSearch,
   beforeLoad: async ({ context, search }) => {
     const session = await context.queryClient.ensureQueryData(sessionQuery)
     if (session) throw redirect({ to: search.redirect ?? '/' })
@@ -71,7 +66,11 @@ function SignIn() {
         </Button>
         <p className="text-muted-foreground text-sm">
           New here?{' '}
-          <Link to="/sign-up" className="text-foreground underline">
+          <Link
+            to="/sign-up"
+            search={{ redirect: search.redirect }}
+            className="text-foreground underline"
+          >
             Create an account
           </Link>
         </p>

@@ -16,6 +16,9 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
+import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
+import { Route as AppSpacesIndexRouteImport } from './routes/_app/spaces/index'
+import { Route as AppSpacesSpaceIdRouteImport } from './routes/_app/spaces/$spaceId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AppRoute = AppRouteImport.update({
@@ -52,6 +55,21 @@ const AppMoreRoute = AppMoreRouteImport.update({
   path: '/more',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSpacesIndexRoute = AppSpacesIndexRouteImport.update({
+  id: '/spaces/',
+  path: '/spaces/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSpacesSpaceIdRoute = AppSpacesSpaceIdRouteImport.update({
+  id: '/spaces/$spaceId',
+  path: '/spaces/$spaceId',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -65,7 +83,10 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
   '/more': typeof AppMoreRoute
+  '/invite/$token': typeof AppInviteTokenRoute
+  '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/spaces/': typeof AppSpacesIndexRoute
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
@@ -74,7 +95,10 @@ export interface FileRoutesByTo {
   '/budgets': typeof AppBudgetsRoute
   '/more': typeof AppMoreRoute
   '/': typeof AppIndexRoute
+  '/invite/$token': typeof AppInviteTokenRoute
+  '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/spaces': typeof AppSpacesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,7 +109,10 @@ export interface FileRoutesById {
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/more': typeof AppMoreRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/invite/$token': typeof AppInviteTokenRoute
+  '/_app/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/spaces/': typeof AppSpacesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,7 +123,10 @@ export interface FileRouteTypes {
     | '/activity'
     | '/budgets'
     | '/more'
+    | '/invite/$token'
+    | '/spaces/$spaceId'
     | '/api/auth/$'
+    | '/spaces/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
@@ -105,7 +135,10 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/more'
     | '/'
+    | '/invite/$token'
+    | '/spaces/$spaceId'
     | '/api/auth/$'
+    | '/spaces'
   id:
     | '__root__'
     | '/_app'
@@ -115,7 +148,10 @@ export interface FileRouteTypes {
     | '/_app/budgets'
     | '/_app/more'
     | '/_app/'
+    | '/_app/invite/$token'
+    | '/_app/spaces/$spaceId'
     | '/api/auth/$'
+    | '/_app/spaces/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +212,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMoreRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/invite/$token': {
+      id: '/_app/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof AppInviteTokenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/spaces/': {
+      id: '/_app/spaces/'
+      path: '/spaces'
+      fullPath: '/spaces/'
+      preLoaderRoute: typeof AppSpacesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/spaces/$spaceId': {
+      id: '/_app/spaces/$spaceId'
+      path: '/spaces/$spaceId'
+      fullPath: '/spaces/$spaceId'
+      preLoaderRoute: typeof AppSpacesSpaceIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -191,6 +248,9 @@ interface AppRouteChildren {
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppMoreRoute: typeof AppMoreRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppInviteTokenRoute: typeof AppInviteTokenRoute
+  AppSpacesSpaceIdRoute: typeof AppSpacesSpaceIdRoute
+  AppSpacesIndexRoute: typeof AppSpacesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -198,6 +258,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppBudgetsRoute: AppBudgetsRoute,
   AppMoreRoute: AppMoreRoute,
   AppIndexRoute: AppIndexRoute,
+  AppInviteTokenRoute: AppInviteTokenRoute,
+  AppSpacesSpaceIdRoute: AppSpacesSpaceIdRoute,
+  AppSpacesIndexRoute: AppSpacesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

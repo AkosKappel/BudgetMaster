@@ -8,7 +8,7 @@ import { space, spaceMember } from '@/db/schema'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 
-const ACTIVE_SPACE_COOKIE = 'bm-space'
+export const ACTIVE_SPACE_COOKIE = 'bm-space'
 
 export const spaceInput = z.object({ spaceId: z.uuid() })
 

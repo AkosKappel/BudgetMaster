@@ -1,4 +1,5 @@
-import { Check, ChevronsUpDown, User, Users } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { Check, ChevronsUpDown, Settings2, User, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -6,6 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useActiveSpace, useSpaces, useSwitchSpace } from '@/lib/queries'
@@ -56,6 +58,13 @@ export function SpaceSwitcher({ className }: { className?: string }) {
             </DropdownMenuItem>
           )
         })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="gap-3 py-2">
+          <Link to="/spaces">
+            <Settings2 />
+            Manage spaces
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

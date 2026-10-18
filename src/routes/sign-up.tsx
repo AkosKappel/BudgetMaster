@@ -1,6 +1,11 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 
-import { AuthPage, FormError, useAuthSubmit } from '@/components/auth-page'
+import {
+  AuthPage,
+  FormError,
+  redirectSearch,
+  useAuthSubmit,
+} from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,16 +14,18 @@ import { authClient } from '@/lib/auth-client'
 import { sessionQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/sign-up')({
-  beforeLoad: async ({ context }) => {
+  validateSearch: redirectSearch,
+  beforeLoad: async ({ context, search }) => {
     const session = await context.queryClient.ensureQueryData(sessionQuery)
-    if (session) throw redirect({ to: '/' })
+    if (session) throw redirect({ to: search.redirect ?? '/' })
   },
   head: () => ({ meta: [{ title: 'Create account | BudgetMaster' }] }),
   component: SignUp,
 })
 
 function SignUp() {
-  const { run, error, pending } = useAuthSubmit()
+  const search = Route.useSearch()
+  const { run, error, pending } = useAuthSubmit(search.redirect)
 
   return (
     <AuthPage title="Create account">
@@ -70,7 +77,11 @@ function SignUp() {
         </Button>
         <p className="text-muted-foreground text-sm">
           Already have an account?{' '}
-          <Link to="/sign-in" className="text-foreground underline">
+          <Link
+            to="/sign-in"
+            search={{ redirect: search.redirect }}
+            className="text-foreground underline"
+          >
             Sign in
           </Link>
         </p>

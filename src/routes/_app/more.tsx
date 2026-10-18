@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Ellipsis, LogOut } from 'lucide-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { ChevronRight, Ellipsis, LogOut, Users } from 'lucide-react'
 
 import { useSignOut } from '@/components/auth-page'
 import { EmptyState } from '@/components/empty-state'
@@ -25,14 +25,31 @@ function More() {
           <p className="truncate font-medium">{user.name}</p>
           <p className="truncate text-muted-foreground text-sm">{user.email}</p>
         </div>
-        <Button variant="outline" onClick={signOut}>
+        <Button variant="outline" onClick={() => signOut()}>
           <LogOut />
           Sign out
         </Button>
       </section>
+      <ul className="divide-y rounded-lg border bg-card">
+        <li>
+          <Link
+            to="/spaces"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Users className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Spaces</span>
+              <span className="text-muted-foreground text-sm">
+                Shared spaces, members and invites
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+      </ul>
       <EmptyState icon={Ellipsis}>
         Wallets, categories, tags, recurring payments and settings will live
-        here.
+        here too.
       </EmptyState>
     </div>
   )

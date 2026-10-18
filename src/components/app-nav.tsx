@@ -146,7 +146,7 @@ export function Sidebar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={signOut}
+          onClick={() => signOut()}
           aria-label="Sign out"
         >
           <LogOut />

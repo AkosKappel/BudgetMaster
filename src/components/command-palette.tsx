@@ -13,6 +13,7 @@ import {
   Plus,
   ReceiptText,
   Search,
+  Settings2,
   User,
   Users,
 } from 'lucide-react'
@@ -205,8 +206,15 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
+        <CommandGroup heading="Spaces">
+          <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
+            <Settings2 />
+            Manage spaces and invites
+          </CommandItem>
+        </CommandGroup>
+
         <CommandGroup heading="Account">
-          <CommandItem onSelect={run(signOut)}>
+          <CommandItem onSelect={run(() => signOut())}>
             <LogOut />
             Sign out
           </CommandItem>

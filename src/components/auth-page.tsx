@@ -1,10 +1,20 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { z } from 'zod'
 
 import { Guilloche } from '@/components/guilloche'
 import { Logo } from '@/components/logo'
 import { authClient } from '@/lib/auth-client'
+
+// `?redirect=` on the auth pages: same-site paths only, never `//other.site`.
+export const redirectSearch = z.object({
+  redirect: z
+    .string()
+    .regex(/^\/(?!\/)/)
+    .optional()
+    .catch(undefined),
+})
 
 // Wraps the sign-in and sign-up pages: brand, title and a shared submit flow.
 export function AuthPage({
@@ -70,9 +80,10 @@ export function FormError({ message }: { message: string | null }) {
 export function useSignOut() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  return async () => {
+  // `redirect` brings the next person who signs in back to the same page (e.g. an invite).
+  return async (redirect?: string) => {
     await authClient.signOut()
     queryClient.clear()
-    await navigate({ to: '/sign-in' })
+    await navigate({ to: '/sign-in', search: { redirect } })
   }
 }
