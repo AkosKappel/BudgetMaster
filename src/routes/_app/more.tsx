@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronRight, Ellipsis, LogOut, Shapes, Users } from 'lucide-react'
+import {
+  ChevronRight,
+  Ellipsis,
+  LogOut,
+  Shapes,
+  Users,
+  WalletCards,
+} from 'lucide-react'
 
 import { AccountData } from '@/components/account-data'
 import { useSignOut } from '@/components/auth-page'
@@ -52,6 +59,21 @@ function More() {
         </li>
         <li>
           <Link
+            to="/wallets"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <WalletCards className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Wallets</span>
+              <span className="text-muted-foreground text-sm">
+                Accounts, cards, cash and their balances
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+        <li>
+          <Link
             to="/categories"
             className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           >
@@ -68,7 +90,7 @@ function More() {
       </ul>
       <AccountData />
       <EmptyState icon={Ellipsis}>
-        Wallets, tags, recurring payments and settings will live here too.
+        Tags, recurring payments and settings will live here too.
       </EmptyState>
     </div>
   )

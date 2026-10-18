@@ -18,6 +18,7 @@ import {
 import { getInvite, getSpaceDetails } from '@/server/space-admin'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
 import { getFormOptions, suggestPayees } from '@/server/transactions'
+import { listWallets } from '@/server/wallets'
 
 export const sessionQuery = queryOptions({
   queryKey: ['session'],
@@ -60,6 +61,12 @@ export const categoriesQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'categories'],
     queryFn: () => listCategories({ data: { spaceId } }),
+  })
+
+export const walletsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'wallets'],
+    queryFn: () => listWallets({ data: { spaceId } }),
   })
 
 export const payeesQuery = (spaceId: string, query: string) =>

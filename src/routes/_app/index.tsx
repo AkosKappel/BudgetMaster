@@ -56,7 +56,16 @@ function Home() {
           Wallets
         </h2>
         {data.wallets.length === 0 ? (
-          <EmptyState icon={iconFor('wallet')}>
+          <EmptyState
+            icon={iconFor('wallet')}
+            action={
+              <Button size="sm" asChild>
+                <Link to="/wallets">
+                  <Plus /> Add wallet
+                </Link>
+              </Button>
+            }
+          >
             Add a wallet for each account, card or cash you want to track.
           </EmptyState>
         ) : (

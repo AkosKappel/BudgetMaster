@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import { FormError } from '@/components/auth-page'
+import { ColorPicker, IconPicker } from '@/components/pickers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { COLORS, ICONS } from '@/lib/icons'
 import type { CategoryInput, ManagedCategory } from '@/server/categories'
 
 type CategoryType = ManagedCategory['type']
@@ -15,9 +15,6 @@ export type CategoryValues = Pick<
 
 const selectClass =
   'h-9 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm'
-
-const swatchClass =
-  'flex size-10 cursor-pointer items-center justify-center rounded-full border-2 border-transparent has-checked:border-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring'
 
 export function CategoryForm({
   defaults,
@@ -114,48 +111,12 @@ export function CategoryForm({
         )}
       </div>
 
-      <fieldset>
-        <legend className="mb-2 font-medium text-sm">Icon</legend>
-        <div className="flex flex-wrap gap-1">
-          {Object.entries(ICONS).map(([name, Icon]) => (
-            <label key={name} className={swatchClass} title={name}>
-              <input
-                type="radio"
-                name="icon"
-                value={name}
-                checked={values.icon === name}
-                onChange={() => set({ icon: name })}
-                className="sr-only"
-                aria-label={name.replaceAll('-', ' ')}
-              />
-              <Icon className="size-5" style={{ color: values.color }} />
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend className="mb-2 font-medium text-sm">Colour</legend>
-        <div className="flex flex-wrap gap-1">
-          {COLORS.map((color, index) => (
-            <label key={color} className={swatchClass}>
-              <input
-                type="radio"
-                name="color"
-                value={color}
-                checked={values.color === color}
-                onChange={() => set({ color })}
-                className="sr-only"
-                aria-label={`Colour ${index + 1}`}
-              />
-              <span
-                className="size-7 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <IconPicker
+        value={values.icon}
+        color={values.color}
+        onChange={(icon) => set({ icon })}
+      />
+      <ColorPicker value={values.color} onChange={(color) => set({ color })} />
 
       <FormError message={error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>

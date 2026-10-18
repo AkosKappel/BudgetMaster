@@ -1,7 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import {
   and,
-  asc,
   between,
   eq,
   gte,
@@ -12,7 +11,6 @@ import {
   lte,
   or,
   type SQL,
-  sql,
   sum,
 } from 'drizzle-orm'
 import { z } from 'zod'
@@ -34,6 +32,7 @@ import {
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
+import { walletBalances } from '@/server/wallet-balances'
 
 const PAGE_SIZE = 30
 
@@ -58,43 +57,6 @@ const transactionColumns = {
   note: true,
   recurringRuleId: true,
 } as const
-
-// Balance up to and including `today`: income adds, expenses and outgoing transfers
-// subtract, incoming transfers add their target amount.
-async function walletBalances(spaceId: string, today: string) {
-  const change = sql`case
-    when ${transaction.toWalletId} = ${wallet.id} then coalesce(${transaction.toAmount}, ${transaction.amount})
-    when ${transaction.type} = 'income' then ${transaction.amount}
-    else -${transaction.amount}
-  end`
-  return db
-    .select({
-      id: wallet.id,
-      name: wallet.name,
-      type: wallet.type,
-      currency: wallet.currency,
-      color: wallet.color,
-      icon: wallet.icon,
-      balance:
-        sql`${wallet.initialBalance} + coalesce(sum(${change}), 0)`.mapWith(
-          Number,
-        ),
-    })
-    .from(wallet)
-    .leftJoin(
-      transaction,
-      and(
-        or(
-          eq(transaction.walletId, wallet.id),
-          eq(transaction.toWalletId, wallet.id),
-        ),
-        lte(transaction.date, today),
-      ),
-    )
-    .where(and(eq(wallet.spaceId, spaceId), isNull(wallet.archivedAt)))
-    .groupBy(wallet.id)
-    .orderBy(asc(wallet.sortOrder), asc(wallet.name))
-}
 
 export const getOverview = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])

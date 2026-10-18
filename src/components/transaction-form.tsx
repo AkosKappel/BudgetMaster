@@ -5,7 +5,7 @@ import {
   useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
+import { Link, useRouteContext } from '@tanstack/react-router'
 import { Trash2 } from 'lucide-react'
 import { z } from 'zod'
 
@@ -213,7 +213,14 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
   if (options.wallets.length === 0) {
     return (
       <p className="px-4 pb-6 text-muted-foreground">
-        Add a wallet first, so the app knows where the money goes.
+        Add a wallet first, so the app knows where the money goes.{' '}
+        <Link
+          to="/wallets"
+          className="text-foreground underline"
+          onClick={onDone}
+        >
+          Add a wallet
+        </Link>
       </p>
     )
   }

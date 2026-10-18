@@ -17,6 +17,7 @@ import {
   Shapes,
   User,
   Users,
+  WalletCards,
 } from 'lucide-react'
 import { useRef, useState, useSyncExternalStore } from 'react'
 
@@ -211,6 +212,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
             Manage spaces and invites
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/wallets' }))}>
+            <WalletCards />
+            Manage wallets
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/categories' }))}>
             <Shapes />
