@@ -10,6 +10,11 @@ test('the home budget card moves between budget months', async ({ page }) => {
     page.getByRole('heading', { name: 'Needs attention' }),
   ).toBeVisible()
   await expect(nav.getByRole('button', { name: 'Next month' })).toBeDisabled()
+  await expect(
+    page
+      .getByRole('region', { name: 'Spending pace' })
+      .getByText(/spent by day/),
+  ).toBeVisible()
 
   await nav.getByRole('button', { name: 'Previous month' }).click()
   await expect(page).toHaveURL(/month=-1/)

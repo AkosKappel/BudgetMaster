@@ -6,6 +6,7 @@ import {
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight, Plus, ReceiptText } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { lazy, Suspense } from 'react'
 import { z } from 'zod'
 
 import { BudgetMeter, budgetStatus } from '@/components/budget-meter'
@@ -13,6 +14,7 @@ import { EmptyState } from '@/components/empty-state'
 import { Guilloche } from '@/components/guilloche'
 import { TransactionRow } from '@/components/transaction-row'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
@@ -49,6 +51,8 @@ function Home() {
   return (
     <div className="flex flex-col gap-10">
       <BudgetHero spaceId={space.id} month={month} />
+
+      <PaceSection spaceId={space.id} month={month} />
 
       {month === 0 && <BudgetWarnings spaceId={space.id} />}
 
@@ -309,6 +313,45 @@ function BudgetWarnings({ spaceId }: { spaceId: string }) {
           )
         })}
       </ul>
+    </section>
+  )
+}
+
+// Recharts is only needed below the fold, so Home's first download stays small.
+const SpendingPaceChart = lazy(() =>
+  import('@/components/spending-pace-chart').then((module) => ({
+    default: module.SpendingPaceChart,
+  })),
+)
+
+function PaceSection({ spaceId, month }: { spaceId: string; month: number }) {
+  const { data } = useQuery({
+    ...budgetReportQuery(spaceId, month),
+    placeholderData: keepPreviousData,
+  })
+  if (!data) return null
+  return (
+    <section aria-labelledby="pace" className="flex flex-col gap-3">
+      <div className="flex items-baseline justify-between">
+        <h2 id="pace" className="font-semibold text-lg">
+          Spending pace
+        </h2>
+        <Link
+          to="/budgets"
+          search={{ month }}
+          className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Budgets
+        </Link>
+      </div>
+      <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
+        <SpendingPaceChart
+          pace={data.pace}
+          budget={data.overall?.amount ?? null}
+          currency={data.currency}
+          isCurrent={data.isCurrent}
+        />
+      </Suspense>
     </section>
   )
 }
