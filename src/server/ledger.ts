@@ -175,3 +175,23 @@ export const listTransactions = createServerFn({ method: 'GET' })
 export type LedgerTransaction = Awaited<
   ReturnType<typeof listTransactions>
 >['items'][number]
+
+// Command palette search: payee or note contains the query, newest first.
+export const searchTransactions = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ query: z.string().trim().min(2).max(60) }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const pattern = `%${data.query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+    return db.query.transaction.findMany({
+      columns: transactionColumns,
+      with: transactionWith,
+      where: (t, { and, eq, ilike, or }) =>
+        and(
+          eq(t.spaceId, space.id),
+          or(ilike(t.payee, pattern), ilike(t.note, pattern)),
+        ),
+      orderBy: (t, { desc }) => [desc(t.date), desc(t.id)],
+      limit: 8,
+    })
+  })

@@ -10,6 +10,7 @@ import { getSession } from '@/server/auth'
 import {
   getOverview,
   listTransactions,
+  searchTransactions,
   type TransactionCursor,
 } from '@/server/ledger'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
@@ -54,6 +55,14 @@ export const payeesQuery = (spaceId: string, query: string) =>
     queryKey: ['space', spaceId, 'payees', query],
     queryFn: () => suggestPayees({ data: { spaceId, query } }),
     staleTime: 60_000,
+  })
+
+export const searchQuery = (spaceId: string, query: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'search', query],
+    queryFn: () => searchTransactions({ data: { spaceId, query } }),
+    enabled: query.length >= 2,
+    staleTime: 30_000,
   })
 
 export function useSpaces() {

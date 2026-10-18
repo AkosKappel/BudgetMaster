@@ -11,6 +11,8 @@ import {
 import { motion } from 'motion/react'
 
 import { useSignOut } from '@/components/auth-page'
+import { SearchButton } from '@/components/command-palette'
+import { Logo } from '@/components/logo'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Button } from '@/components/ui/button'
 import { useQuickAdd } from '@/stores/quick-add'
@@ -97,14 +99,18 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-dvh flex-col gap-8 border-r bg-card px-4 py-6 md:flex">
-      <Link to="/" className="px-3 font-semibold text-lg tracking-tight">
-        BudgetMaster
+      <Link
+        to="/"
+        className="rounded-md px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Logo />
       </Link>
       <SpaceSwitcher className="-my-4 w-full" />
       <Button size="lg" onClick={() => openNew()} className="justify-start">
         <Plus />
         Add transaction
       </Button>
+      <SearchButton className="-mt-5" />
       <nav aria-label="Main">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (

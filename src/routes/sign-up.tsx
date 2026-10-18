@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 
 import { AuthPage, FormError, useAuthSubmit } from '@/components/auth-page'
+import { PasswordInput } from '@/components/password-input'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,10 +52,9 @@ function SignUp() {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="new-password"
             minLength={8}
             required

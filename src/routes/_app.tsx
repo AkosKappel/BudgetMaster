@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Suspense } from 'react'
 
 import { Sidebar, TabBar } from '@/components/app-nav'
+import { CommandPalette, SearchButton } from '@/components/command-palette'
 import { QuickAddDrawer } from '@/components/quick-add'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -31,8 +32,9 @@ function AppShell() {
     <div className="min-h-dvh md:grid md:grid-cols-[15rem_1fr]">
       <Sidebar />
       <main className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pt-10 md:pb-10">
-        <header className="-mx-3 mb-4 md:hidden">
-          <SpaceSwitcher className="max-w-full" />
+        <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden">
+          <SpaceSwitcher className="min-w-0 flex-1" />
+          <SearchButton compact />
         </header>
         <Suspense fallback={<PageSkeleton />}>
           <Outlet />
@@ -40,6 +42,7 @@ function AppShell() {
       </main>
       <TabBar />
       <QuickAddDrawer />
+      <CommandPalette />
     </div>
   )
 }

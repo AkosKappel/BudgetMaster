@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Guilloche } from '@/components/guilloche'
+import { Logo } from '@/components/logo'
 import { authClient } from '@/lib/auth-client'
 
 // Wraps the sign-in and sign-up pages: brand, title and a shared submit flow.
@@ -17,7 +18,7 @@ export function AuthPage({
     <main className="relative isolate mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 overflow-hidden px-4 py-10">
       <Guilloche className="mask-b-from-40% absolute -top-24 -right-32 -z-10 size-96 text-note/30" />
       <div>
-        <p className="font-semibold text-lg tracking-tight">BudgetMaster</p>
+        <Logo />
         <h1 className="mt-6 font-semibold text-3xl tracking-tight">{title}</h1>
       </div>
       {children}
