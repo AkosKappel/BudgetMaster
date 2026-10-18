@@ -3,11 +3,24 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
 
 import { CashFlowChart } from '@/components/cash-flow-chart'
-import { cashFlowQuery, useActiveSpace } from '@/lib/queries'
+import { NetWorthChart } from '@/components/net-worth-chart'
+import { SpendingCalendar } from '@/components/spending-calendar'
+import {
+  cashFlowQuery,
+  netWorthQuery,
+  spendingCalendarQuery,
+  useActiveSpace,
+} from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/reports')({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(cashFlowQuery(context.activeSpaceId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(cashFlowQuery(context.activeSpaceId)),
+      context.queryClient.ensureQueryData(netWorthQuery(context.activeSpaceId)),
+      context.queryClient.ensureQueryData(
+        spendingCalendarQuery(context.activeSpaceId),
+      ),
+    ]),
   head: () => ({ meta: [{ title: 'Reports | BudgetMaster' }] }),
   component: Reports,
 })
@@ -15,6 +28,8 @@ export const Route = createFileRoute('/_app/reports')({
 function Reports() {
   const space = useActiveSpace()
   const { data } = useSuspenseQuery(cashFlowQuery(space.id))
+  const { data: netWorth } = useSuspenseQuery(netWorthQuery(space.id))
+  const { data: calendar } = useSuspenseQuery(spendingCalendarQuery(space.id))
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,6 +46,18 @@ function Reports() {
           Income and spending
         </h2>
         <CashFlowChart {...data} />
+      </section>
+      <section aria-labelledby="net-worth" className="flex flex-col gap-3">
+        <h2 id="net-worth" className="font-semibold text-lg">
+          Net worth
+        </h2>
+        <NetWorthChart {...netWorth} />
+      </section>
+      <section aria-labelledby="calendar" className="flex flex-col gap-3">
+        <h2 id="calendar" className="font-semibold text-lg">
+          Spending calendar
+        </h2>
+        <SpendingCalendar {...calendar} />
       </section>
     </div>
   )

@@ -16,7 +16,7 @@ import {
   type TransactionCursor,
 } from '@/server/ledger'
 import { listRecurringRules } from '@/server/recurring'
-import { getCashFlow } from '@/server/reports'
+import { getCashFlow, getNetWorth, getSpendingCalendar } from '@/server/reports'
 import { getInvite, getSpaceDetails } from '@/server/space-admin'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
 import { listTags } from '@/server/tags'
@@ -88,6 +88,18 @@ export const tagsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'tags'],
     queryFn: () => listTags({ data: { spaceId } }),
+  })
+
+export const netWorthQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'net-worth'],
+    queryFn: () => getNetWorth({ data: { spaceId } }),
+  })
+
+export const spendingCalendarQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'spending-calendar'],
+    queryFn: () => getSpendingCalendar({ data: { spaceId } }),
   })
 
 export const payeesQuery = (spaceId: string, query: string) =>
