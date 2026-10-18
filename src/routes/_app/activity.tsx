@@ -1,6 +1,6 @@
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { ReceiptText } from 'lucide-react'
+import { Plus, ReceiptText } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { useEffect, useRef } from 'react'
 
@@ -41,7 +41,7 @@ function Activity() {
   const items = data.pages.flatMap((page) => page.items)
   const today = todayIso()
   const sentinel = useRef<HTMLDivElement>(null)
-  const openEdit = useQuickAdd((s) => s.openEdit)
+  const { openEdit, openNew } = useQuickAdd()
   const deleteWithUndo = useDeleteWithUndo(space.id)
 
   // Load the next page shortly before the end of the list comes into view.
@@ -61,7 +61,14 @@ function Activity() {
     <div className="flex flex-col gap-6">
       <h1 className="font-semibold text-2xl tracking-tight">Activity</h1>
       {items.length === 0 ? (
-        <EmptyState icon={ReceiptText}>
+        <EmptyState
+          icon={ReceiptText}
+          action={
+            <Button size="sm" onClick={() => openNew()}>
+              <Plus /> Add transaction
+            </Button>
+          }
+        >
           Every income, expense and transfer shows up here, grouped by day.
           Nothing recorded yet.
         </EmptyState>

@@ -1,11 +1,12 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ReceiptText } from 'lucide-react'
+import { Plus, ReceiptText } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 
 import { EmptyState } from '@/components/empty-state'
 import { Guilloche } from '@/components/guilloche'
 import { TransactionRow } from '@/components/transaction-row'
+import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
@@ -25,7 +26,7 @@ const daysBetween = (from: string, to: string) =>
 function Home() {
   const space = useActiveSpace()
   const { data } = useSuspenseQuery(overviewQuery(space.id))
-  const openEdit = useQuickAdd((s) => s.openEdit)
+  const { openEdit, openNew } = useQuickAdd()
   const money = (minor: number) => formatMoney(minor, space.baseCurrency)
   const daysLeft = daysBetween(data.today, data.period.end) + 1
   const daysText = `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left.`
@@ -89,7 +90,14 @@ function Home() {
           )}
         </div>
         {data.recent.length === 0 ? (
-          <EmptyState icon={ReceiptText}>
+          <EmptyState
+            icon={ReceiptText}
+            action={
+              <Button size="sm" onClick={() => openNew()}>
+                <Plus /> Add transaction
+              </Button>
+            }
+          >
             No transactions yet. Add your first one to see where your money
             goes.
           </EmptyState>
