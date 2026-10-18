@@ -52,7 +52,9 @@ The app runs on http://localhost:3000.
 
 ## Demo data
 
-`pnpm db:seed` recreates three users, all with the password `demo-budget-2026`:
+**Try the demo** on the sign-in page gives every visitor a private anonymous account with about 14 months of sample data (Better Auth `anonymous` plugin). Signing up keeps the data; otherwise it is deleted after 48 hours. The generator lives in `src/db/demo-data.ts`.
+
+For development, `pnpm db:seed` also recreates three shared logins (listed on the sign-in page in dev only), all with the password `demo-budget-2026`:
 
 - `demo@budgetmaster.app`: about 14 months of personal data and owner of a shared Household space
 - `jordan@budgetmaster.app`: small personal space, member of Household
@@ -75,3 +77,13 @@ The schema lives in `src/db/schema/`, migrations in `drizzle/`. The auth tables 
 ```bash
 pnpm dlx auth@latest generate --config src/lib/auth.ts --output src/db/schema/auth.ts --yes
 ```
+
+## Docker
+
+The `Dockerfile` builds a production image: the Nitro server bundle on Node 24, running as a non-root user with a health check on `/api/health`. CI builds it for every pull request and pushes `ghcr.io/akoskappel/budgetmaster` on `main`. Migrations run as a one-off container from the same image before the app starts:
+
+```bash
+docker run --rm --env-file .env <image> node scripts/migrate.ts
+```
+
+The app needs `DATABASE_URL`, `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
