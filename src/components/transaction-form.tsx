@@ -581,7 +581,10 @@ type Category = {
 }
 
 // Parents followed by their children, so groups stay together.
-function categoryOrder<T extends Category>(categories: T[], type: string) {
+export function categoryOrder<T extends Category>(
+  categories: T[],
+  type: string,
+) {
   const ofType = categories.filter((c) => c.type === type)
   return ofType
     .filter((c) => !c.parentId)

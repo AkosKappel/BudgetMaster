@@ -4,18 +4,33 @@ import {
   asc,
   between,
   eq,
+  gte,
+  ilike,
   inArray,
   isNull,
+  lt,
   lte,
   or,
+  type SQL,
   sql,
   sum,
 } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { budget, transaction, wallet } from '@/db/schema'
+import {
+  budget,
+  category,
+  transaction,
+  transactionTag,
+  wallet,
+} from '@/db/schema'
+import { currencyDigits } from '@/lib/money'
 import { budgetPeriod, todayIso } from '@/lib/recurrence'
+import {
+  type TransactionFilters,
+  transactionFiltersSchema,
+} from '@/lib/transaction-filters'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -135,29 +150,90 @@ export const getOverview = createServerFn({ method: 'GET' })
     }
   })
 
+// `ilike` pattern that matches the text anywhere, with the user's % and _ taken literally.
+const containsPattern = (text: string) =>
+  `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+
+function filterConditions(filters: TransactionFilters, digits: number) {
+  const t = transaction
+  const minor = (major: number) => Math.round(major * 10 ** digits)
+  const conditions: (SQL | undefined)[] = []
+  if (filters.q) {
+    const pattern = containsPattern(filters.q)
+    conditions.push(or(ilike(t.payee, pattern), ilike(t.note, pattern)))
+  }
+  if (filters.type) conditions.push(eq(t.type, filters.type))
+  if (filters.category) {
+    // A parent category includes the spending on its subcategories.
+    conditions.push(
+      inArray(
+        t.categoryId,
+        db
+          .select({ id: category.id })
+          .from(category)
+          .where(
+            or(
+              eq(category.id, filters.category),
+              eq(category.parentId, filters.category),
+            ),
+          ),
+      ),
+    )
+  }
+  if (filters.wallet) {
+    conditions.push(
+      or(eq(t.walletId, filters.wallet), eq(t.toWalletId, filters.wallet)),
+    )
+  }
+  if (filters.tag) {
+    conditions.push(
+      inArray(
+        t.id,
+        db
+          .select({ id: transactionTag.transactionId })
+          .from(transactionTag)
+          .where(eq(transactionTag.tagId, filters.tag)),
+      ),
+    )
+  }
+  if (filters.from) conditions.push(gte(t.date, filters.from))
+  if (filters.to) conditions.push(lte(t.date, filters.to))
+  if (filters.min !== undefined)
+    conditions.push(gte(t.amount, minor(filters.min)))
+  if (filters.max !== undefined)
+    conditions.push(lte(t.amount, minor(filters.max)))
+  return conditions
+}
+
 const cursorSchema = z.object({ date: z.iso.date(), id: z.uuid() })
 export type TransactionCursor = z.infer<typeof cursorSchema>
 
 // Newest first, keyset pagination on (date, id): stable while new rows are added.
 export const listTransactions = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator(spaceInput.extend({ cursor: cursorSchema.optional() }))
+  .validator(
+    spaceInput.extend({
+      cursor: cursorSchema.optional(),
+      filters: transactionFiltersSchema.default({}),
+    }),
+  )
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const { cursor } = data
+    const t = transaction
     const rows = await db.query.transaction.findMany({
       columns: transactionColumns,
       with: transactionWith,
-      where: (t, { and, eq, lt, or }) =>
-        and(
-          eq(t.spaceId, space.id),
-          cursor
-            ? or(
-                lt(t.date, cursor.date),
-                and(eq(t.date, cursor.date), lt(t.id, cursor.id)),
-              )
-            : undefined,
-        ),
+      where: and(
+        eq(t.spaceId, space.id),
+        cursor
+          ? or(
+              lt(t.date, cursor.date),
+              and(eq(t.date, cursor.date), lt(t.id, cursor.id)),
+            )
+          : undefined,
+        ...filterConditions(data.filters, currencyDigits(space.baseCurrency)),
+      ),
       orderBy: (t, { desc }) => [desc(t.date), desc(t.id)],
       limit: PAGE_SIZE + 1,
     })
@@ -182,7 +258,7 @@ export const searchTransactions = createServerFn({ method: 'GET' })
   .validator(spaceInput.extend({ query: z.string().trim().min(2).max(60) }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const pattern = `%${data.query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+    const pattern = containsPattern(data.query)
     return db.query.transaction.findMany({
       columns: transactionColumns,
       with: transactionWith,

@@ -1,9 +1,10 @@
-import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Plus, ReceiptText } from 'lucide-react'
+import { Plus, ReceiptText, SearchX } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { ActivityFilters } from '@/components/activity-filters'
 import { EmptyState } from '@/components/empty-state'
 import { TransactionRow } from '@/components/transaction-row'
 import { Button } from '@/components/ui/button'
@@ -12,13 +13,24 @@ import { formatSignedMoney } from '@/lib/money'
 import { useDeleteWithUndo } from '@/lib/mutations'
 import { transactionsQuery, useActiveSpace } from '@/lib/queries'
 import { todayIso } from '@/lib/recurrence'
+import {
+  activeFilterCount,
+  transactionFiltersSchema,
+} from '@/lib/transaction-filters'
+import { cn } from '@/lib/utils'
 import type { LedgerTransaction } from '@/server/ledger'
 import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/activity')({
-  loader: ({ context }) =>
+  validateSearch: transactionFiltersSchema,
+  // Not loaderDeps: a new filter would remount the page and the search field with it.
+  // Later filter changes load in the component and keep the previous list meanwhile.
+  loader: ({ context, location }) =>
     context.queryClient.ensureInfiniteQueryData(
-      transactionsQuery(context.activeSpaceId),
+      transactionsQuery(
+        context.activeSpaceId,
+        transactionFiltersSchema.parse(location.search),
+      ),
     ),
   head: () => ({ meta: [{ title: 'Activity | BudgetMaster' }] }),
   component: Activity,
@@ -36,9 +48,26 @@ function groupByDay(items: LedgerTransaction[]) {
 
 function Activity() {
   const space = useActiveSpace()
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(transactionsQuery(space.id))
-  const items = data.pages.flatMap((page) => page.items)
+  const filters = Route.useSearch()
+  const navigate = Route.useNavigate()
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPlaceholderData,
+  } = useInfiniteQuery({
+    ...transactionsQuery(space.id, filters),
+    placeholderData: keepPreviousData,
+  })
+  const items = data?.pages.flatMap((page) => page.items) ?? []
+  const filtered = activeFilterCount(filters) > 0
+  // Remounts the filter fields once the cleared URL is in place, so typed values go too.
+  const [clearCount, setClearCount] = useState(0)
+  const clearFilters = () =>
+    navigate({ search: {}, replace: true }).then(() =>
+      setClearCount((count) => count + 1),
+    )
   const today = todayIso()
   const sentinel = useRef<HTMLDivElement>(null)
   const { openEdit, openNew } = useQuickAdd()
@@ -60,7 +89,24 @@ function Activity() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-semibold text-2xl tracking-tight">Activity</h1>
-      {items.length === 0 ? (
+      <ActivityFilters
+        key={clearCount}
+        spaceId={space.id}
+        filters={filters}
+        onClear={clearFilters}
+      />
+      {items.length === 0 && filtered ? (
+        <EmptyState
+          icon={SearchX}
+          action={
+            <Button size="sm" variant="outline" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          }
+        >
+          No transactions match these filters.
+        </EmptyState>
+      ) : items.length === 0 ? (
         <EmptyState
           icon={ReceiptText}
           action={
@@ -73,7 +119,13 @@ function Activity() {
           Nothing recorded yet.
         </EmptyState>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div
+          className={cn(
+            'flex flex-col gap-6 transition-opacity',
+            isPlaceholderData && 'opacity-60',
+          )}
+          aria-busy={isPlaceholderData}
+        >
           {groupByDay(items).map((group) => {
             // Net of the day in the space currency; transfers do not change it.
             const net = group.items

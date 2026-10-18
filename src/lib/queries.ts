@@ -5,7 +5,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { useState } from 'react'
-
+import type { TransactionFilters } from '@/lib/transaction-filters'
 import { getSession } from '@/server/auth'
 import { getBudgetReport } from '@/server/budgets'
 import {
@@ -36,11 +36,14 @@ export const overviewQuery = (spaceId: string) =>
     queryFn: () => getOverview({ data: { spaceId } }),
   })
 
-export const transactionsQuery = (spaceId: string) =>
+export const transactionsQuery = (
+  spaceId: string,
+  filters: TransactionFilters = {},
+) =>
   infiniteQueryOptions({
-    queryKey: ['space', spaceId, 'transactions'],
+    queryKey: ['space', spaceId, 'transactions', filters],
     queryFn: ({ pageParam }) =>
-      listTransactions({ data: { spaceId, cursor: pageParam } }),
+      listTransactions({ data: { spaceId, cursor: pageParam, filters } }),
     initialPageParam: undefined as TransactionCursor | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
   })

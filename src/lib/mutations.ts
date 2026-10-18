@@ -53,8 +53,24 @@ export function removeFromList(data: ListData, id: string): ListData {
   }
 }
 
-// Applies a change to the cached list and the Home "recent" list at once. Balances and
-// totals are not guessed: they refetch when the mutation settles.
+// Updates a row only where it is already listed: a filtered list cannot tell whether the
+// changed row still matches, so it refetches when the mutation settles.
+export function replaceInList(
+  data: ListData,
+  row: LedgerTransaction,
+): ListData {
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      items: page.items.map((t) => (t.id === row.id ? row : t)),
+    })),
+  }
+}
+
+// Applies a change to every cached list (`changeFiltered` for the filtered ones) and the
+// Home "recent" list at once. Balances and totals are not guessed: they refetch when the
+// mutation settles.
 function patchCaches(
   queryClient: QueryClient,
   spaceId: string,
@@ -63,10 +79,16 @@ function patchCaches(
     recent: LedgerTransaction[],
     today: string,
   ) => LedgerTransaction[],
+  changeFiltered = change,
 ) {
-  queryClient.setQueryData(transactionsQuery(spaceId).queryKey, (data) =>
-    data ? change(data) : data,
-  )
+  const unfiltered = transactionsQuery(spaceId).queryKey
+  for (const [key, data] of queryClient.getQueriesData<ListData>({
+    queryKey: unfiltered.slice(0, 3),
+  })) {
+    if (!data) continue
+    const filtered = JSON.stringify(key) !== JSON.stringify(unfiltered)
+    queryClient.setQueryData(key, (filtered ? changeFiltered : change)(data))
+  }
   queryClient.setQueryData(overviewQuery(spaceId).queryKey, (data) =>
     data ? { ...data, recent: changeRecent(data.recent, data.today) } : data,
   )
@@ -106,6 +128,7 @@ export function useSaveTransaction(spaceId: string) {
         spaceId,
         (list) => upsertInList(list, optimistic),
         upsertRecent(optimistic),
+        (list) => replaceInList(list, optimistic),
       )
       return previous
     },
@@ -153,6 +176,7 @@ export function useDeleteWithUndo(spaceId: string) {
         spaceId,
         (list) => upsertInList(list, row),
         upsertRecent(row),
+        (list) => list,
       )
     const commit = () => {
       if (undone || committed) return
@@ -175,6 +199,10 @@ export function useDeleteWithUndo(spaceId: string) {
         onClick: () => {
           undone = true
           restore()
+          // Filtered lists cannot tell whether the row belongs back in them.
+          queryClient.invalidateQueries({
+            queryKey: ['space', spaceId, 'transactions'],
+          })
         },
       },
       onAutoClose: commit,
