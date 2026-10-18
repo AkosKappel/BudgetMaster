@@ -17,6 +17,7 @@ import { currencyDigits, parseAmount } from '@/lib/money'
 import { useDeleteWithUndo, useSaveTransaction } from '@/lib/mutations'
 import { formOptionsQuery, payeesQuery, useActiveSpace } from '@/lib/queries'
 import { addDays, localTodayIso } from '@/lib/recurrence'
+import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
 import { uuidv7 } from '@/lib/uuid'
 import type { LedgerTransaction } from '@/server/ledger'
@@ -380,7 +381,24 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                           : 'Shop, person, service'
                       }
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value)
+                        // A rule (M-15) fills the category of a new transaction
+                        // until the user picks one.
+                        const rule = ruleFor(
+                          e.target.value,
+                          type,
+                          options.rules,
+                        )
+                        if (
+                          rule &&
+                          !transaction &&
+                          !form.getFieldMeta('categoryId')?.isTouched
+                        )
+                          form.setFieldValue('categoryId', rule.categoryId, {
+                            dontUpdateMeta: true,
+                          })
+                      }}
                     />
                     <PayeeSuggestions
                       spaceId={space.id}

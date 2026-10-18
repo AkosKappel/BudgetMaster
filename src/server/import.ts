@@ -3,8 +3,9 @@ import { and, between, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { category, transaction, wallet } from '@/db/schema'
+import { categorizationRule, category, transaction, wallet } from '@/db/schema'
 import { addDays } from '@/lib/recurrence'
+import { ruleFor } from '@/lib/rules'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -59,7 +60,7 @@ export const reviewImport = createServerFn({ method: 'POST' })
       ...new Set(data.rows.map((r) => r.payee.toLowerCase()).filter(Boolean)),
     ]
 
-    const [existing, history] = await Promise.all([
+    const [existing, history, rules] = await Promise.all([
       db
         .select({
           date: transaction.date,
@@ -101,6 +102,14 @@ export const reviewImport = createServerFn({ method: 'POST' })
               desc(transaction.date),
             )
         : Promise.resolve([]),
+      db
+        .select({
+          type: categorizationRule.type,
+          match: categorizationRule.match,
+          categoryId: categorizationRule.categoryId,
+        })
+        .from(categorizationRule)
+        .where(eq(categorizationRule.spaceId, space.id)),
     ])
 
     const signed = (t: { type: string; amount: number }) =>
@@ -113,10 +122,13 @@ export const reviewImport = createServerFn({ method: 'POST' })
         duplicate: existing.some(
           (t) => t.date >= low && t.date <= high && signed(t) === row.amount,
         ),
+        // A rule beats history: it is what the user asked for explicitly.
         categoryId:
+          ruleFor(row.payee, type, rules)?.categoryId ??
           history.find(
             (h) => h.payee === row.payee.toLowerCase() && h.type === type,
-          )?.categoryId ?? null,
+          )?.categoryId ??
+          null,
       }
     })
   })

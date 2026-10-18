@@ -22,6 +22,7 @@ import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
 import { formOptionsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { importTransactions, reviewImport } from '@/server/import'
+import { saveRules } from '@/server/rules'
 
 export const Route = createFileRoute('/_app/import')({
   loader: ({ context }) =>
@@ -56,7 +57,20 @@ interface Reviewed extends Staged {
   include: boolean
   duplicate: boolean
   categoryId: string
+  // What the rules or the payee history suggested; a different pick can become a rule.
+  suggested: string
 }
+
+// Rows whose category the user chose differently from the suggestion, as rules for their
+// payee (the whole payee text, so a rule never matches more than intended).
+const rulesToRemember = (rows: Reviewed[]) =>
+  rows
+    .filter((r) => r.payee.trim().length >= 2 && r.categoryId !== r.suggested)
+    .map((r) => ({
+      type: r.amount > 0 ? ('income' as const) : ('expense' as const),
+      match: r.payee.trim().slice(0, 60),
+      categoryId: r.categoryId,
+    }))
 
 // Guesses columns from common header names in English, German, Slovak and Hungarian.
 function guessMapping(header: string[], rows: string[][]): Mapping {
@@ -149,6 +163,7 @@ function Import() {
           include: !result[i].duplicate,
           duplicate: result[i].duplicate,
           categoryId: result[i].categoryId ?? '',
+          suggested: result[i].categoryId ?? '',
         })),
       )
     } catch (e) {
@@ -158,13 +173,15 @@ function Import() {
     }
   }
 
-  const confirm = async (included: Reviewed[]) => {
+  const confirm = async (included: Reviewed[], remember: boolean) => {
     setError(null)
     setPending(true)
     try {
       const { count } = await importTransactions({
         data: { spaceId: space.id, walletId, rows: included },
       })
+      const rules = remember ? rulesToRemember(included) : []
+      if (rules.length) await saveRules({ data: { spaceId: space.id, rules } })
       await queryClient.invalidateQueries({ queryKey: ['space', space.id] })
       toast.success(
         `${count} ${count === 1 ? 'transaction' : 'transactions'} imported`,
@@ -403,9 +420,11 @@ function ReviewStep({
   }[]
   pending: boolean
   onChange: (index: number, change: Partial<Reviewed>) => void
-  onConfirm: (rows: Reviewed[]) => void
+  onConfirm: (rows: Reviewed[], remember: boolean) => void
 }) {
+  const [remember, setRemember] = useState(true)
   const included = rows.filter((r) => r.include)
+  const learnable = rulesToRemember(included).length
   const missing = included.filter((r) => !r.categoryId).length
   const duplicates = rows.filter((r) => r.duplicate).length
 
@@ -478,11 +497,22 @@ function ReviewStep({
           Choose a category for {missing} more {missing === 1 ? 'row' : 'rows'}.
         </p>
       )}
+      {learnable > 0 && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+          />
+          Remember the {learnable === 1 ? 'category' : 'categories'} I chose for{' '}
+          {learnable === 1 ? 'this payee' : `these ${learnable} payees`}
+        </label>
+      )}
       <Button
         size="lg"
         className="w-fit"
         disabled={pending || included.length === 0 || missing > 0}
-        onClick={() => onConfirm(included)}
+        onClick={() => onConfirm(included, remember && learnable > 0)}
       >
         Import {included.length}{' '}
         {included.length === 1 ? 'transaction' : 'transactions'}

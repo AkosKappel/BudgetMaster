@@ -9,6 +9,7 @@ import {
   Tag,
   Users,
   WalletCards,
+  Wand,
 } from 'lucide-react'
 
 import { AccountData } from '@/components/account-data'
@@ -130,6 +131,21 @@ function More() {
               <span className="font-medium">Categories</span>
               <span className="text-muted-foreground text-sm">
                 Names, groups, icons and colours
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/rules"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Wand className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Rules</span>
+              <span className="text-muted-foreground text-sm">
+                Categories picked automatically by payee
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />

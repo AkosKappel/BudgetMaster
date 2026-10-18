@@ -334,6 +334,32 @@ export const budget = pgTable(
   ],
 )
 
+// "Payee contains `match`" means this category (M-15). Matching is case-insensitive and
+// the longest match wins (src/lib/rules.ts). The composite key keeps the rule and its
+// category in the same space and of the same type.
+export const categorizationRule = pgTable(
+  'categorization_rule',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    type: categoryType().notNull(),
+    match: text().notNull(),
+    categoryId: uuid().notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    unique().on(t.spaceId, t.type, t.match),
+    check(
+      'categorization_rule_match_lowercase',
+      sql`${t.match} = lower(${t.match})`,
+    ),
+    foreignKey({
+      columns: [t.categoryId, t.spaceId, t.type],
+      foreignColumns: [category.id, category.spaceId, category.type],
+    }).onDelete('cascade'),
+  ],
+)
+
 export const spaceRelations = relations(space, ({ many }) => ({
   members: many(spaceMember),
   invites: many(spaceInvite),

@@ -14,7 +14,14 @@ import {
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { category, tag, transaction, transactionTag, wallet } from '@/db/schema'
+import {
+  categorizationRule,
+  category,
+  tag,
+  transaction,
+  transactionTag,
+  wallet,
+} from '@/db/schema'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { checkMovement } from '@/server/movement'
@@ -26,7 +33,7 @@ export const getFormOptions = createServerFn({ method: 'GET' })
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const [wallets, categories, tags] = await Promise.all([
+    const [wallets, categories, tags, rules] = await Promise.all([
       db
         .select({
           id: wallet.id,
@@ -55,8 +62,22 @@ export const getFormOptions = createServerFn({ method: 'GET' })
         .from(tag)
         .where(eq(tag.spaceId, space.id))
         .orderBy(asc(tag.name)),
+      db
+        .select({
+          type: categorizationRule.type,
+          match: categorizationRule.match,
+          categoryId: categorizationRule.categoryId,
+        })
+        .from(categorizationRule)
+        .where(eq(categorizationRule.spaceId, space.id)),
     ])
-    return { wallets, categories, tags, canWrite: space.role !== 'viewer' }
+    return {
+      wallets,
+      categories,
+      tags,
+      rules,
+      canWrite: space.role !== 'viewer',
+    }
   })
 
 // Payee memory: the payees used most, each with the category and wallet of its latest

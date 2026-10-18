@@ -23,6 +23,7 @@ import {
   User,
   Users,
   WalletCards,
+  Wand,
 } from 'lucide-react'
 import { useRef, useState, useSyncExternalStore } from 'react'
 
@@ -245,6 +246,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/wallets' }))}>
             <WalletCards />
             Manage wallets
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/rules' }))}>
+            <Wand />
+            Categorisation rules
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/tags' }))}>
             <Tag />
