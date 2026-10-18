@@ -48,6 +48,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           'Track income, expenses and budgets on your phone, alone or with a partner. Try the demo without signing up.',
       },
     ],
+    // Zod 4 compiles schemas with `new Function` unless told not to, and even its caught
+    // probe is reported as a CSP violation. The setting is read when a schema is created,
+    // so it has to exist before any module runs: an inline script (it gets the CSP nonce).
+    scripts: [{ children: 'globalThis.__zod_globalConfig={jitless:true}' }],
     links: [
       {
         rel: 'stylesheet',
