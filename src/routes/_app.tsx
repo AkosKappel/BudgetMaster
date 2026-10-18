@@ -7,6 +7,7 @@ import { CrossTabSync, OfflineNotice } from '@/components/app-sync'
 import { CommandPalette, SearchButton } from '@/components/command-palette'
 import { DemoBanner } from '@/components/demo-banner'
 import { QuickAddDrawer } from '@/components/quick-add'
+import { ShortcutsHelp } from '@/components/shortcuts-help'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formOptionsQuery, sessionQuery, spacesQuery } from '@/lib/queries'
@@ -70,6 +71,7 @@ function AppShell() {
       <QuickAddDrawer />
       <CommandPalette />
       <CrossTabSync />
+      <ShortcutsHelp />
     </div>
   )
 }

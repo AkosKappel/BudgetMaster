@@ -10,6 +10,7 @@ import {
   FileUp,
   Gauge,
   House,
+  Keyboard,
   LogOut,
   Minus,
   Plus,
@@ -46,11 +47,21 @@ import {
   useSwitchSpace,
 } from '@/lib/queries'
 import { cn } from '@/lib/utils'
-import { useCommandPalette } from '@/stores/command-palette'
+import { useCommandPalette, useShortcutsHelp } from '@/stores/command-palette'
 import { useQuickAdd } from '@/stores/quick-add'
 
 const PALETTE_HOTKEY = 'Mod+K'
 const QUICK_ADD_HOTKEY = 'N'
+const HELP_HOTKEY = 'Shift+/'
+
+// Shown in the shortcuts help; the sidebar toggle lives in app-nav.
+export const SHORTCUTS = [
+  { keys: PALETTE_HOTKEY, action: 'Search and commands' },
+  { keys: QUICK_ADD_HOTKEY, action: 'Add a transaction' },
+  { keys: 'Mod+B', action: 'Collapse or expand the sidebar' },
+  { keys: HELP_HOTKEY, action: 'Show these shortcuts' },
+  { keys: 'Escape', action: 'Close a sheet or dialog' },
+] as const
 
 // The platform (Ctrl or ⌘) is only known in the browser, so the hint renders after hydration.
 const useIsClient = () =>
@@ -79,6 +90,8 @@ export function CommandPalette() {
   })
 
   useHotkey(PALETTE_HOTKEY, () => setOpen(!open))
+  const setShortcutsOpen = useShortcutsHelp((s) => s.setOpen)
+  useHotkey(HELP_HOTKEY, () => setShortcutsOpen(true), { enabled: !open })
   // Single keys are ignored while typing in a field.
   useHotkey(QUICK_ADD_HOTKEY, () => openNew(), { enabled: !open })
 
@@ -244,6 +257,10 @@ export function CommandPalette() {
         </CommandGroup>
 
         <CommandGroup heading="Account">
+          <CommandItem onSelect={run(() => setShortcutsOpen(true))}>
+            <Keyboard />
+            Keyboard shortcuts
+          </CommandItem>
           <CommandItem onSelect={run(() => signOut())}>
             <LogOut />
             Sign out

@@ -123,3 +123,15 @@ test('public pages have no axe violations', async ({ page }) => {
   const securityTxt = await page.request.get('/.well-known/security.txt')
   expect(await securityTxt.text()).toContain('Contact: https://')
 })
+
+test('? opens the keyboard shortcuts help', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Keyboard shortcuts are for desktop')
+  await startDemo(page)
+  await page.keyboard.press('Shift+Slash')
+  const dialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText('Add a transaction')
+  await expectNoAxeViolations(page)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+})

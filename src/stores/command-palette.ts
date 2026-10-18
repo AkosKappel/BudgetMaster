@@ -24,3 +24,9 @@ export const useCommandPalette = create<CommandPaletteState>()((set) => ({
         : { open },
     ),
 }))
+
+// The keyboard shortcuts help, opened with ? or from the palette.
+export const useShortcutsHelp = create<{
+  open: boolean
+  setOpen: (open: boolean) => void
+}>()((set) => ({ open: false, setOpen: (open) => set({ open }) }))
