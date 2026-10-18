@@ -71,6 +71,19 @@ jobs:
         with:
           name: playwright-traces
           path: test-results/
+      # Desktop Lighthouse on the public pages: performance 90, accessibility, best practices
+      # and SEO 100, at most 300 KB of compressed JavaScript. CI only, never on the server.
+      - uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
+        env:
+          PORT: 3200
+          BETTER_AUTH_URL: http://localhost:3200
+        with:
+          configPath: ./lighthouserc.json
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-report
+          path: lighthouse-report/
 
   image:
     needs: [check, e2e]
