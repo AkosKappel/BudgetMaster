@@ -67,14 +67,20 @@ const requestLog = createMiddleware().server(async ({ request, next }) => {
     )
     return result
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        ...entry,
-        status: 500,
-        ms: Math.round(performance.now() - started),
-        error: error instanceof Error ? error.stack : String(error),
-      }),
-    )
+    const ms = Math.round(performance.now() - started)
+    // The browser went away (closed tab, cancelled fetch): not a server error.
+    if (request.signal.aborted) {
+      console.log(JSON.stringify({ ...entry, status: 499, ms }))
+    } else {
+      console.error(
+        JSON.stringify({
+          ...entry,
+          status: 500,
+          ms,
+          error: error instanceof Error ? error.stack : String(error),
+        }),
+      )
+    }
     throw error
   }
 })
