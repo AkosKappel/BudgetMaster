@@ -39,9 +39,17 @@ checkout can change branches, rebuild and reset its database without touching it
 
 ## Backups
 
-The database lives in the `budgetmaster-prod_dbdata` volume. Nightly `pg_dump` is backlog
-item H-02; until then:
-`docker compose exec db pg_dump -U budgetmaster budgetmaster > budgetmaster-$(date +%F).sql`
+The `backup` service writes `budgetmaster-YYYY-MM-DD.dump` to `BACKUP_DIR` once at start and
+then every 24 hours, keeping 14 days. They protect against mistakes and bad migrations, not
+against losing this machine: copy the folder elsewhere (backlog H-02).
+
+Restore a dump (stops nothing, replaces the data):
+
+```bash
+docker compose exec -T db pg_restore -U budgetmaster -d budgetmaster --clean --if-exists < ~/backups/budgetmaster/budgetmaster-2026-10-18.dump
+```
+
+Test a restore now and then into a scratch database before you need it.
 
 ## Registry access
 

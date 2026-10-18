@@ -71,6 +71,38 @@ services:
     networks:
       - app-network
 
+  # Nightly compressed dump of the database into BACKUP_DIR on the host, kept for 14 days.
+  # Copy that folder off the machine for protection against disk loss (H-02).
+  backup:
+    image: postgres:18
+    container_name: budgetmaster-prod-backup
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    environment:
+      PGHOST: db
+      PGUSER: budgetmaster
+      PGDATABASE: budgetmaster
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ${BACKUP_DIR:-./backups}:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          pg_dump --format=custom --file="/backups/budgetmaster-$$(date +%F).dump" \
+            && find /backups -name 'budgetmaster-*.dump' -mtime +14 -delete \
+            && echo "backup written $$(date +%F)"
+          sleep 86400
+        done
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
 volumes:
   dbdata:
 
