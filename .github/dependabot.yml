@@ -1,0 +1,54 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+      database-and-auth:
+        patterns:
+          - drizzle-orm
+          - drizzle-kit
+          - postgres
+          - better-auth
+      tooling:
+        patterns:
+          - "@biomejs/biome"
+          - "@playwright/test"
+          - "@axe-core/playwright"
+          - "@types/node"
+          - typescript
+          - vite
+          - tailwindcss
+          - "@tailwindcss/vite"
+      everything-else:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - "*"

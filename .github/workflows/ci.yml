@@ -94,12 +94,28 @@ jobs:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha
-      # Pull requests only build, to catch Dockerfile breakage; main also pushes to GHCR.
+      # Build into the local Docker engine first, so the scan sees the exact image.
       - uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' }}
+          load: true
+          tags: budgetmaster:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Fails on fixable high or critical vulnerabilities; scans never run on the home server.
+      # Pinned to a commit: this action's tags were hijacked in a 2026 supply-chain attack.
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: budgetmaster:scan
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      # Pull requests only build and scan; main also pushes to GHCR (from the build cache).
+      - if: github.event_name == 'push'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
