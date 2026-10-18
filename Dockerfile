@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-slim AS build
+FROM node:26-slim AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@12 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -12,7 +12,7 @@ RUN pnpm build \
     && mkdir -p /migrate/node_modules \
     && cp -rL node_modules/drizzle-orm node_modules/postgres /migrate/node_modules/
 
-FROM node:24-slim
+FROM node:26-slim
 # Security patches newer than the base image, and no package managers at runtime: the app
 # never installs anything, and npm, yarn and corepack carried their own vulnerable
 # dependencies (found by the Trivy scan in CI).
