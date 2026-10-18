@@ -1,30 +1,20 @@
 import { createServerFn } from '@tanstack/react-start'
 import {
   and,
-  between,
   eq,
   gte,
   ilike,
   inArray,
-  isNull,
   lt,
   lte,
   or,
   type SQL,
-  sum,
 } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import {
-  budget,
-  category,
-  transaction,
-  transactionTag,
-  wallet,
-} from '@/db/schema'
+import { category, transaction, transactionTag } from '@/db/schema'
 import { currencyDigits } from '@/lib/money'
-import { budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import {
   type TransactionFilters,
@@ -67,31 +57,9 @@ export const getOverview = createServerFn({ method: 'GET' })
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
     await createDueTransactions(space.id, today)
-    const period = budgetPeriod(today, space.budgetMonthStartDay)
-
-    // Totals only count wallets in the base currency until exchange rates exist (I-05).
-    const [wallets, totals, [overall], recent] = await Promise.all([
+    // Budget totals for Home come from the budget report (src/server/budgets.ts).
+    const [wallets, recent] = await Promise.all([
       walletBalances(space.id, today),
-      db
-        .select({
-          type: transaction.type,
-          total: sum(transaction.amount).mapWith(Number),
-        })
-        .from(transaction)
-        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-        .where(
-          and(
-            eq(transaction.spaceId, space.id),
-            eq(wallet.currency, space.baseCurrency),
-            inArray(transaction.type, ['income', 'expense']),
-            between(transaction.date, period.start, today),
-          ),
-        )
-        .groupBy(transaction.type),
-      db
-        .select({ amount: budget.amount })
-        .from(budget)
-        .where(and(eq(budget.spaceId, space.id), isNull(budget.categoryId))),
       db.query.transaction.findMany({
         columns: transactionColumns,
         with: transactionWith,
@@ -101,18 +69,7 @@ export const getOverview = createServerFn({ method: 'GET' })
         limit: 5,
       }),
     ])
-
-    const totalOf = (type: 'income' | 'expense') =>
-      totals.find((t) => t.type === type)?.total ?? 0
-    return {
-      today,
-      period,
-      spent: totalOf('expense'),
-      income: totalOf('income'),
-      budget: overall?.amount ?? null,
-      wallets,
-      recent,
-    }
+    return { today, wallets, recent }
   })
 
 // `ilike` pattern that matches the text anywhere, with the user's % and _ taken literally.

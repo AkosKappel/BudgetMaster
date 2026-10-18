@@ -30,55 +30,67 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
     const previous = budgetPeriod(addMonths(period.start, -1), startDay)
     const asOf = data.offset === 0 ? today : period.end
 
-    const expensesIn = (from: string, to: string) =>
+    const movementsIn = (
+      type: 'income' | 'expense',
+      from: string,
+      to: string,
+    ) =>
       and(
         eq(transaction.spaceId, space.id),
-        eq(transaction.type, 'expense'),
+        eq(transaction.type, type),
         eq(wallet.currency, space.baseCurrency),
         between(transaction.date, from, to),
       )
+    const expensesIn = (from: string, to: string) =>
+      movementsIn('expense', from, to)
 
-    const [byCategory, byDay, categories, budgets] = await Promise.all([
-      db
-        .select({
-          categoryId: transaction.categoryId,
-          total: sum(transaction.amount).mapWith(Number),
-        })
-        .from(transaction)
-        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-        .where(expensesIn(period.start, asOf))
-        .groupBy(transaction.categoryId),
-      db
-        .select({
-          date: transaction.date,
-          total: sum(transaction.amount).mapWith(Number),
-        })
-        .from(transaction)
-        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-        .where(expensesIn(previous.start, asOf))
-        .groupBy(transaction.date),
-      db
-        .select({
-          id: category.id,
-          name: category.name,
-          icon: category.icon,
-          color: category.color,
-          parentId: category.parentId,
-          archived: sql<boolean>`${category.archivedAt} is not null`,
-        })
-        .from(category)
-        .where(
-          and(eq(category.spaceId, space.id), eq(category.type, 'expense')),
-        ),
-      db
-        .select({
-          id: budget.id,
-          categoryId: budget.categoryId,
-          amount: budget.amount,
-        })
-        .from(budget)
-        .where(eq(budget.spaceId, space.id)),
-    ])
+    const [byCategory, byDay, categories, budgets, [incomeRow]] =
+      await Promise.all([
+        db
+          .select({
+            categoryId: transaction.categoryId,
+            total: sum(transaction.amount).mapWith(Number),
+          })
+          .from(transaction)
+          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+          .where(expensesIn(period.start, asOf))
+          .groupBy(transaction.categoryId),
+        db
+          .select({
+            date: transaction.date,
+            total: sum(transaction.amount).mapWith(Number),
+          })
+          .from(transaction)
+          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+          .where(expensesIn(previous.start, asOf))
+          .groupBy(transaction.date),
+        db
+          .select({
+            id: category.id,
+            name: category.name,
+            icon: category.icon,
+            color: category.color,
+            parentId: category.parentId,
+            archived: sql<boolean>`${category.archivedAt} is not null`,
+          })
+          .from(category)
+          .where(
+            and(eq(category.spaceId, space.id), eq(category.type, 'expense')),
+          ),
+        db
+          .select({
+            id: budget.id,
+            categoryId: budget.categoryId,
+            amount: budget.amount,
+          })
+          .from(budget)
+          .where(eq(budget.spaceId, space.id)),
+        db
+          .select({ total: sum(transaction.amount).mapWith(Number) })
+          .from(transaction)
+          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+          .where(movementsIn('income', period.start, asOf)),
+      ])
 
     const own = new Map(byCategory.map((r) => [r.categoryId, r.total]))
     const childrenOf = (id: string) =>
@@ -168,6 +180,7 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       currency: space.baseCurrency,
       canWrite: space.role !== 'viewer',
       spent,
+      income: incomeRow?.total ?? 0,
       overall: overall && { id: overall.id, amount: overall.amount },
       categoryBudgets,
       breakdown,

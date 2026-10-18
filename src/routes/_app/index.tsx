@@ -1,7 +1,12 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, ReceiptText } from 'lucide-react'
-import { AnimatePresence } from 'motion/react'
+import {
+  keepPreviousData,
+  useQuery,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { ChevronLeft, ChevronRight, Plus, ReceiptText } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { z } from 'zod'
 
 import { BudgetMeter, budgetStatus } from '@/components/budget-meter'
 import { EmptyState } from '@/components/empty-state'
@@ -16,40 +21,36 @@ import { cn } from '@/lib/utils'
 import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/')({
-  loader: ({ context }) =>
+  // `?month=-1` shows the previous budget month in the hero, like on Budgets.
+  // Optional, so the current month keeps the plain `/` URL.
+  validateSearch: z.object({
+    month: z.int().min(-36).max(-1).optional().catch(undefined),
+  }),
+  loaderDeps: ({ search }) => ({ month: search.month ?? 0 }),
+  loader: ({ context, deps }) =>
     Promise.all([
       context.queryClient.ensureQueryData(overviewQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(
         budgetReportQuery(context.activeSpaceId, 0),
       ),
+      context.queryClient.ensureQueryData(
+        budgetReportQuery(context.activeSpaceId, deps.month),
+      ),
     ]),
   component: Home,
 })
 
-const daysBetween = (from: string, to: string) =>
-  Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000)
-
 function Home() {
   const space = useActiveSpace()
+  const month = Route.useSearch().month ?? 0
   const { data } = useSuspenseQuery(overviewQuery(space.id))
   const { openEdit, openNew } = useQuickAdd()
-  const money = (minor: number) => formatMoney(minor, space.baseCurrency)
-  const daysLeft = daysBetween(data.today, data.period.end) + 1
-  const daysText = `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left.`
 
   return (
     <div className="flex flex-col gap-10">
-      <BudgetHero
-        budget={data.budget}
-        spent={data.spent}
-        income={data.income}
-        periodStart={data.period.start}
-        periodEnd={data.period.end}
-        daysText={daysText}
-        money={money}
-      />
+      <BudgetHero spaceId={space.id} month={month} />
 
-      <BudgetWarnings spaceId={space.id} />
+      {month === 0 && <BudgetWarnings spaceId={space.id} />}
 
       <section aria-labelledby="wallets" className="flex flex-col gap-3">
         <h2 id="wallets" className="font-semibold text-lg">
@@ -138,46 +139,93 @@ function Home() {
   )
 }
 
-interface HeroProps {
-  budget: number | null
-  spent: number
-  income: number
-  periodStart: string
-  periodEnd: string
-  daysText: string
-  money: (minor: number) => string
-}
+// The budget month at a glance: what is left (or how far over), or what was spent without
+// a budget. Arrows and a horizontal swipe move between months.
+function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
+  const navigate = useNavigate({ from: '/' })
+  // Keeps the shown month while the next one loads: no flash.
+  const { data, isPlaceholderData } = useQuery({
+    ...budgetReportQuery(spaceId, month),
+    placeholderData: keepPreviousData,
+  })
+  if (!data) return null
 
-function BudgetHero({
-  budget,
-  spent,
-  income,
-  periodStart,
-  periodEnd,
-  daysText,
-  money,
-}: HeroProps) {
-  const left = budget === null ? null : budget - spent
+  const money = (minor: number) => formatMoney(minor, data.currency)
+  const budget = data.overall?.amount ?? null
+  const left = budget === null ? null : budget - data.spent
   const over = left !== null && left < 0
+  const until = formatShortDate(data.period.end)
+  const days = `${data.daysLeft} ${data.daysLeft === 1 ? 'day' : 'days'} left`
+  const goTo = (next: number) =>
+    next <= 0 &&
+    navigate({
+      search: { month: next === 0 ? undefined : next },
+      replace: true,
+    })
 
-  let label = `Spent since ${formatShortDate(periodStart)}`
-  let amount = money(spent)
-  let detail = `Income ${money(income)}. ${daysText} Set a monthly budget to see what you can still spend.`
-  if (budget !== null && left !== null) {
+  let label: string
+  let detail: string
+  if (left === null) {
+    label = data.isCurrent
+      ? `Spent since ${formatShortDate(data.period.start)}`
+      : 'Spent'
+    detail = data.isCurrent
+      ? `Income ${money(data.income)}. ${days}. Set a monthly budget to see what you can still spend.`
+      : `Income ${money(data.income)}.`
+  } else {
     label = over
       ? 'Over budget by'
-      : `Left to spend until ${formatShortDate(periodEnd)}`
-    amount = money(Math.abs(left))
-    detail = `Spent ${money(spent)} of ${money(budget)}. ${daysText.replace('.', ` until ${formatShortDate(periodEnd)}.`)}`
+      : data.isCurrent
+        ? `Left to spend until ${until}`
+        : 'Under budget by'
+    detail = `Spent ${money(data.spent)} of ${money(budget ?? 0)}.${data.isCurrent ? ` ${days} until ${until}.` : ''}`
   }
-  const used = budget ? Math.min(100, (spent / budget) * 100) : 0
+  const used = budget ? Math.min(100, (data.spent / budget) * 100) : 0
 
   return (
-    <section
+    <motion.section
       aria-labelledby="budget-heading"
-      className="relative isolate overflow-hidden rounded-xl border bg-card px-5 py-7"
+      className={cn(
+        'relative isolate touch-pan-y overflow-hidden rounded-xl border bg-card px-5 pt-3 pb-7 transition-opacity',
+        isPlaceholderData && 'opacity-60',
+      )}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.15}
+      onDragEnd={(_, info) => {
+        if (info.offset.x > 80) goTo(month - 1)
+        else if (info.offset.x < -80) goTo(month + 1)
+      }}
     >
       <Guilloche className="mask-l-from-55% mask-l-to-90% absolute -top-16 -right-20 -z-10 size-72 text-note/45" />
+      <nav
+        aria-label="Budget month"
+        className="-mx-3 mb-3 flex items-center gap-1 text-muted-foreground text-sm"
+      >
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Previous month"
+          disabled={month <= -36}
+          onClick={() => goTo(month - 1)}
+        >
+          <ChevronLeft />
+        </Button>
+        <p className="min-w-0 flex-1 text-center" aria-live="polite">
+          {data.isCurrent
+            ? 'This month'
+            : `${formatShortDate(data.period.start)} to ${until}`}
+        </p>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Next month"
+          disabled={month >= 0}
+          onClick={() => goTo(month + 1)}
+        >
+          <ChevronRight />
+        </Button>
+      </nav>
       <h1 id="budget-heading" className="text-muted-foreground text-sm">
         {label}
       </h1>
@@ -187,7 +235,7 @@ function BudgetHero({
           over && 'text-destructive',
         )}
       >
-        {amount}
+        {money(left === null ? data.spent : Math.abs(left))}
       </p>
       {budget !== null && (
         <div
@@ -208,7 +256,7 @@ function BudgetHero({
         </div>
       )}
       <p className="mt-3 max-w-prose text-muted-foreground text-sm">{detail}</p>
-    </section>
+    </motion.section>
   )
 }
 
