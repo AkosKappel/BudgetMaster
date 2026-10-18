@@ -18,3 +18,5 @@ BACKLOG.md
 # Playwright
 test-results
 playwright-report
+deploy/.env
+deploy/tailscale/ts.env
