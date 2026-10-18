@@ -25,6 +25,9 @@
   --destructive-foreground: #fafbf8;
   --income: #1f7a5a;
   --note: #4b3f8f;
+  --warning: #9a6412;
+  /* De-emphasised series (last month); validated for 3:1 on the card surface. */
+  --chart-muted: #7a8a84;
   --border: #d3dcd3;
   --input: #c5d0c6;
   --ring: #4b3f8f;
@@ -55,6 +58,8 @@
   --destructive-foreground: #0f1d1a;
   --income: #5cc495;
   --note: #a99bf0;
+  --warning: #e0a84a;
+  --chart-muted: #6f817b;
   --border: #263d38;
   --input: #2f4842;
   --ring: #a99bf0;
@@ -86,6 +91,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-income: var(--income);
   --color-note: var(--note);
+  --color-warning: var(--warning);
+  --color-chart-muted: var(--chart-muted);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

@@ -7,6 +7,7 @@ import {
 import { useState } from 'react'
 
 import { getSession } from '@/server/auth'
+import { getBudgetReport } from '@/server/budgets'
 import {
   getOverview,
   listTransactions,
@@ -76,6 +77,12 @@ export const inviteQuery = (token: string) =>
   queryOptions({
     queryKey: ['invite', token],
     queryFn: () => getInvite({ data: { token } }),
+  })
+
+export const budgetReportQuery = (spaceId: string, offset: number) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'budgets', offset],
+    queryFn: () => getBudgetReport({ data: { spaceId, offset } }),
   })
 
 export function useSpaces() {

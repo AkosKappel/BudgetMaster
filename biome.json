@@ -1,15 +1,28 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "ignoreUnknown": true,
     "includes": ["**", "!src/routeTree.gen.ts", "!drizzle"]
   },
-  "formatter": { "indentStyle": "space" },
-  "javascript": {
-    "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" }
+  "formatter": {
+    "indentStyle": "space"
   },
-  "css": { "parser": { "tailwindDirectives": true } },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "linter": {
     "rules": {
       "preset": "recommended",
@@ -17,10 +30,33 @@
         "useSortedClasses": {
           "level": "warn",
           "fix": "safe",
-          "options": { "functions": ["cn", "cva"] }
+          "options": {
+            "functions": ["cn", "cva"]
+          }
         }
       }
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } }
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    }
+  ]
 }
