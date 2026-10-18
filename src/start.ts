@@ -44,6 +44,41 @@ const securityHeaders = createMiddleware().server(({ next }) => {
   return next({ context: { nonce } })
 })
 
+// One JSON line per request in production, for `docker compose logs`. The query string is
+// left out: it can hold search text such as payee names. Errors keep their stack trace.
+const requestLog = createMiddleware().server(async ({ request, next }) => {
+  if (!import.meta.env.PROD) return next()
+  const started = performance.now()
+  const id = crypto.randomUUID()
+  setResponseHeaders(new Headers({ 'X-Request-Id': id }))
+  const entry = {
+    id,
+    method: request.method,
+    path: new URL(request.url).pathname,
+  }
+  try {
+    const result = await next()
+    console.log(
+      JSON.stringify({
+        ...entry,
+        status: result.response.status,
+        ms: Math.round(performance.now() - started),
+      }),
+    )
+    return result
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        ...entry,
+        status: 500,
+        ms: Math.round(performance.now() - started),
+        error: error instanceof Error ? error.stack : String(error),
+      }),
+    )
+    throw error
+  }
+})
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [csrf, securityHeaders],
+  requestMiddleware: [requestLog, csrf, securityHeaders],
 }))
