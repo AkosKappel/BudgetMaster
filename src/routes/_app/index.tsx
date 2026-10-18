@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Plus, ReceiptText } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 
+import { BudgetMeter, budgetStatus } from '@/components/budget-meter'
 import { EmptyState } from '@/components/empty-state'
 import { Guilloche } from '@/components/guilloche'
 import { TransactionRow } from '@/components/transaction-row'
@@ -10,13 +11,18 @@ import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
-import { overviewQuery, useActiveSpace } from '@/lib/queries'
+import { budgetReportQuery, overviewQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/')({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(overviewQuery(context.activeSpaceId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(overviewQuery(context.activeSpaceId)),
+      context.queryClient.ensureQueryData(
+        budgetReportQuery(context.activeSpaceId, 0),
+      ),
+    ]),
   component: Home,
 })
 
@@ -42,6 +48,8 @@ function Home() {
         daysText={daysText}
         money={money}
       />
+
+      <BudgetWarnings spaceId={space.id} />
 
       <section aria-labelledby="wallets" className="flex flex-col gap-3">
         <h2 id="wallets" className="font-semibold text-lg">
@@ -191,6 +199,59 @@ function BudgetHero({
         </div>
       )}
       <p className="mt-3 max-w-prose text-muted-foreground text-sm">{detail}</p>
+    </section>
+  )
+}
+
+// Category budgets that are close to or over their limit this month; nothing when all is fine.
+function BudgetWarnings({ spaceId }: { spaceId: string }) {
+  const { data } = useSuspenseQuery(budgetReportQuery(spaceId, 0))
+  const warnings = data.categoryBudgets
+    .filter((b) => budgetStatus(b.spent, b.amount) !== 'ok')
+    .sort((a, b) => b.spent / b.amount - a.spent / a.amount)
+  if (warnings.length === 0) return null
+
+  return (
+    <section aria-labelledby="warnings" className="flex flex-col gap-3">
+      <div className="flex items-baseline justify-between">
+        <h2 id="warnings" className="font-semibold text-lg">
+          Needs attention
+        </h2>
+        <Link
+          to="/budgets"
+          className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+        >
+          All budgets
+        </Link>
+      </div>
+      <ul className="divide-y rounded-lg border bg-card">
+        {warnings.map((b) => {
+          const Icon = iconFor(b.icon)
+          return (
+            <li key={b.id} className="flex flex-col gap-2 px-4 py-3">
+              <span className="flex items-center gap-2">
+                <Icon
+                  className="size-4 shrink-0"
+                  style={{ color: b.color }}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 flex-1 truncate font-medium">
+                  {b.name}
+                </span>
+                <span className="text-sm">
+                  {formatMoney(b.spent, data.currency)}
+                </span>
+              </span>
+              <BudgetMeter
+                spent={b.spent}
+                limit={b.amount}
+                currency={data.currency}
+                daysLeft={data.daysLeft}
+              />
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }
