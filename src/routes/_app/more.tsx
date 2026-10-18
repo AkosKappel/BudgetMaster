@@ -12,6 +12,7 @@ import { AccountData } from '@/components/account-data'
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
 import { EmptyState } from '@/components/empty-state'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/_app/more')({
@@ -88,6 +89,7 @@ function More() {
           </Link>
         </li>
       </ul>
+      <ThemeSwitch />
       <AccountData />
       <EmptyState icon={Ellipsis}>
         Tags, recurring payments and settings will live here too.

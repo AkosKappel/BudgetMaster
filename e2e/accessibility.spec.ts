@@ -77,3 +77,17 @@ test('pages reflow at 320 px without horizontal scrolling', async ({
       .toBeLessThanOrEqual(0)
   }
 })
+
+test.describe('dark mode', () => {
+  // The default theme follows the system, so this checks the dark tokens' contrast.
+  test.use({ colorScheme: 'dark' })
+
+  test('app pages have no axe violations in dark mode', async ({ page }) => {
+    await startDemo(page)
+    for (const path of ['/', '/activity', '/budgets', '/wallets', '/more']) {
+      await page.goto(path)
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      await expectNoAxeViolations(page)
+    }
+  })
+})

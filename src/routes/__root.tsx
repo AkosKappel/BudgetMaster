@@ -10,6 +10,7 @@ import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
 
 import { Toaster } from '@/components/ui/sonner'
+import { getTheme } from '@/lib/theme'
 import { TIME_ZONE_COOKIE } from '@/lib/today'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
@@ -30,7 +31,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: 'theme-color',
+        media: '(prefers-color-scheme: light)',
         content: '#f1f4ef',
+      },
+      {
+        name: 'theme-color',
+        media: '(prefers-color-scheme: dark)',
+        content: '#0f1d1a',
       },
       {
         title: 'BudgetMaster',
@@ -47,12 +54,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       { rel: 'manifest', href: '/manifest.webmanifest' },
     ],
   }),
+  beforeLoad: () => ({ theme: getTheme() }),
   shellComponent: RootDocument,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { theme } = Route.useRouteContext()
   return (
-    <html lang="en">
+    // The theme switch changes data-theme on the client before the next render.
+    <html lang="en" data-theme={theme} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

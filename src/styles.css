@@ -2,72 +2,61 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/schibsted-grotesk";
 
-@custom-variant dark (&:is(.dark *));
+/* Theme: `data-theme` on <html> comes from the theme cookie during SSR. "system" follows
+   the OS through `color-scheme`; every token below is light-dark(light, dark). */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme="system"], [data-theme="system"] *) {
+      @slot;
+    }
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
 
 /* "Security print": paper and ink like a banknote. Expenses are plain ink, income is
    ledger green, crimson is kept for overspending and destructive actions only. */
 :root {
-  --background: #f1f4ef;
-  --foreground: #16302b;
-  --card: #fafbf8;
-  --card-foreground: #16302b;
-  --popover: #fafbf8;
-  --popover-foreground: #16302b;
-  --primary: #16302b;
-  --primary-foreground: #f1f4ef;
-  --secondary: #e3e9e2;
-  --secondary-foreground: #16302b;
-  --muted: #e3e9e2;
-  --muted-foreground: #50635e;
-  --accent: #e3e9e2;
-  --accent-foreground: #16302b;
-  --destructive: #b4233c;
-  --destructive-foreground: #fafbf8;
-  --income: #1f7a5a;
-  --note: #4b3f8f;
-  --warning: #9a6412;
+  color-scheme: light dark;
+  --background: light-dark(#f1f4ef, #0f1d1a);
+  --foreground: light-dark(#16302b, #e6ece5);
+  --card: light-dark(#fafbf8, #152724);
+  --card-foreground: light-dark(#16302b, #e6ece5);
+  --popover: light-dark(#fafbf8, #152724);
+  --popover-foreground: light-dark(#16302b, #e6ece5);
+  --primary: light-dark(#16302b, #e6ece5);
+  --primary-foreground: light-dark(#f1f4ef, #0f1d1a);
+  --secondary: light-dark(#e3e9e2, #1c302c);
+  --secondary-foreground: light-dark(#16302b, #e6ece5);
+  --muted: light-dark(#e3e9e2, #1c302c);
+  --muted-foreground: light-dark(#50635e, #9db0a9);
+  --accent: light-dark(#e3e9e2, #1c302c);
+  --accent-foreground: light-dark(#16302b, #e6ece5);
+  --destructive: light-dark(#b4233c, #f06a7d);
+  --destructive-foreground: light-dark(#fafbf8, #0f1d1a);
+  --income: light-dark(#1f7a5a, #5cc495);
+  --note: light-dark(#4b3f8f, #a99bf0);
+  --warning: light-dark(#9a6412, #e0a84a);
   /* De-emphasised series (last month); validated for 3:1 on the card surface. */
-  --chart-muted: #7a8a84;
-  --border: #d3dcd3;
-  --input: #c5d0c6;
-  --ring: #4b3f8f;
-  --chart-1: #4b3f8f;
-  --chart-2: #1f7a5a;
-  --chart-3: #b7791f;
-  --chart-4: #2a7f8f;
-  --chart-5: #b4233c;
+  --chart-muted: light-dark(#7a8a84, #6f817b);
+  --border: light-dark(#d3dcd3, #263d38);
+  --input: light-dark(#c5d0c6, #2f4842);
+  --ring: light-dark(#4b3f8f, #a99bf0);
+  --chart-1: light-dark(#4b3f8f, #a99bf0);
+  --chart-2: light-dark(#1f7a5a, #5cc495);
+  --chart-3: light-dark(#b7791f, #e0a84a);
+  --chart-4: light-dark(#2a7f8f, #5fb8c7);
+  --chart-5: light-dark(#b4233c, #f06a7d);
   --radius: 0.5rem;
-}
-
-.dark {
-  --background: #0f1d1a;
-  --foreground: #e6ece5;
-  --card: #152724;
-  --card-foreground: #e6ece5;
-  --popover: #152724;
-  --popover-foreground: #e6ece5;
-  --primary: #e6ece5;
-  --primary-foreground: #0f1d1a;
-  --secondary: #1c302c;
-  --secondary-foreground: #e6ece5;
-  --muted: #1c302c;
-  --muted-foreground: #9db0a9;
-  --accent: #1c302c;
-  --accent-foreground: #e6ece5;
-  --destructive: #f06a7d;
-  --destructive-foreground: #0f1d1a;
-  --income: #5cc495;
-  --note: #a99bf0;
-  --warning: #e0a84a;
-  --chart-muted: #6f817b;
-  --border: #263d38;
-  --input: #2f4842;
-  --ring: #a99bf0;
-  --chart-1: #a99bf0;
-  --chart-2: #5cc495;
-  --chart-3: #e0a84a;
-  --chart-4: #5fb8c7;
-  --chart-5: #f06a7d;
 }
 
 @theme inline {
