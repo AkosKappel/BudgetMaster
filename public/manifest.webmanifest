@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "BudgetMaster",
   "short_name": "BudgetMaster",
   "description": "Track income and expenses, alone or as a household.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f1f4ef",
   "theme_color": "#f1f4ef",
@@ -19,5 +21,10 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    { "name": "Activity", "url": "/activity" },
+    { "name": "Budgets", "url": "/budgets" },
+    { "name": "Reports", "url": "/reports" }
   ]
 }

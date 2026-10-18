@@ -73,6 +73,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <TimeZoneCookie />
+        <ServiceWorker />
         <MotionConfig reducedMotion="user">{children}</MotionConfig>
         <Toaster />
         <TanStackDevtools
@@ -99,6 +100,16 @@ function TimeZoneCookie() {
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
     // biome-ignore lint/suspicious/noDocumentCookie: a plain preference cookie, read on the server
     document.cookie = `${TIME_ZONE_COOKIE}=${encodeURIComponent(zone)}; path=/; max-age=31536000; samesite=lax`
+  }, [])
+  return null
+}
+
+// Installable app with an offline page (public/sw.js). Production only: in development
+// it would serve stale Vite modules.
+function ServiceWorker() {
+  useEffect(() => {
+    if (import.meta.env.PROD && 'serviceWorker' in navigator)
+      navigator.serviceWorker.register('/sw.js')
   }, [])
   return null
 }
