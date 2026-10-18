@@ -21,6 +21,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
+import { Route as AppImportRouteImport } from './routes/_app/import'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppRecurringRouteImport } from './routes/_app/recurring'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
@@ -92,6 +93,11 @@ const AppCategoriesRoute = AppCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AppRoute,
 } as any)
+const AppImportRoute = AppImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMoreRoute = AppMoreRouteImport.update({
   id: '/more',
   path: '/more',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
+  '/import': typeof AppImportRoute
   '/more': typeof AppMoreRoute
   '/recurring': typeof AppRecurringRoute
   '/reports': typeof AppReportsRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
+  '/import': typeof AppImportRoute
   '/more': typeof AppMoreRoute
   '/recurring': typeof AppRecurringRoute
   '/reports': typeof AppReportsRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_app/activity': typeof AppActivityRoute
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
+  '/_app/import': typeof AppImportRoute
   '/_app/more': typeof AppMoreRoute
   '/_app/recurring': typeof AppRecurringRoute
   '/_app/reports': typeof AppReportsRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/budgets'
     | '/categories'
+    | '/import'
     | '/more'
     | '/recurring'
     | '/reports'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/budgets'
     | '/categories'
+    | '/import'
     | '/more'
     | '/recurring'
     | '/reports'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_app/activity'
     | '/_app/budgets'
     | '/_app/categories'
+    | '/_app/import'
     | '/_app/more'
     | '/_app/recurring'
     | '/_app/reports'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCategoriesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/import': {
+      id: '/_app/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof AppImportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/more': {
       id: '/_app/more'
       path: '/more'
@@ -481,6 +500,7 @@ interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
+  AppImportRoute: typeof AppImportRoute
   AppMoreRoute: typeof AppMoreRoute
   AppRecurringRoute: typeof AppRecurringRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -497,6 +517,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
+  AppImportRoute: AppImportRoute,
   AppMoreRoute: AppMoreRoute,
   AppRecurringRoute: AppRecurringRoute,
   AppReportsRoute: AppReportsRoute,

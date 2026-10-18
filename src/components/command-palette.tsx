@@ -7,6 +7,7 @@ import {
   ChartColumn,
   Check,
   Ellipsis,
+  FileUp,
   Gauge,
   House,
   LogOut,
@@ -215,6 +216,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
             Manage spaces and invites
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/import' }))}>
+            <FileUp />
+            Import a bank CSV
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/reports' }))}>
             <ChartColumn />
