@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { Guilloche } from '@/components/guilloche'
 import { Logo } from '@/components/logo'
+import { PublicFooter } from '@/components/public-page'
 import { authClient } from '@/lib/auth-client'
 
 // `?redirect=` on the auth pages: same-site paths only, never `//other.site`.
@@ -32,6 +33,7 @@ export function AuthPage({
         <h1 className="mt-6 font-semibold text-3xl tracking-tight">{title}</h1>
       </div>
       {children}
+      <PublicFooter />
     </main>
   )
 }

@@ -102,3 +102,21 @@ test('the welcome page has no axe violations', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
   await expectNoAxeViolations(page)
 })
+
+test('public pages have no axe violations', async ({ page }) => {
+  for (const [path, heading] of [
+    ['/about', 'About BudgetMaster'],
+    ['/faq', 'Frequently asked questions'],
+    ['/privacy', 'Privacy'],
+    ['/terms', 'Terms of use'],
+    ['/security', 'Security'],
+  ] as const) {
+    await page.goto(path)
+    await expect(
+      page.getByRole('heading', { level: 1, name: heading }),
+    ).toBeVisible()
+    await expectNoAxeViolations(page)
+  }
+  const securityTxt = await page.request.get('/.well-known/security.txt')
+  expect(await securityTxt.text()).toContain('Contact: https://')
+})
