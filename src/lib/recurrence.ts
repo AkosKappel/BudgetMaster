@@ -95,3 +95,40 @@ export function todayIn(timeZone: string | undefined, now = new Date()) {
 
 // Today on the user's own clock, for form defaults ("sv" formats as YYYY-MM-DD).
 export const localTodayIso = () => new Date().toLocaleDateString('sv')
+
+const ordinal = (n: number) => {
+  const suffix =
+    n % 10 === 1 && n !== 11
+      ? 'st'
+      : n % 10 === 2 && n !== 12
+        ? 'nd'
+        : n % 10 === 3 && n !== 13
+          ? 'rd'
+          : 'th'
+  return `${n}${suffix}`
+}
+
+// "Every month on the 25th", "Every 2 weeks on Monday", "Every year on 3 March".
+export function describeSchedule({ startDate, frequency, interval }: Schedule) {
+  const date = new Date(`${startDate}T00:00:00Z`)
+  const units = {
+    daily: 'day',
+    weekly: 'week',
+    monthly: 'month',
+    yearly: 'year',
+  }
+  const every =
+    interval === 1
+      ? `Every ${units[frequency]}`
+      : `Every ${interval} ${units[frequency]}s`
+  switch (frequency) {
+    case 'daily':
+      return every
+    case 'weekly':
+      return `${every} on ${date.toLocaleDateString('en-IE', { weekday: 'long', timeZone: 'UTC' })}`
+    case 'monthly':
+      return `${every} on the ${ordinal(date.getUTCDate())}`
+    case 'yearly':
+      return `${every} on ${date.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', timeZone: 'UTC' })}`
+  }
+}

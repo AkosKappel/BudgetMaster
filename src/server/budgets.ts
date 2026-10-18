@@ -8,6 +8,7 @@ import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
+import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
 
 const daysInRange = (start: string, end: string) =>
@@ -22,6 +23,7 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const startDay = space.budgetMonthStartDay
     const current = budgetPeriod(today, startDay)
     const period = budgetPeriod(addMonths(current.start, data.offset), startDay)

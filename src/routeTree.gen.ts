@@ -17,6 +17,7 @@ import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
+import { Route as AppRecurringRouteImport } from './routes/_app/recurring'
 import { Route as AppWalletsRouteImport } from './routes/_app/wallets'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
@@ -63,6 +64,11 @@ const AppMoreRoute = AppMoreRouteImport.update({
   path: '/more',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRecurringRoute = AppRecurringRouteImport.update({
+  id: '/recurring',
+  path: '/recurring',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWalletsRoute = AppWalletsRouteImport.update({
   id: '/wallets',
   path: '/wallets',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/more': typeof AppMoreRoute
+  '/recurring': typeof AppRecurringRoute
   '/wallets': typeof AppWalletsRoute
   '/api/health': typeof ApiHealthRoute
   '/invite/$token': typeof AppInviteTokenRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/more': typeof AppMoreRoute
+  '/recurring': typeof AppRecurringRoute
   '/wallets': typeof AppWalletsRoute
   '/api/health': typeof ApiHealthRoute
   '/': typeof AppIndexRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
   '/_app/more': typeof AppMoreRoute
+  '/_app/recurring': typeof AppRecurringRoute
   '/_app/wallets': typeof AppWalletsRoute
   '/api/health': typeof ApiHealthRoute
   '/_app/': typeof AppIndexRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/categories'
     | '/more'
+    | '/recurring'
     | '/wallets'
     | '/api/health'
     | '/invite/$token'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/categories'
     | '/more'
+    | '/recurring'
     | '/wallets'
     | '/api/health'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/_app/budgets'
     | '/_app/categories'
     | '/_app/more'
+    | '/_app/recurring'
     | '/_app/wallets'
     | '/api/health'
     | '/_app/'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMoreRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/recurring': {
+      id: '/_app/recurring'
+      path: '/recurring'
+      fullPath: '/recurring'
+      preLoaderRoute: typeof AppRecurringRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/wallets': {
       id: '/_app/wallets'
       path: '/wallets'
@@ -306,6 +325,7 @@ interface AppRouteChildren {
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
   AppMoreRoute: typeof AppMoreRoute
+  AppRecurringRoute: typeof AppRecurringRoute
   AppWalletsRoute: typeof AppWalletsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
@@ -318,6 +338,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
   AppMoreRoute: AppMoreRoute,
+  AppRecurringRoute: AppRecurringRoute,
   AppWalletsRoute: AppWalletsRoute,
   AppIndexRoute: AppIndexRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,

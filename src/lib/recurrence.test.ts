@@ -4,6 +4,8 @@ import { test } from 'node:test'
 import {
   addMonths,
   budgetPeriod,
+  describeSchedule,
+  type Frequency,
   nextOccurrence,
   nthOccurrence,
   occurrencesUntil,
@@ -98,4 +100,34 @@ test('todayIn uses the time zone and falls back to UTC', () => {
   assert.equal(todayIn('Europe/Bratislava', now), '2027-01-01')
   assert.equal(todayIn('America/New_York', now), '2026-12-31')
   assert.equal(todayIn('Not/AZone', now), '2026-12-31')
+})
+
+test('describeSchedule reads like a sentence', () => {
+  const rule = (
+    frequency: Frequency,
+    interval = 1,
+    startDate = '2026-10-25',
+  ) => ({
+    startDate,
+    frequency,
+    interval,
+  })
+  assert.equal(describeSchedule(rule('daily')), 'Every day')
+  assert.equal(describeSchedule(rule('monthly')), 'Every month on the 25th')
+  assert.equal(
+    describeSchedule(rule('monthly', 1, '2026-10-22')),
+    'Every month on the 22nd',
+  )
+  assert.equal(
+    describeSchedule(rule('monthly', 3, '2026-10-11')),
+    'Every 3 months on the 11th',
+  )
+  assert.equal(
+    describeSchedule(rule('weekly', 2, '2026-10-19')),
+    'Every 2 weeks on Monday',
+  )
+  assert.equal(
+    describeSchedule(rule('yearly', 1, '2026-03-03')),
+    'Every year on 3 March',
+  )
 })

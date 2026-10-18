@@ -15,6 +15,7 @@ import {
   searchTransactions,
   type TransactionCursor,
 } from '@/server/ledger'
+import { listRecurringRules } from '@/server/recurring'
 import { getInvite, getSpaceDetails } from '@/server/space-admin'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
 import { getFormOptions, suggestPayees } from '@/server/transactions'
@@ -67,6 +68,12 @@ export const walletsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'wallets'],
     queryFn: () => listWallets({ data: { spaceId } }),
+  })
+
+export const recurringQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'recurring'],
+    queryFn: () => listRecurringRules({ data: { spaceId } }),
   })
 
 export const payeesQuery = (spaceId: string, query: string) =>

@@ -3,6 +3,7 @@ import {
   ChevronRight,
   Ellipsis,
   LogOut,
+  Repeat,
   Shapes,
   Users,
   WalletCards,
@@ -75,6 +76,21 @@ function More() {
         </li>
         <li>
           <Link
+            to="/recurring"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Repeat className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Recurring</span>
+              <span className="text-muted-foreground text-sm">
+                Salary, rent and subscriptions, recorded automatically
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+        <li>
+          <Link
             to="/categories"
             className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           >
@@ -92,7 +108,7 @@ function More() {
       <ThemeSwitch />
       <AccountData />
       <EmptyState icon={Ellipsis}>
-        Tags, recurring payments and settings will live here too.
+        Tags and more settings will live here too.
       </EmptyState>
     </div>
   )

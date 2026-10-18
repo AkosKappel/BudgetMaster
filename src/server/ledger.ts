@@ -32,6 +32,7 @@ import {
 } from '@/lib/transaction-filters'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
+import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
 import { walletBalances } from '@/server/wallet-balances'
 
@@ -65,6 +66,7 @@ export const getOverview = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const period = budgetPeriod(today, space.budgetMonthStartDay)
 
     // Totals only count wallets in the base currency until exchange rates exist (I-05).
@@ -183,6 +185,7 @@ export const listTransactions = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const { cursor } = data
+    if (!cursor) await createDueTransactions(space.id, currentDay())
     const t = transaction
     const rows = await db.query.transaction.findMany({
       columns: transactionColumns,

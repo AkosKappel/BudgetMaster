@@ -17,6 +17,7 @@ import { db } from '@/db'
 import { category, tag, transaction, transactionTag, wallet } from '@/db/schema'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
+import { checkMovement } from '@/server/movement'
 import { spaceInput } from '@/server/spaces'
 
 // Wallets, categories and tags offered by the quick add form.
@@ -130,33 +131,15 @@ const transactionInput = spaceInput.extend({
 export type TransactionInput = z.input<typeof transactionInput>
 type ValidInput = z.output<typeof transactionInput>
 
-// Checks what the database cannot: the role, the category type, archived wallets and the
-// currency rule for `toAmount`. Returns the row to store.
+// Checks the role and the tags; checkMovement covers wallets, category and currencies.
+// Returns the row to store.
 async function prepare(userId: string, input: ValidInput) {
   const space = await requireMembership(userId, input.spaceId)
   if (space.role === 'viewer')
     throw new Error('Viewers cannot change this space.')
 
-  const isTransfer = input.type === 'transfer'
-  const walletIds = [input.walletId, input.toWalletId].filter(
-    (id): id is string => id !== null,
-  )
-  const [wallets, [cat], tags] = await Promise.all([
-    db
-      .select({ id: wallet.id, currency: wallet.currency })
-      .from(wallet)
-      .where(and(eq(wallet.spaceId, space.id), inArray(wallet.id, walletIds))),
-    input.categoryId
-      ? db
-          .select({ type: category.type })
-          .from(category)
-          .where(
-            and(
-              eq(category.spaceId, space.id),
-              eq(category.id, input.categoryId),
-            ),
-          )
-      : Promise.resolve([]),
+  const [movement, tags] = await Promise.all([
+    checkMovement(space.id, input),
     input.tagIds.length
       ? db
           .select({ id: tag.id })
@@ -164,19 +147,8 @@ async function prepare(userId: string, input: ValidInput) {
           .where(and(eq(tag.spaceId, space.id), inArray(tag.id, input.tagIds)))
       : Promise.resolve([]),
   ])
-
-  const from = wallets.find((w) => w.id === input.walletId)
-  const to = wallets.find((w) => w.id === input.toWalletId)
-  if (!from) throw new Error('Choose a wallet.')
   if (tags.length !== new Set(input.tagIds).size)
     throw new Error('Unknown tag.')
-  if (isTransfer) {
-    if (!to || to.id === from.id)
-      throw new Error('Choose a different target wallet.')
-  } else if (!cat || cat.type !== input.type) {
-    throw new Error(`Choose an ${input.type} category.`)
-  }
-  const sameCurrency = !isTransfer || to?.currency === from.currency
 
   return {
     space,
@@ -187,9 +159,7 @@ async function prepare(userId: string, input: ValidInput) {
       date: input.date,
       walletId: input.walletId,
       amount: input.amount,
-      categoryId: isTransfer ? null : input.categoryId,
-      toWalletId: isTransfer ? input.toWalletId : null,
-      toAmount: sameCurrency ? null : (input.toAmount ?? input.amount),
+      ...movement,
       payee: input.payee,
       note: input.note,
     },

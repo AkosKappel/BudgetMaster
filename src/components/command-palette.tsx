@@ -12,6 +12,7 @@ import {
   Minus,
   Plus,
   ReceiptText,
+  Repeat,
   Search,
   Settings2,
   Shapes,
@@ -212,6 +213,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
             Manage spaces and invites
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/recurring' }))}>
+            <Repeat />
+            Recurring payments
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/wallets' }))}>
             <WalletCards />
