@@ -14,6 +14,7 @@ import {
   ReceiptText,
   Search,
   Settings2,
+  Shapes,
   User,
   Users,
 } from 'lucide-react'
@@ -210,6 +211,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
             Manage spaces and invites
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/categories' }))}>
+            <Shapes />
+            Manage categories
           </CommandItem>
         </CommandGroup>
 

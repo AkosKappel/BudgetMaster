@@ -64,5 +64,27 @@ export const ICONS: Record<string, LucideIcon> = {
   zap: Zap,
 }
 
+// Swatches for the colour picker: the default categories' colours plus a neutral.
+export const COLORS = [
+  '#16a34a',
+  '#15803d',
+  '#059669',
+  '#0d9488',
+  '#65a30d',
+  '#ca8a04',
+  '#a16207',
+  '#ea580c',
+  '#dc2626',
+  '#e11d48',
+  '#db2777',
+  '#c026d3',
+  '#9333ea',
+  '#7c3aed',
+  '#4f46e5',
+  '#0284c7',
+  '#0891b2',
+  '#57534e',
+]
+
 export const iconFor = (name: string | null | undefined) =>
   (name && ICONS[name]) || Circle

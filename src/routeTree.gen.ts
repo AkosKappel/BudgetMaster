@@ -15,6 +15,7 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
+import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
 import { Route as AppSpacesIndexRouteImport } from './routes/_app/spaces/index'
@@ -50,6 +51,11 @@ const AppBudgetsRoute = AppBudgetsRouteImport.update({
   path: '/budgets',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCategoriesRoute = AppCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMoreRoute = AppMoreRouteImport.update({
   id: '/more',
   path: '/more',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/sign-up': typeof SignUpRoute
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
+  '/categories': typeof AppCategoriesRoute
   '/more': typeof AppMoreRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/sign-up': typeof SignUpRoute
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
+  '/categories': typeof AppCategoriesRoute
   '/more': typeof AppMoreRoute
   '/': typeof AppIndexRoute
   '/invite/$token': typeof AppInviteTokenRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/sign-up': typeof SignUpRoute
   '/_app/activity': typeof AppActivityRoute
   '/_app/budgets': typeof AppBudgetsRoute
+  '/_app/categories': typeof AppCategoriesRoute
   '/_app/more': typeof AppMoreRoute
   '/_app/': typeof AppIndexRoute
   '/_app/invite/$token': typeof AppInviteTokenRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/activity'
     | '/budgets'
+    | '/categories'
     | '/more'
     | '/invite/$token'
     | '/spaces/$spaceId'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/activity'
     | '/budgets'
+    | '/categories'
     | '/more'
     | '/'
     | '/invite/$token'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/_app/activity'
     | '/_app/budgets'
+    | '/_app/categories'
     | '/_app/more'
     | '/_app/'
     | '/_app/invite/$token'
@@ -205,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBudgetsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/categories': {
+      id: '/_app/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof AppCategoriesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/more': {
       id: '/_app/more'
       path: '/more'
@@ -246,6 +265,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppBudgetsRoute: typeof AppBudgetsRoute
+  AppCategoriesRoute: typeof AppCategoriesRoute
   AppMoreRoute: typeof AppMoreRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
@@ -256,6 +276,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppBudgetsRoute: AppBudgetsRoute,
+  AppCategoriesRoute: AppCategoriesRoute,
   AppMoreRoute: AppMoreRoute,
   AppIndexRoute: AppIndexRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,

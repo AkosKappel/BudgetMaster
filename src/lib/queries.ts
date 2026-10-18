@@ -8,6 +8,7 @@ import { useState } from 'react'
 import type { TransactionFilters } from '@/lib/transaction-filters'
 import { getSession } from '@/server/auth'
 import { getBudgetReport } from '@/server/budgets'
+import { listCategories } from '@/server/categories'
 import {
   getOverview,
   listTransactions,
@@ -53,6 +54,12 @@ export const formOptionsQuery = (spaceId: string) =>
     queryKey: ['space', spaceId, 'form-options'],
     queryFn: () => getFormOptions({ data: { spaceId } }),
     staleTime: 60_000,
+  })
+
+export const categoriesQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'categories'],
+    queryFn: () => listCategories({ data: { spaceId } }),
   })
 
 export const payeesQuery = (spaceId: string, query: string) =>
