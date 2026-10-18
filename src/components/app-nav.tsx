@@ -1,14 +1,17 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouteContext } from '@tanstack/react-router'
 import {
   Ellipsis,
   Gauge,
   House,
+  LogOut,
   type LucideIcon,
   Plus,
   ReceiptText,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 
+import { useSignOut } from '@/components/auth-page'
+import { SpaceSwitcher } from '@/components/space-switcher'
 import { Button } from '@/components/ui/button'
 import { useQuickAdd } from '@/stores/quick-add'
 
@@ -89,12 +92,15 @@ export function TabBar() {
 
 export function Sidebar() {
   const setQuickAddOpen = useQuickAdd((s) => s.setOpen)
+  const { user } = useRouteContext({ from: '/_app' })
+  const signOut = useSignOut()
 
   return (
     <aside className="sticky top-0 hidden h-dvh flex-col gap-8 border-r bg-card px-4 py-6 md:flex">
       <Link to="/" className="px-3 font-semibold text-lg tracking-tight">
         BudgetMaster
       </Link>
+      <SpaceSwitcher className="-my-4 w-full" />
       <Button
         size="lg"
         onClick={() => setQuickAddOpen(true)}
@@ -130,6 +136,20 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
+      <div className="mt-auto flex items-center gap-2 border-t pt-4">
+        <div className="min-w-0 flex-1 px-3">
+          <p className="truncate font-medium text-sm">{user.name}</p>
+          <p className="truncate text-muted-foreground text-xs">{user.email}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={signOut}
+          aria-label="Sign out"
+        >
+          <LogOut />
+        </Button>
+      </div>
     </aside>
   )
 }

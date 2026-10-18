@@ -30,6 +30,7 @@ import {
   wallet,
 } from '@/db/schema'
 import { createSpace } from '@/db/spaces'
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/demo'
 import {
   addDays,
   addMonths,
@@ -39,11 +40,7 @@ import {
   type Schedule,
 } from '@/lib/recurrence'
 
-// Public demo logins (shown on the sign-in page, see M-02), not secrets.
-const DEMO_PASSWORD = 'demo-budget-2026'
-const ALEX = 'demo@budgetmaster.app'
-const JORDAN = 'jordan@budgetmaster.app'
-const SAM = 'empty@budgetmaster.app'
+const [ALEX, JORDAN, SAM] = DEMO_ACCOUNTS.map((a) => a.email)
 
 type NewTransaction = typeof transaction.$inferInsert
 type NewWallet = Omit<typeof wallet.$inferInsert, 'spaceId'>

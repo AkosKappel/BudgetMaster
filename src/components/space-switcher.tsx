@@ -1,0 +1,62 @@
+import { Check, ChevronsUpDown, User, Users } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useActiveSpace, useSpaces, useSwitchSpace } from '@/lib/queries'
+import { cn } from '@/lib/utils'
+
+export function SpaceSwitcher({ className }: { className?: string }) {
+  const { spaces } = useSpaces()
+  const active = useActiveSpace()
+  const { switchTo, pendingId } = useSwitchSpace()
+  const ActiveIcon = active.personal ? User : Users
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className={cn('h-10 justify-start gap-2 px-3', className)}
+          aria-label={`Space: ${active.name}. Switch space`}
+          disabled={pendingId !== null}
+        >
+          <ActiveIcon />
+          <span className="truncate font-semibold">{active.name}</span>
+          <ChevronsUpDown className="ml-auto text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuLabel className="text-muted-foreground text-xs">
+          Spaces
+        </DropdownMenuLabel>
+        {spaces.map((s) => {
+          const Icon = s.personal ? User : Users
+          return (
+            <DropdownMenuItem
+              key={s.id}
+              onSelect={() => s.id !== active.id && switchTo(s.id)}
+              className="gap-3 py-2"
+            >
+              <Icon />
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate">{s.name}</span>
+                <span className="text-muted-foreground text-xs">
+                  {s.personal
+                    ? 'Only you'
+                    : `${s.memberCount} members, you are ${s.role}`}
+                </span>
+              </span>
+              {s.id === active.id && <Check className="ml-auto" />}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

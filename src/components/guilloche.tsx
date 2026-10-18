@@ -14,7 +14,8 @@ function ring(index: number, direction: 1 | -1) {
   let d = ''
   for (let p = 0; p <= POINTS; p++) {
     const t = (p / POINTS) * Math.PI * 2
-    const r = base + 6.5 * Math.sin(PETALS * t + direction * index * 0.42)
+    const r =
+      base + 6.5 * Math.sin(PETALS * t + direction * (index + 0.5) * 0.42)
     const x = (100 + r * Math.cos(t)).toFixed(1)
     const y = (100 + r * Math.sin(t)).toFixed(1)
     d += `${p ? 'L' : 'M'}${x} ${y}`

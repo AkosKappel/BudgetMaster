@@ -80,3 +80,6 @@ export function budgetPeriod(date: string, startDay: number) {
       : addMonths(startThisMonth, -1)
   return { start, end: addDays(addMonths(start, 1), -1) }
 }
+
+// Today as a calendar date in UTC, the same clock the seed uses.
+export const todayIso = () => new Date().toISOString().slice(0, 10)
