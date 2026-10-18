@@ -69,3 +69,14 @@ export function nextOccurrence(
     if (date > after) return date
   }
 }
+
+// The budget month containing `date` when months start on `startDay` (1 to 28): with
+// startDay 25, 2026-10-18 belongs to 2026-09-25 .. 2026-10-24.
+export function budgetPeriod(date: string, startDay: number) {
+  const startThisMonth = `${date.slice(0, 8)}${String(startDay).padStart(2, '0')}`
+  const start =
+    Number(date.slice(8)) >= startDay
+      ? startThisMonth
+      : addMonths(startThisMonth, -1)
+  return { start, end: addDays(addMonths(start, 1), -1) }
+}

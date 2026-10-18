@@ -3,6 +3,7 @@ import { test } from 'node:test'
 
 import {
   addMonths,
+  budgetPeriod,
   nextOccurrence,
   nthOccurrence,
   occurrencesUntil,
@@ -65,4 +66,27 @@ test('end date stops occurrences', () => {
   ])
   assert.equal(nextOccurrence(rule, '2026-03-10'), null)
   assert.equal(nextOccurrence(rule, '2026-02-01'), '2026-02-10')
+})
+
+test('budgetPeriod follows the start day across months and years', () => {
+  assert.deepEqual(budgetPeriod('2026-10-18', 1), {
+    start: '2026-10-01',
+    end: '2026-10-31',
+  })
+  assert.deepEqual(budgetPeriod('2026-10-18', 25), {
+    start: '2026-09-25',
+    end: '2026-10-24',
+  })
+  assert.deepEqual(budgetPeriod('2026-10-25', 25), {
+    start: '2026-10-25',
+    end: '2026-11-24',
+  })
+  assert.deepEqual(budgetPeriod('2027-01-10', 15), {
+    start: '2026-12-15',
+    end: '2027-01-14',
+  })
+  assert.deepEqual(budgetPeriod('2026-03-01', 28), {
+    start: '2026-02-28',
+    end: '2026-03-27',
+  })
 })

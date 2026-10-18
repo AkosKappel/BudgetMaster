@@ -1,5 +1,5 @@
 {
-  "id": "a060fb03-bc50-4617-8b2f-978f4a5a19d6",
+  "id": "141a2bdb-d3a1-4786-9deb-9608d7fdb8fd",
   "prevId": "bc9b30ac-1478-4d7b-9cad-a1d2e36b2bf5",
   "version": "7",
   "dialect": "postgresql",
@@ -370,9 +370,9 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -385,12 +385,6 @@
         "amount": {
           "name": "amount",
           "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "currency": {
-          "name": "currency",
-          "type": "char(3)",
           "primaryKey": false,
           "notNull": true
         },
@@ -411,12 +405,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "budget_user_id_user_id_fk": {
-          "name": "budget_user_id_user_id_fk",
+        "budget_space_id_space_id_fk": {
+          "name": "budget_space_id_space_id_fk",
           "tableFrom": "budget",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -424,15 +418,17 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "budget_category_id_category_id_fk": {
-          "name": "budget_category_id_category_id_fk",
+        "budget_category_id_space_id_category_id_space_id_fk": {
+          "name": "budget_category_id_space_id_category_id_space_id_fk",
           "tableFrom": "budget",
           "tableTo": "category",
           "columnsFrom": [
-            "category_id"
+            "category_id",
+            "space_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "space_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -440,11 +436,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "budget_userId_categoryId_unique": {
-          "name": "budget_userId_categoryId_unique",
+        "budget_spaceId_categoryId_unique": {
+          "name": "budget_spaceId_categoryId_unique",
           "nullsNotDistinct": true,
           "columns": [
-            "user_id",
+            "space_id",
             "category_id"
           ]
         }
@@ -469,11 +465,17 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -521,36 +523,91 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "category_parent_id_index": {
+          "name": "category_parent_id_index",
+          "columns": [
+            {
+              "expression": "parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "category_user_id_user_id_fk": {
-          "name": "category_user_id_user_id_fk",
+        "category_space_id_space_id_fk": {
+          "name": "category_space_id_space_id_fk",
           "tableFrom": "category",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "category_parent_id_space_id_type_category_id_space_id_type_fk": {
+          "name": "category_parent_id_space_id_type_category_id_space_id_type_fk",
+          "tableFrom": "category",
+          "tableTo": "category",
+          "columnsFrom": [
+            "parent_id",
+            "space_id",
+            "type"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id",
+            "type"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "category_userId_type_name_unique": {
-          "name": "category_userId_type_name_unique",
+        "category_spaceId_type_name_unique": {
+          "name": "category_spaceId_type_name_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "user_id",
+            "space_id",
             "type",
             "name"
+          ]
+        },
+        "category_id_spaceId_unique": {
+          "name": "category_id_spaceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "space_id"
+          ]
+        },
+        "category_id_spaceId_type_unique": {
+          "name": "category_id_spaceId_type_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "space_id",
+            "type"
           ]
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "category_not_own_parent": {
+          "name": "category_not_own_parent",
+          "value": "\"category\".\"parent_id\" <> \"category\".\"id\""
+        }
+      },
       "isRLSEnabled": false
     },
     "public.recurring_rule": {
@@ -564,9 +621,9 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -674,11 +731,11 @@
         }
       },
       "indexes": {
-        "recurring_rule_user_id_next_date_index": {
-          "name": "recurring_rule_user_id_next_date_index",
+        "recurring_rule_space_id_next_date_index": {
+          "name": "recurring_rule_space_id_next_date_index",
           "columns": [
             {
-              "expression": "user_id",
+              "expression": "space_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -697,12 +754,12 @@
         }
       },
       "foreignKeys": {
-        "recurring_rule_user_id_user_id_fk": {
-          "name": "recurring_rule_user_id_user_id_fk",
+        "recurring_rule_space_id_space_id_fk": {
+          "name": "recurring_rule_space_id_space_id_fk",
           "tableFrom": "recurring_rule",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -710,43 +767,49 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "recurring_rule_wallet_id_wallet_id_fk": {
-          "name": "recurring_rule_wallet_id_wallet_id_fk",
+        "recurring_rule_wallet_fk": {
+          "name": "recurring_rule_wallet_fk",
           "tableFrom": "recurring_rule",
           "tableTo": "wallet",
           "columnsFrom": [
-            "wallet_id"
+            "wallet_id",
+            "space_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "space_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "recurring_rule_category_id_category_id_fk": {
-          "name": "recurring_rule_category_id_category_id_fk",
+        "recurring_rule_to_wallet_fk": {
+          "name": "recurring_rule_to_wallet_fk",
+          "tableFrom": "recurring_rule",
+          "tableTo": "wallet",
+          "columnsFrom": [
+            "to_wallet_id",
+            "space_id"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recurring_rule_category_fk": {
+          "name": "recurring_rule_category_fk",
           "tableFrom": "recurring_rule",
           "tableTo": "category",
           "columnsFrom": [
-            "category_id"
+            "category_id",
+            "space_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "space_id"
           ],
           "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "recurring_rule_to_wallet_id_wallet_id_fk": {
-          "name": "recurring_rule_to_wallet_id_wallet_id_fk",
-          "tableFrom": "recurring_rule",
-          "tableTo": "wallet",
-          "columnsFrom": [
-            "to_wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -777,6 +840,316 @@
       },
       "isRLSEnabled": false
     },
+    "public.space": {
+      "name": "space",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "personal_owner_id": {
+          "name": "personal_owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "base_currency": {
+          "name": "base_currency",
+          "type": "char(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'EUR'"
+        },
+        "budget_month_start_day": {
+          "name": "budget_month_start_day",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "space_personal_owner_id_user_id_fk": {
+          "name": "space_personal_owner_id_user_id_fk",
+          "tableFrom": "space",
+          "tableTo": "user",
+          "columnsFrom": [
+            "personal_owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "space_personalOwnerId_unique": {
+          "name": "space_personalOwnerId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "personal_owner_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "space_budget_month_start_day_range": {
+          "name": "space_budget_month_start_day_range",
+          "value": "\"space\".\"budget_month_start_day\" between 1 and 28"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.space_invite": {
+      "name": "space_invite",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "space_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "space_invite_pending_unique": {
+          "name": "space_invite_pending_unique",
+          "columns": [
+            {
+              "expression": "space_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"space_invite\".\"accepted_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "space_invite_space_id_space_id_fk": {
+          "name": "space_invite_space_id_space_id_fk",
+          "tableFrom": "space_invite",
+          "tableTo": "space",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "space_invite_invited_by_user_id_fk": {
+          "name": "space_invite_invited_by_user_id_fk",
+          "tableFrom": "space_invite",
+          "tableTo": "user",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "space_invite_tokenHash_unique": {
+          "name": "space_invite_tokenHash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "space_invite_not_owner": {
+          "name": "space_invite_not_owner",
+          "value": "\"space_invite\".\"role\" <> 'owner'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.space_member": {
+      "name": "space_member",
+      "schema": "",
+      "columns": {
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "space_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "space_member_user_id_index": {
+          "name": "space_member_user_id_index",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "space_member_space_id_space_id_fk": {
+          "name": "space_member_space_id_space_id_fk",
+          "tableFrom": "space_member",
+          "tableTo": "space",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "space_member_user_id_user_id_fk": {
+          "name": "space_member_user_id_user_id_fk",
+          "tableFrom": "space_member",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "space_member_space_id_user_id_pk": {
+          "name": "space_member_space_id_user_id_pk",
+          "columns": [
+            "space_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.tag": {
       "name": "tag",
       "schema": "",
@@ -788,9 +1161,9 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -823,12 +1196,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "tag_user_id_user_id_fk": {
-          "name": "tag_user_id_user_id_fk",
+        "tag_space_id_space_id_fk": {
+          "name": "tag_space_id_space_id_fk",
           "tableFrom": "tag",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -839,12 +1212,20 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "tag_userId_name_unique": {
-          "name": "tag_userId_name_unique",
+        "tag_spaceId_name_unique": {
+          "name": "tag_spaceId_name_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "user_id",
+            "space_id",
             "name"
+          ]
+        },
+        "tag_id_spaceId_unique": {
+          "name": "tag_id_spaceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "space_id"
           ]
         }
       },
@@ -863,9 +1244,9 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -930,6 +1311,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -946,11 +1333,11 @@
         }
       },
       "indexes": {
-        "transaction_user_id_date_index": {
-          "name": "transaction_user_id_date_index",
+        "transaction_space_id_date_index": {
+          "name": "transaction_space_id_date_index",
           "columns": [
             {
-              "expression": "user_id",
+              "expression": "space_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1014,51 +1401,12 @@
         }
       },
       "foreignKeys": {
-        "transaction_user_id_user_id_fk": {
-          "name": "transaction_user_id_user_id_fk",
+        "transaction_space_id_space_id_fk": {
+          "name": "transaction_space_id_space_id_fk",
           "tableFrom": "transaction",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "transaction_wallet_id_wallet_id_fk": {
-          "name": "transaction_wallet_id_wallet_id_fk",
-          "tableFrom": "transaction",
-          "tableTo": "wallet",
-          "columnsFrom": [
-            "wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "transaction_category_id_category_id_fk": {
-          "name": "transaction_category_id_category_id_fk",
-          "tableFrom": "transaction",
-          "tableTo": "category",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "transaction_to_wallet_id_wallet_id_fk": {
-          "name": "transaction_to_wallet_id_wallet_id_fk",
-          "tableFrom": "transaction",
-          "tableTo": "wallet",
-          "columnsFrom": [
-            "to_wallet_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -1078,10 +1426,77 @@
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
+        },
+        "transaction_created_by_user_id_fk": {
+          "name": "transaction_created_by_user_id_fk",
+          "tableFrom": "transaction",
+          "tableTo": "user",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "transaction_wallet_fk": {
+          "name": "transaction_wallet_fk",
+          "tableFrom": "transaction",
+          "tableTo": "wallet",
+          "columnsFrom": [
+            "wallet_id",
+            "space_id"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "transaction_to_wallet_fk": {
+          "name": "transaction_to_wallet_fk",
+          "tableFrom": "transaction",
+          "tableTo": "wallet",
+          "columnsFrom": [
+            "to_wallet_id",
+            "space_id"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "transaction_category_fk": {
+          "name": "transaction_category_fk",
+          "tableFrom": "transaction",
+          "tableTo": "category",
+          "columnsFrom": [
+            "category_id",
+            "space_id"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "transaction_id_spaceId_unique": {
+          "name": "transaction_id_spaceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "space_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "transaction_amount_positive": {
@@ -1103,6 +1518,12 @@
       "name": "transaction_tag",
       "schema": "",
       "columns": {
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "transaction_id": {
           "name": "transaction_id",
           "type": "uuid",
@@ -1134,12 +1555,12 @@
         }
       },
       "foreignKeys": {
-        "transaction_tag_transaction_id_transaction_id_fk": {
-          "name": "transaction_tag_transaction_id_transaction_id_fk",
+        "transaction_tag_space_id_space_id_fk": {
+          "name": "transaction_tag_space_id_space_id_fk",
           "tableFrom": "transaction_tag",
-          "tableTo": "transaction",
+          "tableTo": "space",
           "columnsFrom": [
-            "transaction_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -1147,15 +1568,32 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "transaction_tag_tag_id_tag_id_fk": {
-          "name": "transaction_tag_tag_id_tag_id_fk",
+        "transaction_tag_transaction_id_space_id_transaction_id_space_id_fk": {
+          "name": "transaction_tag_transaction_id_space_id_transaction_id_space_id_fk",
+          "tableFrom": "transaction_tag",
+          "tableTo": "transaction",
+          "columnsFrom": [
+            "transaction_id",
+            "space_id"
+          ],
+          "columnsTo": [
+            "id",
+            "space_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "transaction_tag_tag_id_space_id_tag_id_space_id_fk": {
+          "name": "transaction_tag_tag_id_space_id_tag_id_space_id_fk",
           "tableFrom": "transaction_tag",
           "tableTo": "tag",
           "columnsFrom": [
-            "tag_id"
+            "tag_id",
+            "space_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "space_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -1186,9 +1624,9 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
+        "space_id": {
+          "name": "space_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1260,12 +1698,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "wallet_user_id_user_id_fk": {
-          "name": "wallet_user_id_user_id_fk",
+        "wallet_space_id_space_id_fk": {
+          "name": "wallet_space_id_space_id_fk",
           "tableFrom": "wallet",
-          "tableTo": "user",
+          "tableTo": "space",
           "columnsFrom": [
-            "user_id"
+            "space_id"
           ],
           "columnsTo": [
             "id"
@@ -1276,12 +1714,20 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "wallet_userId_name_unique": {
-          "name": "wallet_userId_name_unique",
+        "wallet_spaceId_name_unique": {
+          "name": "wallet_spaceId_name_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "user_id",
+            "space_id",
             "name"
+          ]
+        },
+        "wallet_id_spaceId_unique": {
+          "name": "wallet_id_spaceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "space_id"
           ]
         }
       },
@@ -1307,6 +1753,15 @@
         "weekly",
         "monthly",
         "yearly"
+      ]
+    },
+    "public.space_role": {
+      "name": "space_role",
+      "schema": "public",
+      "values": [
+        "owner",
+        "editor",
+        "viewer"
       ]
     },
     "public.transaction_type": {

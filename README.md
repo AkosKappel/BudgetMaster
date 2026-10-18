@@ -52,7 +52,13 @@ The app runs on http://localhost:3000.
 
 ## Demo data
 
-`pnpm db:seed` creates `demo@budgetmaster.app` (about 14 months of data) and `empty@budgetmaster.app` (no data), both with the password `demo-budget-2026`. Running it again recreates both users.
+`pnpm db:seed` recreates three users, all with the password `demo-budget-2026`:
+
+- `demo@budgetmaster.app`: about 14 months of personal data and owner of a shared Household space
+- `jordan@budgetmaster.app`: small personal space, member of Household
+- `empty@budgetmaster.app`: no data, for empty states
+
+The script checks its own data (balances, budget states) and fails if a check does not hold.
 
 ## UI components
 

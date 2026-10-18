@@ -1,10 +1,12 @@
 import { relations, sql } from 'drizzle-orm'
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   char,
   check,
   date,
+  foreignKey,
   index,
   integer,
   pgEnum,
@@ -13,6 +15,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
 
@@ -24,11 +27,6 @@ const money = () => bigint({ mode: 'number' })
 
 const id = () => uuid().primaryKey().default(sql`uuidv7()`)
 
-const userId = () =>
-  text()
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' })
-
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true })
@@ -37,6 +35,7 @@ const timestamps = {
     .notNull(),
 }
 
+export const spaceRole = pgEnum('space_role', ['owner', 'editor', 'viewer'])
 export const walletType = pgEnum('wallet_type', [
   'checking',
   'savings',
@@ -57,11 +56,84 @@ export const frequency = pgEnum('frequency', [
   'yearly',
 ])
 
+// A ledger with its own wallets, categories, tags, budgets and rules. Every user has one
+// personal space (deleted with the user); shared spaces have several members and outlive
+// any single one of them.
+export const space = pgTable(
+  'space',
+  {
+    id: id(),
+    name: text().notNull(),
+    personalOwnerId: text()
+      .unique()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    baseCurrency: char({ length: 3 }).default('EUR').notNull(),
+    // At most 28, so every month has the day.
+    budgetMonthStartDay: integer().default(1).notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    check(
+      'space_budget_month_start_day_range',
+      sql`${t.budgetMonthStartDay} between 1 and 28`,
+    ),
+  ],
+)
+
+export const spaceMember = pgTable(
+  'space_member',
+  {
+    spaceId: uuid()
+      .notNull()
+      .references(() => space.id, { onDelete: 'cascade' }),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    role: spaceRole().notNull(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.spaceId, t.userId] }), index().on(t.userId)],
+)
+
+// Only a hash of the token is stored; the token itself is in the invite link.
+export const spaceInvite = pgTable(
+  'space_invite',
+  {
+    id: id(),
+    spaceId: uuid()
+      .notNull()
+      .references(() => space.id, { onDelete: 'cascade' }),
+    email: text().notNull(),
+    role: spaceRole().notNull(),
+    tokenHash: text().notNull().unique(),
+    invitedBy: text().references(() => user.id, { onDelete: 'set null' }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    acceptedAt: timestamp({ withTimezone: true }),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    check('space_invite_not_owner', sql`${t.role} <> 'owner'`),
+    uniqueIndex('space_invite_pending_unique')
+      .on(t.spaceId, t.email)
+      .where(sql`${t.acceptedAt} is null`),
+  ],
+)
+
+const spaceId = () =>
+  uuid()
+    .notNull()
+    .references(() => space.id, { onDelete: 'cascade' })
+
+// Lets child tables reference (id, spaceId), so a row can only point to wallets,
+// categories and tags of its own space.
+const idInSpace = (t: { id: AnyPgColumn; spaceId: AnyPgColumn }) =>
+  unique().on(t.id, t.spaceId)
+
 export const wallet = pgTable(
   'wallet',
   {
     id: id(),
-    userId: userId(),
+    spaceId: spaceId(),
     name: text().notNull(),
     type: walletType().notNull(),
     currency: char({ length: 3 }).notNull(),
@@ -72,14 +144,18 @@ export const wallet = pgTable(
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
-  (t) => [unique().on(t.userId, t.name)],
+  (t) => [unique().on(t.spaceId, t.name), idInSpace(t)],
 )
 
+// One level of nesting: a category with a parent cannot be a parent itself (enforced in
+// the server functions). The composite key keeps parent and child in the same space and of
+// the same type.
 export const category = pgTable(
   'category',
   {
     id: id(),
-    userId: userId(),
+    spaceId: spaceId(),
+    parentId: uuid(),
     name: text().notNull(),
     type: categoryType().notNull(),
     color: text().notNull(),
@@ -87,19 +163,29 @@ export const category = pgTable(
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
-  (t) => [unique().on(t.userId, t.type, t.name)],
+  (t) => [
+    unique().on(t.spaceId, t.type, t.name),
+    idInSpace(t),
+    unique().on(t.id, t.spaceId, t.type),
+    foreignKey({
+      columns: [t.parentId, t.spaceId, t.type],
+      foreignColumns: [t.id, t.spaceId, t.type],
+    }),
+    check('category_not_own_parent', sql`${t.parentId} <> ${t.id}`),
+    index().on(t.parentId),
+  ],
 )
 
 export const tag = pgTable(
   'tag',
   {
     id: id(),
-    userId: userId(),
+    spaceId: spaceId(),
     name: text().notNull(),
     color: text().notNull(),
     ...timestamps,
   },
-  (t) => [unique().on(t.userId, t.name)],
+  (t) => [unique().on(t.spaceId, t.name), idInSpace(t)],
 )
 
 // Shared by `transaction` and `recurring_rule`: a transfer moves money between two wallets
@@ -107,29 +193,26 @@ export const tag = pgTable(
 // `toAmount` is only set for transfers between wallets with different currencies.
 const movementColumns = () => ({
   type: transactionType().notNull(),
-  walletId: uuid()
-    .notNull()
-    .references(() => wallet.id, { onDelete: 'cascade' }),
+  walletId: uuid().notNull(),
   amount: money().notNull(),
-  // No cascade: categories are archived, not deleted, once they have transactions.
-  categoryId: uuid().references(() => category.id),
-  toWalletId: uuid().references(() => wallet.id, { onDelete: 'cascade' }),
+  categoryId: uuid(),
+  toWalletId: uuid(),
   toAmount: money(),
   payee: text(),
   note: text(),
 })
 
-const movementChecks = (
-  name: string,
-  t: {
-    type: unknown
-    amount: unknown
-    toAmount: unknown
-    categoryId: unknown
-    walletId: unknown
-    toWalletId: unknown
-  },
-) => [
+type MovementTable = {
+  spaceId: AnyPgColumn
+  type: AnyPgColumn
+  amount: AnyPgColumn
+  toAmount: AnyPgColumn
+  categoryId: AnyPgColumn
+  walletId: AnyPgColumn
+  toWalletId: AnyPgColumn
+}
+
+const movementConstraints = (name: string, t: MovementTable) => [
   check(`${name}_amount_positive`, sql`${t.amount} > 0`),
   check(
     `${name}_to_amount_positive`,
@@ -140,13 +223,29 @@ const movementChecks = (
     sql`(${t.type} = 'transfer' and ${t.toWalletId} is not null and ${t.toWalletId} <> ${t.walletId} and ${t.categoryId} is null)
       or (${t.type} <> 'transfer' and ${t.toWalletId} is null and ${t.toAmount} is null and ${t.categoryId} is not null)`,
   ),
+  foreignKey({
+    name: `${name}_wallet_fk`,
+    columns: [t.walletId, t.spaceId],
+    foreignColumns: [wallet.id, wallet.spaceId],
+  }).onDelete('cascade'),
+  foreignKey({
+    name: `${name}_to_wallet_fk`,
+    columns: [t.toWalletId, t.spaceId],
+    foreignColumns: [wallet.id, wallet.spaceId],
+  }).onDelete('cascade'),
+  // No cascade: categories are archived, not deleted, once they are used.
+  foreignKey({
+    name: `${name}_category_fk`,
+    columns: [t.categoryId, t.spaceId],
+    foreignColumns: [category.id, category.spaceId],
+  }),
 ]
 
 export const recurringRule = pgTable(
   'recurring_rule',
   {
     id: id(),
-    userId: userId(),
+    spaceId: spaceId(),
     ...movementColumns(),
     frequency: frequency().notNull(),
     interval: integer().default(1).notNull(),
@@ -158,13 +257,13 @@ export const recurringRule = pgTable(
     ...timestamps,
   },
   (t) => [
-    ...movementChecks('recurring_rule', t),
+    ...movementConstraints('recurring_rule', t),
     check('recurring_rule_interval_positive', sql`${t.interval} > 0`),
     check(
       'recurring_rule_end_after_start',
       sql`${t.endDate} is null or ${t.endDate} >= ${t.startDate}`,
     ),
-    index().on(t.userId, t.nextDate),
+    index().on(t.spaceId, t.nextDate),
   ],
 )
 
@@ -172,17 +271,20 @@ export const transaction = pgTable(
   'transaction',
   {
     id: id(),
-    userId: userId(),
+    spaceId: spaceId(),
     ...movementColumns(),
     date: date().notNull(),
     recurringRuleId: uuid().references(() => recurringRule.id, {
       onDelete: 'set null',
     }),
+    // Who entered it; kept when that member leaves a shared space.
+    createdBy: text().references(() => user.id, { onDelete: 'set null' }),
     ...timestamps,
   },
   (t) => [
-    ...movementChecks('transaction', t),
-    index().on(t.userId, t.date.desc()),
+    ...movementConstraints('transaction', t),
+    idInSpace(t),
+    index().on(t.spaceId, t.date.desc()),
     index().on(t.walletId),
     index().on(t.toWalletId),
     index().on(t.categoryId),
@@ -192,52 +294,89 @@ export const transaction = pgTable(
 export const transactionTag = pgTable(
   'transaction_tag',
   {
-    transactionId: uuid()
-      .notNull()
-      .references(() => transaction.id, { onDelete: 'cascade' }),
-    tagId: uuid()
-      .notNull()
-      .references(() => tag.id, { onDelete: 'cascade' }),
+    spaceId: spaceId(),
+    transactionId: uuid().notNull(),
+    tagId: uuid().notNull(),
   },
   (t) => [
     primaryKey({ columns: [t.transactionId, t.tagId] }),
+    foreignKey({
+      columns: [t.transactionId, t.spaceId],
+      foreignColumns: [transaction.id, transaction.spaceId],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tagId, t.spaceId],
+      foreignColumns: [tag.id, tag.spaceId],
+    }).onDelete('cascade'),
     index().on(t.tagId),
   ],
 )
 
-// A monthly spending limit. `categoryId` null is the overall limit for all expenses.
+// A monthly spending limit in the space's base currency, per budget month (see
+// `space.budgetMonthStartDay`). `categoryId` null is the overall limit; a parent category's
+// limit includes its children.
 export const budget = pgTable(
   'budget',
   {
     id: id(),
-    userId: userId(),
-    categoryId: uuid().references(() => category.id, { onDelete: 'cascade' }),
+    spaceId: spaceId(),
+    categoryId: uuid(),
     amount: money().notNull(),
-    currency: char({ length: 3 }).notNull(),
     ...timestamps,
   },
   (t) => [
-    unique().on(t.userId, t.categoryId).nullsNotDistinct(),
+    unique().on(t.spaceId, t.categoryId).nullsNotDistinct(),
     check('budget_amount_positive', sql`${t.amount} > 0`),
+    foreignKey({
+      columns: [t.categoryId, t.spaceId],
+      foreignColumns: [category.id, category.spaceId],
+    }).onDelete('cascade'),
   ],
 )
 
+export const spaceRelations = relations(space, ({ many }) => ({
+  members: many(spaceMember),
+  invites: many(spaceInvite),
+  wallets: many(wallet),
+  categories: many(category),
+  tags: many(tag),
+  budgets: many(budget),
+}))
+
+export const spaceMemberRelations = relations(spaceMember, ({ one }) => ({
+  space: one(space, { fields: [spaceMember.spaceId], references: [space.id] }),
+  user: one(user, { fields: [spaceMember.userId], references: [user.id] }),
+}))
+
+export const spaceInviteRelations = relations(spaceInvite, ({ one }) => ({
+  space: one(space, { fields: [spaceInvite.spaceId], references: [space.id] }),
+}))
+
 export const walletRelations = relations(wallet, ({ one, many }) => ({
-  user: one(user, { fields: [wallet.userId], references: [user.id] }),
+  space: one(space, { fields: [wallet.spaceId], references: [space.id] }),
   transactions: many(transaction, { relationName: 'source' }),
   incomingTransfers: many(transaction, { relationName: 'target' }),
 }))
 
-export const categoryRelations = relations(category, ({ many }) => ({
+export const categoryRelations = relations(category, ({ one, many }) => ({
+  space: one(space, { fields: [category.spaceId], references: [space.id] }),
+  parent: one(category, {
+    fields: [category.parentId],
+    references: [category.id],
+    relationName: 'parent',
+  }),
+  children: many(category, { relationName: 'parent' }),
   transactions: many(transaction),
   budgets: many(budget),
 }))
 
-export const tagRelations = relations(tag, ({ many }) => ({
+export const tagRelations = relations(tag, ({ one, many }) => ({
+  space: one(space, { fields: [tag.spaceId], references: [space.id] }),
   transactions: many(transactionTag),
 }))
 
 export const transactionRelations = relations(transaction, ({ one, many }) => ({
+  space: one(space, { fields: [transaction.spaceId], references: [space.id] }),
   wallet: one(wallet, {
     fields: [transaction.walletId],
     references: [wallet.id],
@@ -256,6 +395,7 @@ export const transactionRelations = relations(transaction, ({ one, many }) => ({
     fields: [transaction.recurringRuleId],
     references: [recurringRule.id],
   }),
+  author: one(user, { fields: [transaction.createdBy], references: [user.id] }),
   tags: many(transactionTag),
 }))
 
@@ -270,6 +410,10 @@ export const transactionTagRelations = relations(transactionTag, ({ one }) => ({
 export const recurringRuleRelations = relations(
   recurringRule,
   ({ one, many }) => ({
+    space: one(space, {
+      fields: [recurringRule.spaceId],
+      references: [space.id],
+    }),
     wallet: one(wallet, {
       fields: [recurringRule.walletId],
       references: [wallet.id],
@@ -283,6 +427,7 @@ export const recurringRuleRelations = relations(
 )
 
 export const budgetRelations = relations(budget, ({ one }) => ({
+  space: one(space, { fields: [budget.spaceId], references: [space.id] }),
   category: one(category, {
     fields: [budget.categoryId],
     references: [category.id],

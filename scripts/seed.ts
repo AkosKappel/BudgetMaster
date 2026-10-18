@@ -1,40 +1,53 @@
-// Seeds a demo user with about 14 months of realistic data, plus an empty user for
-// testing empty states. Dates are relative to today, so the demo always looks current.
-// Deterministic: the same day always produces the same data.
+// Seeds demo data relative to today, so the demo always looks current. Deterministic: the
+// same day always produces the same data.
 //
-// Run with `pnpm db:seed`. Deletes and recreates both users (and everything they own).
+// - Alex: personal space (budget month starts on the 25th, payday) with about 14 months of
+//   history and most edge cases, owner of the shared "Household" space.
+// - Jordan: small personal space, editor in "Household".
+// - Sam: personal space with default categories only, for empty states.
+// - Household: joint account both pay into, shared groceries and bills, pending and
+//   expired invites.
+//
+// Run with `pnpm db:seed`. Deletes and recreates these users and their spaces.
 
+import { createHash, randomBytes } from 'node:crypto'
 import { hashPassword } from 'better-auth/crypto'
-import { inArray } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 import { db } from '@/db'
-import { DEFAULT_CATEGORIES } from '@/db/default-categories'
 import {
   account,
   budget,
   category,
   recurringRule,
+  space,
+  spaceInvite,
+  spaceMember,
   tag,
   transaction,
   transactionTag,
   user,
   wallet,
 } from '@/db/schema'
+import { createSpace } from '@/db/spaces'
 import {
   addDays,
   addMonths,
+  budgetPeriod,
   nextOccurrence,
   occurrencesUntil,
   type Schedule,
 } from '@/lib/recurrence'
 
-// Public demo login (shown on the sign-in page, see M-02), not a secret.
-const DEMO_EMAIL = 'demo@budgetmaster.app'
-const EMPTY_EMAIL = 'empty@budgetmaster.app'
+// Public demo logins (shown on the sign-in page, see M-02), not secrets.
 const DEMO_PASSWORD = 'demo-budget-2026'
+const ALEX = 'demo@budgetmaster.app'
+const JORDAN = 'jordan@budgetmaster.app'
+const SAM = 'empty@budgetmaster.app'
 
 type NewTransaction = typeof transaction.$inferInsert
-type Extra = Pick<NewTransaction, 'payee' | 'note' | 'toAmount'>
+type NewWallet = Omit<typeof wallet.$inferInsert, 'spaceId'>
+type Extra = Pick<NewTransaction, 'payee' | 'note' | 'toAmount' | 'createdBy'>
 
 // mulberry32: tiny seeded PRNG, so every run produces the same data.
 let seed = 2026
@@ -45,7 +58,8 @@ function random() {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296
 }
 const chance = (p: number) => random() < p
-const pick = <T>(items: T[]) => items[Math.floor(random() * items.length)]
+const pick = <T>(items: readonly T[]) =>
+  items[Math.floor(random() * items.length)]
 const cents = (min: number, max: number) =>
   Math.round((min + random() * (max - min)) * 100)
 const money = (value: number) => Math.round(value * 100)
@@ -60,6 +74,17 @@ const dayOf = (monthsAgo: number, day: number) => {
 }
 const start = monthStart(14)
 const weekday = (date: string) => new Date(date).getUTCDay()
+const firstWeekday = (from: string, day: number) => {
+  let date = from
+  while (weekday(date) !== day) date = addDays(date, 1)
+  return date
+}
+const days = function* (from: string, to: string) {
+  for (let date = from; date <= to; date = addDays(date, 1)) yield date
+}
+
+const byName = <T extends { name: string; id: string }>(rows: T[]) =>
+  Object.fromEntries(rows.map((r) => [r.name, r.id])) as Record<string, string>
 
 async function createUser(email: string, name: string) {
   const id = crypto.randomUUID()
@@ -71,203 +96,463 @@ async function createUser(email: string, name: string) {
     providerId: 'credential',
     password: await hashPassword(DEMO_PASSWORD),
   })
-  const categories = await db
-    .insert(category)
-    .values(DEFAULT_CATEGORIES.map((c) => ({ ...c, userId: id })))
-    .returning()
-  return { id, categories }
+  return id
 }
 
-const byName = <T extends { name: string; id: string }>(rows: T[]) =>
-  Object.fromEntries(rows.map((r) => [r.name, r.id])) as Record<string, string>
+// Everything seeded into one space: lookups by name and the transactions to insert.
+class Ledger {
+  rows: NewTransaction[] = []
+  tagsFor = new Map<NewTransaction, string[]>()
+  wallets: Record<string, string> = {}
+  categories: Record<string, string> = {}
+  tags: Record<string, string> = {}
+  walletRows: (typeof wallet.$inferSelect)[] = []
+
+  constructor(readonly spaceId: string) {}
+
+  async load(wallets: NewWallet[], tags: { name: string; color: string }[]) {
+    this.walletRows = await db
+      .insert(wallet)
+      .values(
+        wallets.map((w, i) => ({ sortOrder: i, ...w, spaceId: this.spaceId })),
+      )
+      .returning()
+    this.wallets = byName(this.walletRows)
+    if (tags.length) {
+      const rows = await db
+        .insert(tag)
+        .values(tags.map((t) => ({ ...t, spaceId: this.spaceId })))
+        .returning()
+      this.tags = byName(rows)
+    }
+    await this.reloadCategories()
+  }
+
+  async reloadCategories() {
+    const rows = await db
+      .select()
+      .from(category)
+      .where(eq(category.spaceId, this.spaceId))
+    this.categories = byName(rows)
+  }
+
+  add(row: Omit<NewTransaction, 'spaceId'>, tagNames: readonly string[] = []) {
+    const full = { ...row, spaceId: this.spaceId }
+    this.rows.push(full)
+    if (tagNames.length) this.tagsFor.set(full, [...tagNames])
+    return full
+  }
+
+  expense(
+    date: string,
+    walletName: string,
+    categoryName: string,
+    amount: number,
+    extra: Extra = {},
+    tagNames?: readonly string[],
+  ) {
+    return this.add(
+      {
+        type: 'expense',
+        date,
+        walletId: this.wallets[walletName],
+        categoryId: this.categories[categoryName],
+        amount,
+        ...extra,
+      },
+      tagNames,
+    )
+  }
+
+  income(
+    date: string,
+    walletName: string,
+    categoryName: string,
+    amount: number,
+    extra: Extra = {},
+    tagNames?: readonly string[],
+  ) {
+    return this.add(
+      {
+        type: 'income',
+        date,
+        walletId: this.wallets[walletName],
+        categoryId: this.categories[categoryName],
+        amount,
+        ...extra,
+      },
+      tagNames,
+    )
+  }
+
+  transfer(
+    date: string,
+    from: string,
+    to: string,
+    amount: number,
+    extra: Extra = {},
+  ) {
+    return this.add({
+      type: 'transfer',
+      date,
+      walletId: this.wallets[from],
+      toWalletId: this.wallets[to],
+      amount,
+      ...extra,
+    })
+  }
+
+  // Inserts the rule and the transactions it has created so far (createdBy null: made by
+  // the app, not by a person).
+  async rule(rule: RuleSeed) {
+    const until = rule.generatedUntil ?? today
+    const [row] = await db
+      .insert(recurringRule)
+      .values({
+        spaceId: this.spaceId,
+        type: rule.type,
+        walletId: this.wallets[rule.wallet],
+        categoryId: rule.category ? this.categories[rule.category] : null,
+        toWalletId: rule.toWallet ? this.wallets[rule.toWallet] : null,
+        amount: rule.amount,
+        payee: rule.payee,
+        note: rule.note,
+        frequency: rule.frequency,
+        interval: rule.interval,
+        startDate: rule.startDate,
+        endDate: rule.endDate,
+        nextDate: nextOccurrence(rule, until),
+        paused: rule.paused ?? false,
+      })
+      .returning()
+    for (const date of occurrencesUntil(rule, until)) {
+      const amount =
+        rule.previousAmount && date < rule.previousAmount.until
+          ? rule.previousAmount.amount
+          : rule.amount
+      this.add({
+        type: rule.type,
+        date,
+        walletId: row.walletId,
+        categoryId: row.categoryId,
+        toWalletId: row.toWalletId,
+        amount,
+        payee: rule.payee,
+        note: rule.note,
+        recurringRuleId: row.id,
+      })
+    }
+  }
+
+  async insert() {
+    const untagged = this.rows.filter((t) => !this.tagsFor.has(t))
+    for (let i = 0; i < untagged.length; i += 500) {
+      await db.insert(transaction).values(untagged.slice(i, i + 500))
+    }
+    for (const [row, tagNames] of this.tagsFor) {
+      const [inserted] = await db.insert(transaction).values(row).returning()
+      await db.insert(transactionTag).values(
+        tagNames.map((name) => ({
+          spaceId: this.spaceId,
+          transactionId: inserted.id,
+          tagId: this.tags[name],
+        })),
+      )
+    }
+  }
+
+  // Balance at the end of each day up to today, oldest first.
+  dailyBalances(walletName: string) {
+    const walletId = this.wallets[walletName]
+    let running =
+      this.walletRows.find((w) => w.id === walletId)?.initialBalance ?? 0
+    const past = this.rows
+      .filter((t) => t.date <= today)
+      .sort((a, b) => a.date.localeCompare(b.date))
+    const result: number[] = []
+    past.forEach((t, i) => {
+      if (t.walletId === walletId)
+        running += t.type === 'income' ? t.amount : -t.amount
+      else if (t.toWalletId === walletId) running += t.toAmount ?? t.amount
+      if (past[i + 1]?.date !== t.date) result.push(running)
+    })
+    return result
+  }
+
+  balance = (walletName: string) => this.dailyBalances(walletName).at(-1) ?? 0
+  neverNegative = (walletName: string) =>
+    this.dailyBalances(walletName).every((value) => value >= 0)
+
+  spent(categoryName: string, from: string, to: string) {
+    return this.rows
+      .filter(
+        (t) =>
+          t.type === 'expense' &&
+          t.categoryId === this.categories[categoryName] &&
+          t.date >= from &&
+          t.date <= to,
+      )
+      .reduce((sum, t) => sum + t.amount, 0)
+  }
+
+  total(
+    type: 'income' | 'expense',
+    from: string,
+    to: string,
+    walletNames: string[],
+  ) {
+    const ids = walletNames.map((name) => this.wallets[name])
+    return this.rows
+      .filter(
+        (t) =>
+          t.type === type &&
+          t.date >= from &&
+          t.date <= to &&
+          ids.includes(t.walletId),
+      )
+      .reduce((sum, t) => sum + t.amount, 0)
+  }
+}
+
+type RuleSeed = Schedule &
+  Pick<NewTransaction, 'type' | 'amount' | 'payee' | 'note'> & {
+    wallet: string
+    category?: string
+    toWallet?: string
+    paused?: boolean
+    // Generate transactions only until this date (pause date).
+    generatedUntil?: string
+    // Older amount before a price change.
+    previousAmount?: { amount: number; until: string }
+  }
+
+async function addCategory(
+  ledger: Ledger,
+  values: Omit<typeof category.$inferInsert, 'spaceId' | 'parentId'> & {
+    parent?: string
+  },
+) {
+  const { parent, ...rest } = values
+  await db.insert(category).values({
+    ...rest,
+    spaceId: ledger.spaceId,
+    parentId: parent ? ledger.categories[parent] : null,
+  })
+  await ledger.reloadCategories()
+}
+
+async function invite(
+  spaceId: string,
+  email: string,
+  invitedBy: string,
+  expiresInDays: number,
+) {
+  const token = randomBytes(32).toString('base64url')
+  await db.insert(spaceInvite).values({
+    spaceId,
+    email,
+    role: 'viewer',
+    invitedBy,
+    tokenHash: createHash('sha256').update(token).digest('hex'),
+    expiresAt: new Date(Date.now() + expiresInDays * 86_400_000),
+  })
+}
 
 async function main() {
-  await db.delete(user).where(inArray(user.email, [DEMO_EMAIL, EMPTY_EMAIL]))
+  const emails = [ALEX, JORDAN, SAM]
+  // Shared spaces outlive their members, so remove the demo ones explicitly.
+  const demoSpaces = db
+    .select({ id: spaceMember.spaceId })
+    .from(spaceMember)
+    .innerJoin(user, eq(user.id, spaceMember.userId))
+    .where(inArray(user.email, emails))
+  await db.delete(space).where(inArray(space.id, demoSpaces))
+  await db.delete(user).where(inArray(user.email, emails))
 
-  await createUser(EMPTY_EMAIL, 'Sam New')
-  const demo = await createUser(DEMO_EMAIL, 'Alex Demo')
-  const userId = demo.id
+  const alexId = await createUser(ALEX, 'Alex Demo')
+  const jordanId = await createUser(JORDAN, 'Jordan Demo')
+  const samId = await createUser(SAM, 'Sam New')
+  await createSpace({ name: 'Personal', ownerId: samId, personal: true })
 
-  const extraCategories = await db
-    .insert(category)
-    .values([
-      // Used by a budget, never spent on.
-      {
-        userId,
-        name: 'Pets',
-        type: 'expense',
-        icon: 'paw-print',
-        color: '#a16207',
-      },
-      // Long name for layout testing, budget without spending.
-      {
-        userId,
-        name: 'Home improvement and garden supplies',
-        type: 'expense',
-        icon: 'hammer',
-        color: '#78716c',
-      },
-      // Archived, but older transactions still point to it.
-      {
-        userId,
-        name: 'Photography',
-        type: 'expense',
-        icon: 'camera',
-        color: '#475569',
-        archivedAt: new Date(monthStart(9)),
-      },
-    ])
-    .returning()
-  const cat = byName([...demo.categories, ...extraCategories])
+  const alexSpace = await createSpace({
+    name: 'Personal',
+    ownerId: alexId,
+    personal: true,
+    budgetMonthStartDay: 25,
+  })
+  const jordanSpace = await createSpace({
+    name: 'Personal',
+    ownerId: jordanId,
+    personal: true,
+  })
+  const householdSpace = await createSpace({
+    name: 'Household',
+    ownerId: alexId,
+  })
+  await db
+    .insert(spaceMember)
+    .values({ spaceId: householdSpace.id, userId: jordanId, role: 'editor' })
+  await invite(householdSpace.id, 'grandma@example.com', alexId, 5)
+  // Expired and never accepted.
+  await invite(householdSpace.id, 'old-friend@example.com', jordanId, -10)
 
-  const wallets = await db
-    .insert(wallet)
-    .values([
+  const alex = new Ledger(alexSpace.id)
+  const jordan = new Ledger(jordanSpace.id)
+  const household = new Ledger(householdSpace.id)
+
+  await seedAlex(alex, alexId)
+  await seedJordan(jordan, jordanId)
+  await seedHousehold(household, alexId, jordanId)
+
+  for (const ledger of [alex, jordan, household]) await ledger.insert()
+
+  await db.insert(budget).values([
+    { spaceId: alex.spaceId, categoryId: null, amount: money(1400) },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories.Groceries,
+      amount: money(120),
+    },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories['Restaurants & cafés'],
+      amount: money(120),
+    },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories.Transport,
+      amount: money(80),
+    },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories.Entertainment,
+      amount: money(60),
+    },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories.Pets,
+      amount: money(50),
+    },
+    {
+      spaceId: alex.spaceId,
+      categoryId: alex.categories['Home improvement and garden supplies'],
+      amount: money(100),
+    },
+    { spaceId: jordan.spaceId, categoryId: null, amount: money(900) },
+    { spaceId: household.spaceId, categoryId: null, amount: money(1900) },
+    // Parent category: includes Groceries and Restaurants & cafés.
+    {
+      spaceId: household.spaceId,
+      categoryId: household.categories.Food,
+      amount: money(500),
+    },
+    {
+      spaceId: household.spaceId,
+      categoryId: household.categories.Utilities,
+      amount: money(150),
+    },
+  ])
+
+  report({ alex, jordan, household })
+}
+
+async function seedAlex(ledger: Ledger, alexId: string) {
+  const me = { createdBy: alexId }
+  await ledger.load(
+    [
       {
-        userId,
         name: 'Main account',
         type: 'checking',
         currency: 'EUR',
         initialBalance: money(2400),
         color: '#2563eb',
         icon: 'landmark',
-        sortOrder: 0,
       },
       {
-        userId,
         name: 'Cash',
         type: 'cash',
         currency: 'EUR',
         initialBalance: money(80),
         color: '#16a34a',
         icon: 'wallet',
-        sortOrder: 1,
       },
       {
-        userId,
         name: 'Savings',
         type: 'savings',
         currency: 'EUR',
         initialBalance: money(5000),
         color: '#0d9488',
         icon: 'piggy-bank',
-        sortOrder: 2,
       },
-      // Spending accumulates here and is paid off from the main account each month,
-      // so its balance is usually negative.
+      // Spending accumulates here and is paid off from the main account each month, so
+      // its balance is usually negative.
       {
-        userId,
         name: 'Credit card',
         type: 'credit_card',
         currency: 'EUR',
         initialBalance: 0,
         color: '#7c3aed',
         icon: 'credit-card',
-        sortOrder: 3,
       },
       // Second currency, funded by a EUR to USD transfer.
       {
-        userId,
         name: 'US trip',
         type: 'cash',
         currency: 'USD',
         initialBalance: 0,
         color: '#ea580c',
         icon: 'banknote',
-        sortOrder: 4,
       },
       // Closed: history only, balance moved to the main account.
       {
-        userId,
         name: 'Student account',
         type: 'checking',
         currency: 'EUR',
         initialBalance: money(420),
         color: '#64748b',
         icon: 'landmark',
-        sortOrder: 5,
         archivedAt: new Date(monthStart(9)),
       },
-    ])
-    .returning()
-  const w = byName(wallets)
-
-  const tags = await db
-    .insert(tag)
-    .values([
-      { userId, name: 'Vacation', color: '#0891b2' },
-      { userId, name: 'Reimbursable', color: '#ca8a04' },
-      { userId, name: 'Gift', color: '#db2777' },
-      { userId, name: 'Business', color: '#4f46e5' },
-      { userId, name: 'Tax deductible', color: '#15803d' },
-      { userId, name: 'Wedding', color: '#e11d48' }, // never used
-    ])
-    .returning()
-  const tagId = byName(tags)
-
-  const transactions: NewTransaction[] = []
-  const tagsFor = new Map<NewTransaction, string[]>()
-  const add = (t: Omit<NewTransaction, 'userId'>, tagNames: string[] = []) => {
-    const row = { userId, ...t }
-    transactions.push(row)
-    if (tagNames.length) tagsFor.set(row, tagNames)
-    return row
-  }
-  const expense = (
-    date: string,
-    walletName: string,
-    categoryName: string,
-    amount: number,
-    extra: Extra = {},
-    tagNames?: string[],
-  ) =>
-    add(
-      {
-        type: 'expense',
-        date,
-        walletId: w[walletName],
-        categoryId: cat[categoryName],
-        amount,
-        ...extra,
-      },
-      tagNames,
-    )
-  const income = (
-    date: string,
-    walletName: string,
-    categoryName: string,
-    amount: number,
-    extra: Extra = {},
-    tagNames?: string[],
-  ) =>
-    add(
-      {
-        type: 'income',
-        date,
-        walletId: w[walletName],
-        categoryId: cat[categoryName],
-        amount,
-        ...extra,
-      },
-      tagNames,
-    )
-  const transfer = (
-    date: string,
-    from: string,
-    to: string,
-    amount: number,
-    extra: Extra = {},
-  ) =>
-    add({
-      type: 'transfer',
-      date,
-      walletId: w[from],
-      toWalletId: w[to],
-      amount,
-      ...extra,
-    })
-
-  // ---- Recurring rules and the transactions they created ----
+    ],
+    [
+      { name: 'Vacation', color: '#0891b2' },
+      { name: 'Reimbursable', color: '#ca8a04' },
+      { name: 'Gift', color: '#db2777' },
+      { name: 'Business', color: '#4f46e5' },
+      { name: 'Tax deductible', color: '#15803d' },
+      { name: 'Wedding', color: '#e11d48' }, // never used
+    ],
+  )
+  // Contributions to the shared Household space.
+  await addCategory(ledger, {
+    name: 'Household',
+    type: 'expense',
+    icon: 'handshake',
+    color: '#4b3f8f',
+  })
+  // Used by a budget, never spent on.
+  await addCategory(ledger, {
+    name: 'Pets',
+    type: 'expense',
+    icon: 'paw-print',
+    color: '#a16207',
+  })
+  // Long child name for layout testing, budget without spending.
+  await addCategory(ledger, {
+    name: 'Home improvement and garden supplies',
+    type: 'expense',
+    icon: 'hammer',
+    color: '#78716c',
+    parent: 'Home',
+  })
+  // Archived, but older transactions still point to it.
+  await addCategory(ledger, {
+    name: 'Photography',
+    type: 'expense',
+    icon: 'camera',
+    color: '#475569',
+    archivedAt: new Date(monthStart(9)),
+  })
 
   const first31 = (() => {
     let month = start
@@ -276,23 +561,6 @@ async function main() {
     }
     return `${month.slice(0, 8)}31`
   })()
-  const firstMonday = (() => {
-    let date = start
-    while (weekday(date) !== 1) date = addDays(date, 1)
-    return date
-  })()
-
-  type RuleSeed = Schedule &
-    Pick<NewTransaction, 'type' | 'amount' | 'payee' | 'note'> & {
-      wallet: string
-      category?: string
-      toWallet?: string
-      paused?: boolean
-      // Generate transactions only until this date (pause date).
-      generatedUntil?: string
-      // Older amount before a price change.
-      previousAmount?: { amount: number; until: string }
-    }
 
   const rules: RuleSeed[] = [
     {
@@ -308,13 +576,13 @@ async function main() {
     {
       type: 'expense',
       wallet: 'Main account',
-      category: 'Housing',
-      amount: money(950),
-      payee: 'Landlord',
-      note: 'Rent',
+      category: 'Household',
+      amount: money(1050),
+      payee: 'Household',
+      note: 'My share of rent and bills',
       frequency: 'monthly',
       interval: 1,
-      startDate: start,
+      startDate: addDays(start, 25),
     },
     // On the 31st: lands on the last day of shorter months.
     {
@@ -351,21 +619,10 @@ async function main() {
       generatedUntil: monthStart(3),
     },
     {
-      type: 'expense',
-      wallet: 'Main account',
-      category: 'Housing',
-      amount: money(420),
-      payee: 'HomeSafe Insurance',
-      note: 'Home insurance, yearly',
-      frequency: 'yearly',
-      interval: 1,
-      startDate: addDays(start, 9),
-    },
-    {
       type: 'transfer',
       wallet: 'Main account',
       toWallet: 'Savings',
-      amount: money(300),
+      amount: money(600),
       note: 'Monthly savings',
       frequency: 'monthly',
       interval: 1,
@@ -376,11 +633,11 @@ async function main() {
       type: 'transfer',
       wallet: 'Main account',
       toWallet: 'Cash',
-      amount: money(70),
+      amount: money(40),
       note: 'Pocket money',
       frequency: 'weekly',
       interval: 2,
-      startDate: firstMonday,
+      startDate: firstWeekday(start, 1),
     },
     // Ended: the contract was cancelled.
     {
@@ -396,181 +653,154 @@ async function main() {
       endDate: addDays(monthStart(6), 2),
     },
   ]
+  for (const rule of rules) await ledger.rule(rule)
 
-  for (const rule of rules) {
-    const until = rule.generatedUntil ?? today
-    const [row] = await db
-      .insert(recurringRule)
-      .values({
-        userId,
-        type: rule.type,
-        walletId: w[rule.wallet],
-        categoryId: rule.category ? cat[rule.category] : null,
-        toWalletId: rule.toWallet ? w[rule.toWallet] : null,
-        amount: rule.amount,
-        payee: rule.payee,
-        note: rule.note,
-        frequency: rule.frequency,
-        interval: rule.interval,
-        startDate: rule.startDate,
-        endDate: rule.endDate,
-        nextDate: nextOccurrence(rule, until),
-        paused: rule.paused ?? false,
-      })
-      .returning()
-    for (const date of occurrencesUntil(rule, until)) {
-      const amount =
-        rule.previousAmount && date < rule.previousAmount.until
-          ? rule.previousAmount.amount
-          : rule.amount
-      add({
-        type: rule.type,
-        date,
-        walletId: row.walletId,
-        categoryId: row.categoryId,
-        toWalletId: row.toWalletId,
-        amount,
-        payee: rule.payee,
-        note: rule.note,
-        recurringRuleId: row.id,
-      })
-    }
+  // The current budget month (25th to 24th) is fixed below, so the budgets show known
+  // states.
+  const period = budgetPeriod(today, 25)
+  const inPeriod = (offset: number) => {
+    const date = addDays(period.start, offset)
+    return date > today ? today : date
   }
 
-  // ---- Everyday spending, day by day ----
-
-  for (let date = start; date <= today; date = addDays(date, 1)) {
+  for (const date of days(start, today)) {
     const day = weekday(date)
-    const currentMonth = date >= thisMonth
-    const dayOfMonth = Number(date.slice(8))
     const isWinter = ['11', '12', '01', '02'].includes(date.slice(5, 7))
+    const dayOfMonth = Number(date.slice(8))
 
-    if ([2, 4, 6].includes(day) && chance(0.8)) {
-      expense(
+    if (day === 4 && chance(0.6)) {
+      ledger.expense(
         date,
-        chance(0.8) ? 'Main account' : 'Cash',
+        chance(0.6) ? 'Main account' : 'Cash',
         'Groceries',
-        cents(12, 95),
-        { payee: pick(['Lidl', 'Billa', 'Tesco', 'Farmers market']) },
+        cents(6, 35),
+        {
+          ...me,
+          payee: pick(['Lidl', 'Billa', 'Corner shop']),
+        },
       )
     }
     if (day >= 1 && day <= 5 && chance(0.35)) {
-      expense(
+      ledger.expense(
         date,
         chance(0.5) ? 'Cash' : 'Credit card',
         'Restaurants & cafés',
         cents(1.8, 4.5),
-        {
-          payee: 'Café Central',
-        },
+        { ...me, payee: 'Café Central' },
       )
     }
     if (dayOfMonth === 2) {
-      expense(date, 'Main account', 'Transport', money(49), {
+      ledger.expense(date, 'Main account', 'Transport', money(49), {
+        ...me,
         payee: 'City Transit',
         note: 'Monthly pass',
       })
     }
-    if (dayOfMonth === 12) {
-      expense(
-        date,
-        'Main account',
-        'Utilities',
-        isWinter ? cents(85, 120) : cents(40, 65),
-        { payee: 'PowerGrid', note: 'Electricity' },
-      )
-    }
-    // The current month is fixed below, so the budgets show known states.
-    if (!currentMonth) {
+    if (date < period.start) {
       if ([5, 6].includes(day) && chance(0.5)) {
-        expense(date, 'Credit card', 'Restaurants & cafés', cents(15, 80), {
-          payee: pick([
-            'Trattoria Roma',
-            'Sushi Bar',
-            'Burger House',
-            'Thai Garden',
-          ]),
-        })
+        ledger.expense(
+          date,
+          'Credit card',
+          'Restaurants & cafés',
+          cents(15, 80),
+          {
+            ...me,
+            payee: pick([
+              'Trattoria Roma',
+              'Sushi Bar',
+              'Burger House',
+              'Thai Garden',
+            ]),
+          },
+        )
       }
       if (chance(0.04)) {
-        expense(date, 'Credit card', 'Transport', cents(9, 28), {
+        ledger.expense(date, 'Credit card', 'Transport', cents(9, 28), {
+          ...me,
           payee: 'Taxi',
         })
       }
     }
     if (chance(0.06)) {
-      expense(date, 'Credit card', 'Shopping', cents(15, 180), {
-        payee: pick(['Zalando', 'IKEA', 'Decathlon', 'Amazon']),
+      ledger.expense(date, 'Credit card', 'Shopping', cents(15, 180), {
+        ...me,
+        payee: pick(['Zalando', 'Decathlon', 'Amazon']),
       })
     }
     if (chance(0.05)) {
-      expense(date, 'Credit card', 'Entertainment', cents(8, 45), {
+      ledger.expense(date, 'Credit card', 'Entertainment', cents(8, 45), {
+        ...me,
         payee: pick(['Cinema City', 'Steam', 'Bowling Alley']),
       })
     }
-    if (chance(0.03)) {
-      expense(date, 'Cash', 'Health', cents(5, 40), { payee: 'Pharmacy' })
+    if (chance(isWinter ? 0.05 : 0.03)) {
+      ledger.expense(date, 'Cash', 'Health', cents(5, 40), {
+        ...me,
+        payee: 'Pharmacy',
+      })
     }
-    // Monthly interest on the last day of the month.
+    // Monthly interest on the last day of the month; the very first payout is the smallest
+    // possible amount, 0.01.
     if (addDays(date, 1).endsWith('-01')) {
-      // The very first payout is the smallest possible amount: 0.01.
       const first = date < addMonths(start, 1)
-      income(date, 'Savings', 'Interest', first ? 1 : cents(2, 9), {
+      ledger.income(date, 'Savings', 'Interest', first ? 1 : cents(2, 9), {
         payee: 'Bank',
       })
     }
   }
 
-  // ---- Current month: known budget states ----
-  // Restaurants 150.00 of 120.00 (over), Transport 68.00 of 80.00 (85 %).
-  for (const [day, amount, payee] of [
+  // Current budget month: Restaurants over its 120.00 budget, Transport around 85 % of 80.00
+  // (checked in the report).
+  for (const [offset, amount, payee] of [
     [3, 32.5, 'Trattoria Roma'],
     [7, 41.9, 'Sushi Bar'],
     [11, 28, 'Burger House'],
     [16, 47.6, 'Thai Garden'],
   ] as const) {
-    expense(
-      dayOf(0, day),
+    ledger.expense(
+      inPeriod(offset),
       'Credit card',
       'Restaurants & cafés',
       money(amount),
       {
+        ...me,
         payee,
       },
     )
   }
-  expense(dayOf(0, 9), 'Credit card', 'Transport', money(19), { payee: 'Taxi' })
+  ledger.expense(inPeriod(9), 'Credit card', 'Transport', money(19), {
+    ...me,
+    payee: 'Taxi',
+  })
 
-  // ---- One-off events ----
-
-  // Big purchase.
-  expense(dayOf(7, 15), 'Credit card', 'Shopping', money(1899.99), {
+  // Big purchase, and a purchase with its refund.
+  ledger.expense(dayOf(7, 15), 'Credit card', 'Shopping', money(1899.99), {
+    ...me,
     payee: 'TechStore',
     note: 'Work laptop, 2 year warranty',
   })
-  // Purchase and its refund.
-  expense(dayOf(7, 3), 'Credit card', 'Shopping', money(79.9), {
+  ledger.expense(dayOf(7, 3), 'Credit card', 'Shopping', money(79.9), {
+    ...me,
     payee: 'Zalando',
     note: 'Running shoes',
   })
-  income(dayOf(7, 13), 'Main account', 'Refunds', money(79.9), {
+  ledger.income(dayOf(7, 13), 'Main account', 'Refunds', money(79.9), {
+    ...me,
     payee: 'Zalando',
     note: 'Returned shoes (wrong size)',
   })
 
   // Trip abroad: EUR to USD transfer with a different target amount, spending in USD.
-  expense(
+  ledger.expense(
     dayOf(6, 20),
     'Credit card',
     'Travel',
     money(489),
-    {
-      payee: 'SkyAir',
-      note: 'Flights VIE ⇄ JFK',
-    },
+    { ...me, payee: 'SkyAir', note: 'Flights VIE ⇄ JFK' },
     ['Vacation'],
   )
-  transfer(dayOf(5, 9), 'Main account', 'US trip', money(600), {
+  ledger.transfer(dayOf(5, 9), 'Main account', 'US trip', money(600), {
+    ...me,
     toAmount: money(648),
     note: 'Exchanged at the airport',
   })
@@ -589,17 +819,18 @@ async function main() {
     [13, 'Shopping', 64.2, 'Souvenir shop', ['Vacation', 'Gift']],
     [14, 'Transport', 2.9, 'MTA Subway', ['Vacation']],
   ] as const) {
-    expense(dayOf(5, day), 'US trip', categoryName, money(amount), { payee }, [
-      ...tagNames,
-    ])
+    ledger.expense(
+      dayOf(5, day),
+      'US trip',
+      categoryName,
+      money(amount),
+      { ...me, payee },
+      tagNames,
+    )
   }
 
   // Busy day: twelve transactions on one Saturday.
-  const busyDay = (() => {
-    let date = dayOf(1, 1)
-    while (weekday(date) !== 6) date = addDays(date, 1)
-    return date
-  })()
+  const busyDay = firstWeekday(dayOf(1, 1), 6)
   for (const [walletName, categoryName, amount, payee] of [
     ['Cash', 'Groceries', 18.4, 'Farmers market'],
     ['Cash', 'Restaurants & cafés', 3.2, 'Bakery'],
@@ -613,17 +844,18 @@ async function main() {
     ['Main account', 'Transport', 6, 'City parking'],
     ['Cash', 'Restaurants & cafés', 4.5, 'Gelato Bar'],
   ] as const) {
-    expense(busyDay, walletName, categoryName, money(amount), { payee })
+    ledger.expense(busyDay, walletName, categoryName, money(amount), {
+      ...me,
+      payee,
+    })
   }
-  transfer(busyDay, 'Main account', 'Cash', money(100), {
+  ledger.transfer(busyDay, 'Main account', 'Cash', money(100), {
+    ...me,
     note: 'ATM withdrawal',
   })
 
   // December: holiday spending pushes expenses over income.
-  const december =
-    today.slice(5, 7) === '12'
-      ? thisMonth
-      : `${Number(today.slice(0, 4)) - 1}-12-01`
+  const december = decemberStart()
   for (const [day, amount, payee] of [
     [6, 45, 'Toy Store'],
     [9, 120, 'Jewellery Shop'],
@@ -632,147 +864,148 @@ async function main() {
     [18, 150, 'Department Store'],
     [20, 25, 'Christmas market'],
   ] as const) {
-    expense(
+    ledger.expense(
       addDays(december, day - 1),
       'Credit card',
       'Gifts & donations',
       money(amount),
-      {
-        payee,
-      },
+      { ...me, payee },
       ['Gift'],
     )
   }
-  expense(
+  ledger.expense(
     addDays(december, 21),
     'Main account',
     'Gifts & donations',
     money(50),
-    {
-      payee: 'Red Cross',
-      note: 'Donation',
-    },
+    { ...me, payee: 'Red Cross', note: 'Donation' },
     ['Tax deductible'],
   )
-  expense(addDays(december, 27), 'Credit card', 'Travel', money(1240), {
+  ledger.expense(addDays(december, 27), 'Credit card', 'Travel', money(1240), {
+    ...me,
     payee: 'Alpine Resorts',
     note: 'Ski week in Austria, half board',
   })
 
   // Freelance income.
-  income(
-    dayOf(10, 18),
+  ledger.income(
+    dayOf(11, 18),
     'Main account',
     'Freelance',
     money(850),
-    {
-      payee: 'Bakery Lo',
-      note: 'Website redesign',
-    },
+    { ...me, payee: 'Bakery Lo', note: 'Website redesign' },
     ['Business'],
   )
-  income(
+  ledger.income(
     dayOf(4, 7),
     'Main account',
     'Freelance',
     money(1200),
-    {
-      payee: 'GreenLeaf Studio',
-      note: 'Mobile app prototype',
-    },
+    { ...me, payee: 'GreenLeaf Studio', note: 'Mobile app prototype' },
     ['Business'],
   )
-  income(
+  ledger.income(
     dayOf(1, 22),
     'Main account',
     'Freelance',
     money(420.5),
-    {
-      payee: 'Bakery Lo',
-      note: 'Maintenance, invoice 2026-14',
-    },
+    { ...me, payee: 'Bakery Lo', note: 'Maintenance, invoice 2026-14' },
     ['Business', 'Tax deductible'],
   )
 
   // Reimbursed business expense.
-  expense(
+  ledger.expense(
     dayOf(2, 11),
     'Credit card',
     'Restaurants & cafés',
     money(64.8),
-    {
-      payee: 'Bistro 21',
-      note: 'Client lunch',
-    },
+    { ...me, payee: 'Bistro 21', note: 'Client lunch' },
     ['Business', 'Reimbursable'],
   )
-  income(
+  ledger.income(
     dayOf(2, 25),
     'Main account',
     'Other income',
     money(64.8),
-    {
-      payee: 'Acme Corp',
-      note: 'Expense report #2026-031',
-    },
+    { ...me, payee: 'Acme Corp', note: 'Expense report #2026-031' },
     ['Reimbursable'],
   )
 
-  // Notes: long, multi-line and non-ASCII.
-  expense(dayOf(3, 8), 'Main account', 'Groceries', money(142.37), {
+  // Notes: long, multi-line and non-ASCII. Parent category used directly.
+  ledger.expense(dayOf(3, 8), 'Main account', 'Food', money(142.37), {
+    ...me,
     payee: 'Tesco',
-    note: 'Big monthly shop: rice, pasta, olive oil, coffee beans, cleaning supplies, toilet paper, frozen vegetables, two kinds of cheese, snacks for the weekend trip, dog treats for the neighbours, and a birthday cake for the office. Remember to keep the receipt for the warranty on the blender.',
+    note: 'Big shop before the trip: rice, pasta, olive oil, coffee beans, frozen vegetables, two kinds of cheese, snacks for the weekend, dog treats for the neighbours, and a birthday cake for the office. Remember to keep the receipt for the warranty on the blender.',
   })
-  expense(dayOf(2, 14), 'Cash', 'Restaurants & cafés', money(12.4), {
+  ledger.expense(dayOf(2, 14), 'Cash', 'Restaurants & cafés', money(12.4), {
+    ...me,
     payee: 'Café Zoë',
     note: 'Café ☕ with Zoë and Jürgen, birthday 🎂',
   })
-  expense(dayOf(1, 5), 'Main account', 'Education', money(129), {
+  ledger.expense(dayOf(1, 5), 'Main account', 'Education', money(129), {
+    ...me,
     payee: 'Udemy',
     note: 'TypeScript course\nCertificate after 40 hours\nDiscount code applied',
   })
 
   // Archived category with history.
-  expense(dayOf(12, 6), 'Credit card', 'Photography', money(349), {
+  ledger.expense(dayOf(12, 6), 'Credit card', 'Photography', money(349), {
+    ...me,
     payee: 'FotoShop',
     note: 'Camera lens 50 mm',
   })
-  expense(dayOf(11, 20), 'Credit card', 'Photography', money(24.9), {
+  ledger.expense(dayOf(11, 20), 'Credit card', 'Photography', money(24.9), {
+    ...me,
     payee: 'FotoShop',
     note: 'Memory card',
   })
 
   // Archived wallet: spending, then the remaining balance moves to the main account.
   const studentSpending = [
-    expense(dayOf(13, 4), 'Student account', 'Groceries', money(36.2), {
+    ledger.expense(dayOf(13, 4), 'Student account', 'Groceries', money(36.2), {
+      ...me,
       payee: 'Lidl',
     }),
-    expense(dayOf(12, 9), 'Student account', 'Education', money(65), {
+    ledger.expense(dayOf(12, 9), 'Student account', 'Education', money(65), {
+      ...me,
       payee: 'University',
       note: 'Library fee',
     }),
-    expense(
+    ledger.expense(
       dayOf(11, 15),
       'Student account',
       'Restaurants & cafés',
       money(9.8),
       {
+        ...me,
         payee: 'Canteen',
       },
     ),
   ]
   const studentLeft =
     money(420) - studentSpending.reduce((sum, t) => sum + t.amount, 0)
-  transfer(dayOf(10, 1), 'Student account', 'Main account', studentLeft, {
-    note: 'Closing the student account',
-  })
+  ledger.transfer(
+    dayOf(10, 1),
+    'Student account',
+    'Main account',
+    studentLeft,
+    {
+      ...me,
+      note: 'Closing the student account',
+    },
+  )
 
   // Today and the near future.
-  expense(today, 'Cash', 'Restaurants & cafés', money(3.2), {
+  ledger.expense(today, 'Cash', 'Restaurants & cafés', money(3.2), {
+    ...me,
     payee: 'Café Central',
   })
-  expense(today, 'Main account', 'Groceries', money(23.45), { payee: 'Billa' })
-  expense(addDays(today, 5), 'Credit card', 'Entertainment', money(89), {
+  ledger.expense(today, 'Main account', 'Groceries', money(23.45), {
+    ...me,
+    payee: 'Billa',
+  })
+  ledger.expense(addDays(today, 5), 'Credit card', 'Entertainment', money(89), {
+    ...me,
     payee: 'Ticket Hub',
     note: 'Concert tickets (booked, not charged yet)',
   })
@@ -780,119 +1013,309 @@ async function main() {
   // Credit card bill: last month's card spending, paid from the main account on the 5th.
   for (let monthsAgo = 13; monthsAgo >= 0; monthsAgo--) {
     const payDate = dayOf(monthsAgo, 5)
-    if (payDate > today || Number(payDate.slice(8)) !== 5) continue
-    const billStart = monthStart(monthsAgo + 1)
-    const bill = transactions
+    if (Number(payDate.slice(8)) !== 5) continue
+    const bill = ledger.rows
       .filter(
         (t) =>
-          t.walletId === w['Credit card'] &&
+          t.walletId === ledger.wallets['Credit card'] &&
           t.type === 'expense' &&
-          t.date >= billStart &&
+          t.date >= monthStart(monthsAgo + 1) &&
           t.date < monthStart(monthsAgo),
       )
       .reduce((sum, t) => sum + t.amount, 0)
     if (bill > 0) {
-      transfer(payDate, 'Main account', 'Credit card', bill, {
+      ledger.transfer(payDate, 'Main account', 'Credit card', bill, {
         note: 'Credit card bill',
       })
     }
   }
+}
 
-  // ---- Insert ----
-
-  const untagged = transactions.filter((t) => !tagsFor.has(t))
-  for (let i = 0; i < untagged.length; i += 500) {
-    await db.insert(transaction).values(untagged.slice(i, i + 500))
-  }
-  for (const [row, tagNames] of tagsFor) {
-    const [inserted] = await db.insert(transaction).values(row).returning()
-    await db.insert(transactionTag).values(
-      tagNames.map((name) => ({
-        transactionId: inserted.id,
-        tagId: tagId[name],
-      })),
-    )
-  }
-
-  await db.insert(budget).values([
-    { userId, categoryId: null, amount: money(2200), currency: 'EUR' },
-    { userId, categoryId: cat.Groceries, amount: money(400), currency: 'EUR' },
-    {
-      userId,
-      categoryId: cat['Restaurants & cafés'],
-      amount: money(120),
-      currency: 'EUR',
-    },
-    { userId, categoryId: cat.Transport, amount: money(80), currency: 'EUR' },
-    {
-      userId,
-      categoryId: cat.Entertainment,
-      amount: money(60),
-      currency: 'EUR',
-    },
-    { userId, categoryId: cat.Pets, amount: money(50), currency: 'EUR' },
-    {
-      userId,
-      categoryId: cat['Home improvement and garden supplies'],
-      amount: money(100),
-      currency: 'EUR',
-    },
-  ])
-
-  // ---- Summary and sanity checks ----
-
-  const change = (t: NewTransaction, walletId: string) => {
-    if (t.walletId === walletId)
-      return t.type === 'income' ? t.amount : -t.amount
-    if (t.toWalletId === walletId) return t.toAmount ?? t.amount
-    return 0
-  }
-  // Balance at the end of each day up to today, oldest first.
-  const dailyBalances = (walletId: string) => {
-    let running = wallets.find((x) => x.id === walletId)?.initialBalance ?? 0
-    const result: number[] = []
-    const past = transactions.filter((t) => t.date <= today)
-    past.sort((a, b) => a.date.localeCompare(b.date))
-    for (let i = 0; i < past.length; i++) {
-      running += change(past[i], walletId)
-      if (past[i + 1]?.date !== past[i].date) result.push(running)
-    }
-    return result
-  }
-  const balance = (walletId: string) => dailyBalances(walletId).at(-1) ?? 0
-  const neverNegative = (walletId: string) =>
-    dailyBalances(walletId).every((value) => value >= 0)
-  const format = (value: number) => (value / 100).toFixed(2)
-
-  console.log(`Seeded ${DEMO_EMAIL} / ${DEMO_PASSWORD} and ${EMPTY_EMAIL}`)
-  console.log(
-    `${transactions.length} transactions (${tagsFor.size} tagged), ${rules.length} recurring rules, ${start} to ${addDays(today, 5)}`,
+async function seedJordan(ledger: Ledger, jordanId: string) {
+  const me = { createdBy: jordanId }
+  await ledger.load(
+    [
+      {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        initialBalance: money(1200),
+        color: '#0284c7',
+        icon: 'landmark',
+      },
+      {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        initialBalance: money(40),
+        color: '#16a34a',
+        icon: 'wallet',
+      },
+      {
+        name: 'Savings',
+        type: 'savings',
+        currency: 'EUR',
+        initialBalance: money(3000),
+        color: '#0d9488',
+        icon: 'piggy-bank',
+      },
+    ],
+    [],
   )
-  for (const x of wallets) {
-    console.log(
-      `  ${x.name.padEnd(16)} ${format(balance(x.id)).padStart(10)} ${x.currency}`,
-    )
+  await addCategory(ledger, {
+    name: 'Household',
+    type: 'expense',
+    icon: 'handshake',
+    color: '#4b3f8f',
+  })
+  for (const rule of [
+    {
+      type: 'income',
+      wallet: 'Bank',
+      category: 'Salary',
+      amount: money(2100),
+      payee: 'City Hospital',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: start,
+    },
+    {
+      type: 'expense',
+      wallet: 'Bank',
+      category: 'Household',
+      amount: money(1050),
+      payee: 'Household',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: addDays(start, 1),
+    },
+    {
+      type: 'transfer',
+      wallet: 'Bank',
+      toWallet: 'Savings',
+      amount: money(500),
+      note: 'Savings',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: addDays(start, 2),
+    },
+  ] satisfies RuleSeed[]) {
+    await ledger.rule(rule)
+  }
+  for (const date of days(start, today)) {
+    if (chance(0.3)) {
+      ledger.expense(date, 'Cash', 'Restaurants & cafés', cents(2, 6), {
+        ...me,
+        payee: 'Hospital canteen',
+      })
+    }
+    if (chance(0.05)) {
+      ledger.expense(date, 'Bank', 'Shopping', cents(10, 90), {
+        ...me,
+        payee: pick(['H&M', 'Bookstore', 'Amazon']),
+      })
+    }
+    if (date.endsWith('-15')) {
+      ledger.transfer(date, 'Bank', 'Cash', money(60), {
+        ...me,
+        note: 'ATM withdrawal',
+      })
+    }
+  }
+}
+
+async function seedHousehold(ledger: Ledger, alexId: string, jordanId: string) {
+  await ledger.load(
+    [
+      {
+        name: 'Joint account',
+        type: 'checking',
+        currency: 'EUR',
+        initialBalance: money(2500),
+        color: '#4b3f8f',
+        icon: 'landmark',
+      },
+    ],
+    [
+      { name: 'Guests', color: '#ea580c' },
+      { name: 'Renovation', color: '#78716c' },
+    ],
+  )
+  await addCategory(ledger, {
+    name: 'Contributions',
+    type: 'income',
+    icon: 'handshake',
+    color: '#4b3f8f',
+  })
+
+  const rules: RuleSeed[] = [
+    {
+      type: 'income',
+      wallet: 'Joint account',
+      category: 'Contributions',
+      amount: money(1050),
+      payee: 'Alex',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: addDays(start, 25),
+    },
+    {
+      type: 'income',
+      wallet: 'Joint account',
+      category: 'Contributions',
+      amount: money(1050),
+      payee: 'Jordan',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: addDays(start, 1),
+    },
+    {
+      type: 'expense',
+      wallet: 'Joint account',
+      category: 'Housing',
+      amount: money(1400),
+      payee: 'Landlord',
+      note: 'Rent',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: start,
+    },
+    {
+      type: 'expense',
+      wallet: 'Joint account',
+      category: 'Utilities',
+      amount: money(29.99),
+      payee: 'FiberNet',
+      note: 'Internet',
+      frequency: 'monthly',
+      interval: 1,
+      startDate: addDays(start, 7),
+    },
+    {
+      type: 'expense',
+      wallet: 'Joint account',
+      category: 'Housing',
+      amount: money(420),
+      payee: 'HomeSafe Insurance',
+      note: 'Home insurance, yearly',
+      frequency: 'yearly',
+      interval: 1,
+      startDate: addDays(start, 9),
+    },
+  ]
+  for (const rule of rules) await ledger.rule(rule)
+
+  const members = [alexId, jordanId]
+  for (const date of days(start, today)) {
+    const day = weekday(date)
+    const isWinter = ['11', '12', '01', '02'].includes(date.slice(5, 7))
+    if ([2, 6].includes(day) && chance(0.85)) {
+      ledger.expense(date, 'Joint account', 'Groceries', cents(20, 80), {
+        createdBy: pick(members),
+        payee: pick(['Lidl', 'Billa', 'Tesco', 'Farmers market']),
+      })
+    }
+    if (date.endsWith('-12')) {
+      ledger.expense(
+        date,
+        'Joint account',
+        'Utilities',
+        isWinter ? cents(85, 120) : cents(40, 65),
+        { payee: 'PowerGrid', note: 'Electricity' },
+      )
+    }
+    if (day === 0 && chance(0.15)) {
+      ledger.expense(
+        date,
+        'Joint account',
+        'Restaurants & cafés',
+        cents(40, 120),
+        {
+          createdBy: pick(members),
+          payee: 'Pizza delivery',
+          note: 'Friends over',
+        },
+        ['Guests'],
+      )
+    }
+  }
+  ledger.expense(
+    dayOf(8, 14),
+    'Joint account',
+    'Furniture',
+    money(649),
+    { createdBy: jordanId, payee: 'IKEA', note: 'New sofa' },
+    ['Renovation'],
+  )
+  ledger.expense(
+    dayOf(8, 20),
+    'Joint account',
+    'Home',
+    money(86.4),
+    { createdBy: alexId, payee: 'Hardware store', note: 'Paint and brushes' },
+    ['Renovation'],
+  )
+}
+
+function decemberStart() {
+  return today.slice(5, 7) === '12'
+    ? thisMonth
+    : `${Number(today.slice(0, 4)) - 1}-12-01`
+}
+
+function report({
+  alex,
+  jordan,
+  household,
+}: Record<'alex' | 'jordan' | 'household', Ledger>) {
+  const format = (value: number) => (value / 100).toFixed(2)
+  const count = [alex, jordan, household].reduce((n, l) => n + l.rows.length, 0)
+  console.log(
+    `Seeded ${ALEX}, ${JORDAN} and ${SAM} (password ${DEMO_PASSWORD})`,
+  )
+  console.log(`${count} transactions, ${start} to ${addDays(today, 5)}`)
+  for (const [name, ledger] of Object.entries({ alex, jordan, household })) {
+    for (const w of ledger.walletRows) {
+      console.log(
+        `  ${name.padEnd(10)} ${w.name.padEnd(16)} ${format(ledger.balance(w.name)).padStart(10)} ${w.currency}`,
+      )
+    }
   }
 
-  const decemberTotals = (type: 'income' | 'expense') =>
-    transactions
-      .filter(
-        (t) =>
-          t.type === type &&
-          t.date >= december &&
-          t.date < addMonths(december, 1) &&
-          t.walletId !== w['US trip'],
-      )
-      .reduce((sum, t) => sum + t.amount, 0)
+  const period = budgetPeriod(today, 25)
+  const restaurants = alex.spent(
+    'Restaurants & cafés',
+    period.start,
+    period.end,
+  )
+  const transport = alex.spent('Transport', period.start, period.end)
+  const december = decemberStart()
+  const decemberEnd = addDays(addMonths(december, 1), -1)
+  const eurWallets = ['Main account', 'Cash', 'Savings', 'Credit card']
+
   const checks: [string, boolean][] = [
-    ['Main account never negative', neverNegative(w['Main account'])],
-    ['Cash never negative', neverNegative(w.Cash)],
-    ['Savings never negative', neverNegative(w.Savings)],
-    ['Credit card owes this month', balance(w['Credit card']) < 0],
-    ['Student account is empty', balance(w['Student account']) === 0],
+    ...['Main account', 'Cash', 'Savings'].map((name): [string, boolean] => [
+      `Alex ${name} never negative`,
+      alex.neverNegative(name),
+    ]),
+    ['Jordan Bank never negative', jordan.neverNegative('Bank')],
+    ['Jordan Cash never negative', jordan.neverNegative('Cash')],
+    ['Jordan Savings never negative', jordan.neverNegative('Savings')],
+    ['Joint account never negative', household.neverNegative('Joint account')],
+    ['Credit card owes this month', alex.balance('Credit card') < 0],
+    ['Student account is empty', alex.balance('Student account') === 0],
     [
       'December is overspent',
-      decemberTotals('expense') > decemberTotals('income'),
+      alex.total('expense', december, decemberEnd, eurWallets) >
+        alex.total('income', december, decemberEnd, eurWallets),
+    ],
+    [
+      `Restaurants over budget (${format(restaurants)} of 120.00)`,
+      restaurants > money(120),
+    ],
+    [
+      `Transport 80 to 100 % of budget (${format(transport)} of 80.00)`,
+      transport >= money(64) && transport <= money(80),
     ],
   ]
   for (const [name, ok] of checks)
