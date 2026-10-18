@@ -12,7 +12,9 @@ checkout can change branches, rebuild and reset its database without touching it
 
 ## First setup
 
-1. Make the GHCR package `budgetmaster` public, or run `docker login ghcr.io` on the server.
+1. Nothing to do for the image: `ghcr.io/akoskappel/budgetmaster` is public (checked
+   2026-10-18 with an anonymous pull token), so the server pulls it without logging in. See
+   [Registry access](#registry-access) if it is ever made private.
 2. Create the folder and copy the files from this directory:
    ```bash
    mkdir -p ~/deploy/budgetmaster/tailscale
@@ -40,3 +42,17 @@ checkout can change branches, rebuild and reset its database without touching it
 The database lives in the `budgetmaster-prod_dbdata` volume. Nightly `pg_dump` is backlog
 item H-02; until then:
 `docker compose exec db pg_dump -U budgetmaster budgetmaster > budgetmaster-$(date +%F).sql`
+
+## Registry access
+
+The package is public, like the ambulance images. To check from any machine:
+`docker pull ghcr.io/akoskappel/budgetmaster:latest` without being logged in.
+
+If it is made private (GitHub, your profile, Packages, `budgetmaster`, Package settings,
+Change visibility), the server needs a read-only login once:
+
+1. GitHub, Settings, Developer settings, Personal access tokens, Tokens (classic), Generate
+   new token: only the `read:packages` scope, an expiry you will remember.
+2. On the server: `docker login ghcr.io -u AkosKappel` and paste the token as the password.
+   Docker Desktop keeps it in the Windows credential store, not in a file.
+3. Note the token's expiry in `infra/open-items.md`; pulls fail after it.
