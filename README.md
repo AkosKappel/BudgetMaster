@@ -26,6 +26,7 @@ pnpm install
 cp .env.example .env   # then set DB_PASSWORD, DATABASE_URL and BETTER_AUTH_SECRET
 docker compose up -d   # PostgreSQL on 127.0.0.1:5436
 pnpm db:migrate
+pnpm db:seed       # optional demo data
 pnpm dev
 ```
 
@@ -46,6 +47,12 @@ The app runs on http://localhost:3000.
 | `pnpm db:generate` | Create a migration from schema changes |
 | `pnpm db:migrate`  | Apply pending migrations               |
 | `pnpm db:studio`   | Open Drizzle Studio                    |
+| `pnpm db:seed`     | Recreate the demo users and their data |
+| `pnpm test`        | Run unit tests (`node --test`)         |
+
+## Demo data
+
+`pnpm db:seed` creates `demo@budgetmaster.app` (about 14 months of data) and `empty@budgetmaster.app` (no data), both with the password `demo-budget-2026`. Running it again recreates both users.
 
 ## UI components
 
