@@ -230,10 +230,11 @@ function Budgets() {
                           amount: b.amount,
                         })
                       }
-                      aria-label={`${b.name}: edit budget`}
                       className="flex w-full flex-col gap-2 px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                     >
                       {body}
+                      {/* Keeps the visible text first in the name (WCAG 2.5.3). */}
+                      <span className="sr-only">Edit budget</span>
                     </button>
                   ) : (
                     <div className="flex flex-col gap-2 px-4 py-3">{body}</div>

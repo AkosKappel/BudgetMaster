@@ -14,3 +14,7 @@ todos.json
 
 # Local planning file
 BACKLOG.md
+
+# Playwright
+test-results
+playwright-report
