@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeftRight,
+  ChartColumn,
   Check,
   Ellipsis,
   Gauge,
@@ -213,6 +214,10 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
             Manage spaces and invites
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/reports' }))}>
+            <ChartColumn />
+            Reports
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/recurring' }))}>
             <Repeat />

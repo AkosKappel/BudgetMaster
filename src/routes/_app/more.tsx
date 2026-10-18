@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
+  ChartColumn,
   ChevronRight,
   Ellipsis,
   LogOut,
@@ -69,6 +70,21 @@ function More() {
               <span className="font-medium">Wallets</span>
               <span className="text-muted-foreground text-sm">
                 Accounts, cards, cash and their balances
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/reports"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <ChartColumn className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Reports</span>
+              <span className="text-muted-foreground text-sm">
+                Income and spending month by month
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
