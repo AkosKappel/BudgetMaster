@@ -13,7 +13,14 @@ import {
 import { useActiveSpace, useSpaces, useSwitchSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
-export function SpaceSwitcher({ className }: { className?: string }) {
+export function SpaceSwitcher({
+  className,
+  compact = false,
+}: {
+  className?: string
+  // Icon only, for the collapsed sidebar.
+  compact?: boolean
+}) {
   const { spaces } = useSpaces()
   const active = useActiveSpace()
   const { switchTo, pendingId } = useSwitchSpace()
@@ -24,13 +31,22 @@ export function SpaceSwitcher({ className }: { className?: string }) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className={cn('h-10 justify-start gap-2 px-3', className)}
+          className={cn(
+            'h-10 justify-start gap-2 px-3',
+            compact && 'justify-center px-0',
+            className,
+          )}
           aria-label={`Space: ${active.name}. Switch space`}
+          title={compact ? active.name : undefined}
           disabled={pendingId !== null}
         >
           <ActiveIcon />
-          <span className="truncate font-semibold">{active.name}</span>
-          <ChevronsUpDown className="ml-auto text-muted-foreground" />
+          {!compact && (
+            <>
+              <span className="truncate font-semibold">{active.name}</span>
+              <ChevronsUpDown className="ml-auto text-muted-foreground" />
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">

@@ -1,7 +1,8 @@
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 
-import { Sidebar, TabBar } from '@/components/app-nav'
+import { SIDEBAR_HOTKEY, Sidebar, TabBar } from '@/components/app-nav'
 import { CrossTabSync, OfflineNotice } from '@/components/app-sync'
 import { CommandPalette, SearchButton } from '@/components/command-palette'
 import { DemoBanner } from '@/components/demo-banner'
@@ -9,6 +10,8 @@ import { QuickAddDrawer } from '@/components/quick-add'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formOptionsQuery, sessionQuery, spacesQuery } from '@/lib/queries'
+import { getSidebarCollapsed, saveSidebarCollapsed } from '@/lib/sidebar'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
@@ -18,7 +21,11 @@ export const Route = createFileRoute('/_app')({
     }
     const { activeId } = await context.queryClient.ensureQueryData(spacesQuery)
     if (!activeId) throw new Error('This account has no space.')
-    return { user: session.user, activeSpaceId: activeId }
+    return {
+      user: session.user,
+      activeSpaceId: activeId,
+      sidebarCollapsed: getSidebarCollapsed(),
+    }
   },
   // Not awaited: the quick add sheet usually opens later, and suspends if it is faster.
   loader: ({ context }) => {
@@ -32,9 +39,22 @@ export const Route = createFileRoute('/_app')({
 })
 
 function AppShell() {
+  const context = Route.useRouteContext()
+  const [collapsed, setCollapsed] = useState(context.sidebarCollapsed)
+  const toggle = () => {
+    saveSidebarCollapsed(!collapsed)
+    setCollapsed(!collapsed)
+  }
+  useHotkey(SIDEBAR_HOTKEY, toggle)
+
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[15rem_1fr]">
-      <Sidebar />
+    <div
+      className={cn(
+        'min-h-dvh md:grid',
+        collapsed ? 'md:grid-cols-[3.5rem_1fr]' : 'md:grid-cols-[15rem_1fr]',
+      )}
+    >
+      <Sidebar collapsed={collapsed} onToggle={toggle} />
       <main className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pt-10 md:pb-10">
         <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden">
           <SpaceSwitcher className="min-w-0 flex-1" />
