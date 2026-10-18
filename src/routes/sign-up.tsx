@@ -27,7 +27,8 @@ export const Route = createFileRoute('/sign-up')({
 
 function SignUp() {
   const search = Route.useSearch()
-  const { run, error, pending } = useAuthSubmit(search.redirect)
+  // New accounts set up their first wallet; a kept demo skips this (it has wallets).
+  const { run, error, pending } = useAuthSubmit(search.redirect ?? '/welcome')
 
   return (
     <AuthPage title="Create account">

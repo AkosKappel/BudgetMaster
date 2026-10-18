@@ -92,3 +92,13 @@ test.describe('dark mode', () => {
     }
   })
 })
+
+test('the welcome page has no axe violations', async ({ page }) => {
+  await page.goto('/sign-up')
+  await page.getByLabel('Name').fill('Axe User')
+  await page.getByLabel('Email').fill(`axe-${Date.now()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill('a-long-password-1')
+  await page.getByRole('button', { name: /create account/i }).click()
+  await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
+  await expectNoAxeViolations(page)
+})

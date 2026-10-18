@@ -11,6 +11,7 @@ test('a new account adds its first wallet and records an expense', async ({
   await page.getByLabel('Password', { exact: true }).fill('a-long-password-1')
   await page.getByRole('button', { name: /create account/i }).click()
 
+  await page.getByRole('link', { name: 'Skip for now' }).click()
   await page.getByRole('link', { name: 'Add wallet' }).click()
   await page.getByRole('button', { name: 'New wallet' }).click()
   const sheet = page.getByRole('dialog')

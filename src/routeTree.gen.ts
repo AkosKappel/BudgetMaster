@@ -19,6 +19,7 @@ import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppRecurringRouteImport } from './routes/_app/recurring'
 import { Route as AppWalletsRouteImport } from './routes/_app/wallets'
+import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
 import { Route as AppSpacesIndexRouteImport } from './routes/_app/spaces/index'
@@ -74,6 +75,11 @@ const AppWalletsRoute = AppWalletsRouteImport.update({
   path: '/wallets',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/more': typeof AppMoreRoute
   '/recurring': typeof AppRecurringRoute
   '/wallets': typeof AppWalletsRoute
+  '/welcome': typeof AppWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/more': typeof AppMoreRoute
   '/recurring': typeof AppRecurringRoute
   '/wallets': typeof AppWalletsRoute
+  '/welcome': typeof AppWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/': typeof AppIndexRoute
   '/invite/$token': typeof AppInviteTokenRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/_app/more': typeof AppMoreRoute
   '/_app/recurring': typeof AppRecurringRoute
   '/_app/wallets': typeof AppWalletsRoute
+  '/_app/welcome': typeof AppWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_app/': typeof AppIndexRoute
   '/_app/invite/$token': typeof AppInviteTokenRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/recurring'
     | '/wallets'
+    | '/welcome'
     | '/api/health'
     | '/invite/$token'
     | '/spaces/$spaceId'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/recurring'
     | '/wallets'
+    | '/welcome'
     | '/api/health'
     | '/'
     | '/invite/$token'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/_app/more'
     | '/_app/recurring'
     | '/_app/wallets'
+    | '/_app/welcome'
     | '/api/health'
     | '/_app/'
     | '/_app/invite/$token'
@@ -282,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWalletsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/welcome': {
+      id: '/_app/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
@@ -327,6 +346,7 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppRecurringRoute: typeof AppRecurringRoute
   AppWalletsRoute: typeof AppWalletsRoute
+  AppWelcomeRoute: typeof AppWelcomeRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
   AppSpacesSpaceIdRoute: typeof AppSpacesSpaceIdRoute
@@ -340,6 +360,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppRecurringRoute: AppRecurringRoute,
   AppWalletsRoute: AppWalletsRoute,
+  AppWelcomeRoute: AppWelcomeRoute,
   AppIndexRoute: AppIndexRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,
   AppSpacesSpaceIdRoute: AppSpacesSpaceIdRoute,
