@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Repeat, Split, Trash2 } from 'lucide-react'
+import { ArrowLeftRight, Paperclip, Repeat, Split, Trash2 } from 'lucide-react'
 import { animate, motion, type PanInfo, useMotionValue } from 'motion/react'
 import { useRef } from 'react'
 
@@ -75,6 +75,12 @@ export function TransactionRow({
             <Repeat
               className="size-3.5 shrink-0 text-muted-foreground"
               aria-label="Recurring"
+            />
+          )}
+          {t.receiptVersion !== null && (
+            <Paperclip
+              className="size-3.5 shrink-0 text-muted-foreground"
+              aria-label="Receipt photo"
             />
           )}
         </span>

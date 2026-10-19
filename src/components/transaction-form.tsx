@@ -3,11 +3,13 @@ import { useDebouncedValue } from '@tanstack/react-pacer'
 import {
   keepPreviousData,
   useQuery,
+  useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { Link, useRouteContext } from '@tanstack/react-router'
-import { Plus, Split, Trash2, X } from 'lucide-react'
+import { Camera, Plus, Split, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -19,10 +21,12 @@ import { useDeleteWithUndo, useSaveTransaction } from '@/lib/mutations'
 import { formOptionsQuery, payeesQuery, useActiveSpace } from '@/lib/queries'
 import { parseQuickEntry } from '@/lib/quick-entry'
 import { addDays, localTodayIso } from '@/lib/recurrence'
+import { resizeImage } from '@/lib/resize-image'
 import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
 import { uuidv7 } from '@/lib/uuid'
 import type { LedgerTransaction } from '@/server/ledger'
+import { deleteReceipt, saveReceipt } from '@/server/receipts'
 import type { TransactionType } from '@/stores/quick-add'
 
 const TYPES: { value: TransactionType; label: string }[] = [
@@ -123,6 +127,8 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
   const { user } = useRouteContext({ from: '/_app' })
   const { data: options } = useSuspenseQuery(formOptionsQuery(space.id))
   const save = useSaveTransaction(space.id)
+  const queryClient = useQueryClient()
+  const [receiptChange, setReceiptChange] = useState<ReceiptChange>(null)
   const deleteWithUndo = useDeleteWithUndo(space.id)
 
   const walletById = (id: string) => options.wallets.find((w) => w.id === id)
@@ -198,7 +204,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       const note = value.note.trim() || null
       const paidBy = (value.type === 'expense' && value.paidBy) || null
 
-      save.mutate({
+      const saved = save.mutateAsync({
         mode: transaction ? 'edit' : 'create',
         input: {
           spaceId: space.id,
@@ -225,6 +231,10 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           payee,
           note,
           paidBy,
+          // A new photo shows once it is uploaded and the list refetches.
+          receiptVersion: receiptChange
+            ? null
+            : (transaction?.receiptVersion ?? null),
           recurringRuleId: transaction?.recurringRuleId ?? null,
           category:
             !isTransfer && !split && cat
@@ -259,6 +269,18 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             .map((tag) => ({ tag })),
         },
       })
+      // Errors of the save itself are shown by the mutation; the photo follows the row.
+      saved
+        .then(() =>
+          receiptChange
+            ? applyReceipt(space.id, id, receiptChange).then(() =>
+                queryClient.invalidateQueries({
+                  queryKey: ['space', space.id],
+                }),
+              )
+            : undefined,
+        )
+        .catch(() => {})
       onDone()
     },
   })
@@ -744,6 +766,13 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         )}
       </form.Field>
 
+      <ReceiptField
+        transactionId={transaction?.id}
+        version={transaction?.receiptVersion ?? null}
+        change={receiptChange}
+        onChange={setReceiptChange}
+      />
+
       <div className="sticky bottom-0 -mx-4 flex gap-2 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {transaction && (
           <Button
@@ -1035,6 +1064,114 @@ function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
         Amount, payee, category, wallet and a day like yesterday or Friday, in
         any order. Fills the fields below.
       </p>
+    </div>
+  )
+}
+
+// What the form does to the receipt photo on save: nothing, a new photo, or remove it.
+type ReceiptChange = { image: string } | 'remove' | null
+
+async function applyReceipt(
+  spaceId: string,
+  transactionId: string,
+  change: Exclude<ReceiptChange, null>,
+) {
+  try {
+    if (change === 'remove')
+      await deleteReceipt({ data: { spaceId, transactionId } })
+    else
+      await saveReceipt({
+        data: { spaceId, transactionId, image: change.image },
+      })
+  } catch (error) {
+    toast.error(
+      error instanceof Error ? error.message : 'Could not save the receipt.',
+    )
+  }
+}
+
+// Receipt photo (I-04): taken or picked on the phone, shrunk in the browser, uploaded on
+// save.
+function ReceiptField({
+  transactionId,
+  version,
+  change,
+  onChange,
+}: {
+  transactionId?: string
+  version: number | null
+  change: ReceiptChange
+  onChange: (change: ReceiptChange) => void
+}) {
+  const [error, setError] = useState<string | null>(null)
+  const [reading, setReading] = useState(false)
+  const current =
+    change && change !== 'remove'
+      ? change.image
+      : change === null && version !== null && transactionId
+        ? `/api/receipts/${transactionId}?v=${version}`
+        : null
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="font-medium text-sm">Receipt</span>
+      {current ? (
+        <div className="flex items-end gap-3">
+          <a
+            href={current}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <img
+              src={current}
+              alt="Receipt photo, opens full size"
+              className="h-24 w-auto rounded-md border object-cover"
+            />
+          </a>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            // A just-picked photo goes back to the saved one (if any).
+            onClick={() => onChange(change ? null : 'remove')}
+          >
+            Remove photo
+          </Button>
+        </div>
+      ) : (
+        <label className="flex h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-input bg-card px-3 text-sm shadow-xs has-focus-visible:ring-2 has-focus-visible:ring-ring">
+          <Camera className="size-4" aria-hidden="true" />
+          {reading ? 'Reading photo' : 'Add a photo'}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            disabled={reading}
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              setError(null)
+              setReading(true)
+              try {
+                onChange({ image: await resizeImage(file) })
+              } catch (err) {
+                setError(
+                  err instanceof Error ? err.message : 'Could not read it.',
+                )
+              } finally {
+                setReading(false)
+              }
+            }}
+          />
+        </label>
+      )}
+      {error && (
+        <p role="alert" className="text-destructive text-sm">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

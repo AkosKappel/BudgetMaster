@@ -44,6 +44,7 @@ import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
 import { Route as AppSpacesIndexRouteImport } from './routes/_app/spaces/index'
 import { Route as AppSpacesSpaceIdRouteImport } from './routes/_app/spaces/$spaceId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiReceiptsTransactionIdRouteImport } from './routes/api/receipts/$transactionId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -219,6 +220,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReceiptsTransactionIdRoute =
+  ApiReceiptsTransactionIdRouteImport.update({
+    id: '/api/receipts/$transactionId',
+    path: '/api/receipts/$transactionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/receipts/$transactionId': typeof ApiReceiptsTransactionIdRoute
   '/spaces/': typeof AppSpacesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -290,6 +298,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/receipts/$transactionId': typeof ApiReceiptsTransactionIdRoute
   '/spaces': typeof AppSpacesIndexRoute
 }
 export interface FileRoutesById {
@@ -328,6 +337,7 @@ export interface FileRoutesById {
   '/_app/invite/$token': typeof AppInviteTokenRoute
   '/_app/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/receipts/$transactionId': typeof ApiReceiptsTransactionIdRoute
   '/_app/spaces/': typeof AppSpacesIndexRoute
 }
 export interface FileRouteTypes {
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/spaces/$spaceId'
     | '/api/auth/$'
+    | '/api/receipts/$transactionId'
     | '/spaces/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/spaces/$spaceId'
     | '/api/auth/$'
+    | '/api/receipts/$transactionId'
     | '/spaces'
   id:
     | '__root__'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
     | '/_app/invite/$token'
     | '/_app/spaces/$spaceId'
     | '/api/auth/$'
+    | '/api/receipts/$transactionId'
     | '/_app/spaces/'
   fileRoutesById: FileRoutesById
 }
@@ -459,6 +472,7 @@ export interface RootRouteChildren {
   TwoFactorRoute: typeof TwoFactorRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiReceiptsTransactionIdRoute: typeof ApiReceiptsTransactionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -708,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/receipts/$transactionId': {
+      id: '/api/receipts/$transactionId'
+      path: '/api/receipts/$transactionId'
+      fullPath: '/api/receipts/$transactionId'
+      preLoaderRoute: typeof ApiReceiptsTransactionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -774,6 +795,7 @@ const rootRouteChildren: RootRouteChildren = {
   TwoFactorRoute: TwoFactorRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiReceiptsTransactionIdRoute: ApiReceiptsTransactionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

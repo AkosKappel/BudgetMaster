@@ -104,3 +104,46 @@ test('a receipt split across categories counts in each of them', async ({
   await page.getByRole('button', { name: /E2E Market/ }).click()
   await expect(page.getByLabel('Amount of part 1')).toHaveValue('20.00')
 })
+
+test('a receipt photo is shrunk, saved with the transaction and shown again', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page
+    .getByRole('button', { name: /add transaction|add expense/i })
+    .first()
+    .click()
+  const sheet = page.getByRole('dialog')
+  await sheet.getByLabel('Amount').fill('3.10')
+  await sheet.getByLabel('Paid to').fill('Receipt Kiosk')
+  await sheet.getByText('Groceries', { exact: true }).click()
+  // A 2x2 PNG; the browser turns it into a WebP before the upload.
+  await sheet.getByLabel('Add a photo').setInputFiles({
+    name: 'receipt.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR4nGP4z8DAAMIM/////w8AH+4F+7C4l8kAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  })
+  await expect(sheet.getByRole('img', { name: /Receipt photo/ })).toBeVisible()
+  await sheet.getByRole('button', { name: /save/i }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
+
+  await page.goto('/activity?q=Receipt%20Kiosk')
+  const row = page.getByRole('button', { name: /Receipt Kiosk/ })
+  await expect(row.getByLabel('Receipt photo')).toBeVisible()
+  await row.click()
+  const photo = page.getByRole('dialog').getByRole('img', { name: /Receipt/ })
+  await expect(photo).toHaveAttribute('src', /^\/api\/receipts\//)
+  await expect
+    .poll(() => photo.evaluate((img: HTMLImageElement) => img.naturalWidth))
+    .toBe(2)
+
+  // Not readable without a session.
+  const src = await photo.getAttribute('src')
+  const anonymous = await page.request.fetch(src ?? '', {
+    headers: { cookie: '' },
+  })
+  expect(anonymous.status()).toBe(401)
+})

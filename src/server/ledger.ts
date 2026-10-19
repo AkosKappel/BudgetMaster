@@ -9,6 +9,7 @@ import {
   lte,
   or,
   type SQL,
+  sql,
 } from 'drizzle-orm'
 import { z } from 'zod'
 
@@ -51,6 +52,17 @@ const transactionWith = {
   },
 } as const
 
+// The receipt photo's version (I-04), null without one; part of its URL, so a replaced
+// photo is not served from the browser cache. Plain SQL names in the subquery: Drizzle
+// points every column inside `extras` at the outer table's alias.
+const transactionExtras = (t: typeof transaction._.columns) => ({
+  receiptVersion: sql<
+    number | null
+  >`(select extract(epoch from r.created_at)::float8 from receipt r where r.transaction_id = ${t.id})`
+    .mapWith((value) => (value === null ? null : Number(value)))
+    .as('receipt_version'),
+})
+
 const transactionColumns = {
   id: true,
   type: true,
@@ -75,6 +87,7 @@ export const getOverview = createServerFn({ method: 'GET' })
       walletBalances(space.id, today),
       db.query.transaction.findMany({
         columns: transactionColumns,
+        extras: transactionExtras,
         with: transactionWith,
         where: (t, { and, eq, lte }) =>
           and(eq(t.spaceId, space.id), lte(t.date, today)),
@@ -189,6 +202,7 @@ export const listTransactions = createServerFn({ method: 'GET' })
     const t = transaction
     const rows = await db.query.transaction.findMany({
       columns: transactionColumns,
+      extras: transactionExtras,
       with: transactionWith,
       where: and(
         eq(t.spaceId, space.id),
@@ -227,6 +241,7 @@ export const searchTransactions = createServerFn({ method: 'GET' })
     const pattern = containsPattern(data.query)
     return db.query.transaction.findMany({
       columns: transactionColumns,
+      extras: transactionExtras,
       with: transactionWith,
       where: (t, { and, eq, ilike, or }) =>
         and(

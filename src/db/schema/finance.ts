@@ -5,6 +5,7 @@ import {
   boolean,
   char,
   check,
+  customType,
   date,
   foreignKey,
   index,
@@ -420,6 +421,32 @@ export const activityEvent = pgTable(
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index().on(t.spaceId, t.createdAt.desc())],
+)
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+})
+
+// A receipt photo (I-04), one per transaction, resized in the browser to a WebP or JPEG of
+// a few hundred KB. Kept in the database, so backups and deletes cover it.
+export const receipt = pgTable(
+  'receipt',
+  {
+    transactionId: uuid().primaryKey(),
+    spaceId: spaceId(),
+    contentType: text({ enum: ['image/webp', 'image/jpeg'] }).notNull(),
+    size: integer().notNull(),
+    data: bytea().notNull(),
+    createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index().on(t.spaceId),
+    foreignKey({
+      columns: [t.transactionId, t.spaceId],
+      foreignColumns: [transaction.id, transaction.spaceId],
+    }).onDelete('cascade'),
+  ],
 )
 
 // A member paying another back in a shared space (I-09). Not a transaction: the money moves
