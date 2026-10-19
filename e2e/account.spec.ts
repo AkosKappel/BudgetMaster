@@ -116,3 +116,39 @@ test('two-step sign-in asks for an authenticator or backup code', async ({
   await page.getByRole('button', { name: 'Verify' }).click()
   await expect(page).not.toHaveURL(/two-factor|sign-in/)
 })
+
+test('a passkey can be added and used to sign in', async ({ page }) => {
+  // A virtual authenticator stands in for Face ID or a security key.
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('WebAuthn.enable')
+  await cdp.send('WebAuthn.addVirtualAuthenticator', {
+    options: {
+      protocol: 'ctap2',
+      transport: 'internal',
+      hasResidentKey: true,
+      hasUserVerification: true,
+      isUserVerified: true,
+      automaticPresenceSimulation: true,
+    },
+  })
+  await page.goto('/sign-up')
+  await page.getByLabel('Name').fill('Passkey Test')
+  await page.getByLabel('Email').fill(`passkey-${Date.now()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill('passkey-password-1')
+  await page.getByRole('button', { name: /create account/i }).click()
+  await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
+
+  await page.goto('/more')
+  await page.locator('summary', { hasText: 'Passkeys' }).click()
+  await page.getByRole('button', { name: 'Add a passkey' }).click()
+  await expect(page.getByText('Passkey added')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /^Remove passkey/ }),
+  ).toBeVisible()
+
+  await page.context().clearCookies()
+  await page.goto('/sign-in')
+  await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
+  await expect(page).not.toHaveURL(/sign-in/)
+  await expect(page.getByRole('navigation').first()).toBeVisible()
+})

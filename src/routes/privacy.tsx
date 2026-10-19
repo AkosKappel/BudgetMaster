@@ -42,6 +42,10 @@ function Privacy() {
           With two-step sign-in on: the authenticator key and your backup codes,
           both encrypted.
         </li>
+        <li>
+          Passkeys you add: their public key and a name. The private key never
+          leaves your device.
+        </li>
       </ul>
 
       <h2>Cookies</h2>

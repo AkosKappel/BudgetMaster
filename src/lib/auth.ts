@@ -1,3 +1,4 @@
+import { passkey } from '@better-auth/passkey'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { APIError } from 'better-auth/api'
@@ -90,6 +91,8 @@ export const auth = betterAuth({
     // Authenticator app codes (TOTP) with backup codes. "Trust this device" skips the
     // code on that browser for 30 days.
     twoFactor({ issuer: 'BudgetMaster' }),
+    // Sign in with Face ID, a fingerprint or a security key instead of the password.
+    passkey({ rpName: 'BudgetMaster' }),
     // Must stay last: it sets the cookies of the responses above.
     tanstackStartCookies(),
   ],

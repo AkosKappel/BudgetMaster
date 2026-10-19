@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { FlaskConical } from 'lucide-react'
+import { FlaskConical, KeyRound } from 'lucide-react'
 
 import {
   AuthPage,
@@ -76,6 +76,16 @@ function SignIn() {
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending}>
           Sign in
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          disabled={pending}
+          onClick={() => run(() => authClient.signIn.passkey())}
+        >
+          <KeyRound />
+          Sign in with a passkey
         </Button>
         <p className="text-muted-foreground text-sm">
           New here?{' '}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouteContext, useRouter } from '@tanstack/react-router'
-import { MailWarning, Monitor } from 'lucide-react'
+import { KeyRound, MailWarning, Monitor, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
+import { describeDevice } from '@/lib/devices'
 import { APP_LOCALE } from '@/lib/money'
 import { devicesQuery, sessionQuery } from '@/lib/queries'
 import { signOutDevice } from '@/server/devices'
@@ -71,6 +72,10 @@ export function AccountSecurity() {
           </span>
         </summary>
         <TwoFactorSettings enabled={user.twoFactorEnabled} />
+      </details>
+      <details className="rounded-lg border bg-card px-4 py-3">
+        <summary className="cursor-pointer font-medium">Passkeys</summary>
+        <Passkeys />
       </details>
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">
@@ -420,5 +425,98 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
         </Button>
       </div>
     </form>
+  )
+}
+
+const passkeysQuery = {
+  queryKey: ['passkeys'],
+  queryFn: async () => {
+    const { data, error } = await authClient.passkey.listUserPasskeys()
+    if (error) throw new Error(error.message ?? 'Could not load passkeys.')
+    return data
+  },
+}
+
+// Face ID, a fingerprint or a security key instead of the password. Loaded in the browser
+// only; registering needs the browser's WebAuthn prompt anyway.
+function Passkeys() {
+  const queryClient = useQueryClient()
+  const { data: passkeys, isPending } = useQuery(passkeysQuery)
+  const [error, setError] = useState<string | null>(null)
+  const refresh = () => queryClient.invalidateQueries(passkeysQuery)
+
+  const add = useMutation({
+    mutationFn: async () => {
+      const result = await authClient.passkey.addPasskey({
+        name: describeDevice(navigator.userAgent),
+      })
+      if (result?.error)
+        throw new Error(result.error.message ?? 'The passkey was not saved.')
+    },
+    onMutate: () => setError(null),
+    onSuccess: () => toast.success('Passkey added'),
+    onError: (e) => setError(e.message),
+    onSettled: refresh,
+  })
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await authClient.passkey.deletePasskey({ id })
+      if (error) throw new Error(error.message ?? 'Could not remove it.')
+    },
+    onSuccess: () => toast.success('Passkey removed'),
+    onError: (e) => toast.error(e.message),
+    onSettled: refresh,
+  })
+
+  return (
+    <div className="mt-3 flex flex-col gap-3">
+      <p className="text-muted-foreground text-sm">
+        Sign in with Face ID, a fingerprint or a security key instead of typing
+        your password. The device keeps the private key; only a public key is
+        stored here.
+      </p>
+      {isPending ? (
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      ) : (
+        passkeys &&
+        passkeys.length > 0 && (
+          <ul className="flex flex-col divide-y">
+            {passkeys.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 py-2">
+                <KeyRound
+                  className="size-5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{p.name ?? 'Passkey'}</p>
+                  <p className="text-muted-foreground text-sm">
+                    Added {formatTime(new Date(p.createdAt).toISOString())}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove passkey ${p.name ?? ''}`.trim()}
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(p.id)}
+                >
+                  <Trash2 />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+      <FormError message={error} />
+      <Button
+        variant="outline"
+        className="w-fit"
+        disabled={add.isPending}
+        onClick={() => add.mutate()}
+      >
+        <KeyRound />
+        Add a passkey
+      </Button>
+    </div>
   )
 }
