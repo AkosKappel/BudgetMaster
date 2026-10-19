@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query'
 import { Link, useRouteContext } from '@tanstack/react-router'
 import { Plus, Split, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import { iconFor } from '@/lib/icons'
 import { currencyDigits, formatMoney, parseAmount } from '@/lib/money'
 import { useDeleteWithUndo, useSaveTransaction } from '@/lib/mutations'
 import { formOptionsQuery, payeesQuery, useActiveSpace } from '@/lib/queries'
+import { parseQuickEntry } from '@/lib/quick-entry'
 import { addDays, localTodayIso } from '@/lib/recurrence'
 import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
@@ -286,6 +288,39 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         form.handleSubmit()
       }}
     >
+      {!transaction && (
+        <QuickEntryField
+          onParse={(text) => {
+            const entry = parseQuickEntry(text, {
+              today: localTodayIso(),
+              wallets: options.wallets,
+              categories: options.categories,
+            })
+            const type = entry.type ?? form.getFieldValue('type')
+            if (entry.type) {
+              form.setFieldValue('type', entry.type)
+              form.setFieldValue('splits', [])
+            }
+            if (entry.amount) form.setFieldValue('amount', entry.amount)
+            if (entry.walletId) form.setFieldValue('walletId', entry.walletId)
+            if (entry.date) form.setFieldValue('date', entry.date)
+            if (entry.payee) form.setFieldValue('payee', entry.payee)
+            // A rule for the payee fills the category when the line named none.
+            const categoryId =
+              entry.categoryId ??
+              (entry.payee
+                ? ruleFor(entry.payee, type, options.rules)?.categoryId
+                : undefined)
+            const current = options.categories.find(
+              (c) => c.id === form.getFieldValue('categoryId'),
+            )
+            if (categoryId) form.setFieldValue('categoryId', categoryId)
+            else if (current && current.type !== type)
+              form.setFieldValue('categoryId', '')
+          }}
+        />
+      )}
+
       <form.Field name="type">
         {(field) => (
           <fieldset className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
@@ -920,5 +955,48 @@ function SplitEditor({
         Don't split
       </Button>
     </fieldset>
+  )
+}
+
+// "coffee 3.20 cash yesterday" fills the form below; read in the browser (src/lib/quick-entry.ts).
+function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
+  const [text, setText] = useState('')
+  const apply = () => {
+    if (!text.trim()) return
+    onParse(text)
+    setText('')
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="quick-entry" className="text-muted-foreground text-xs">
+        Or type it
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          id="quick-entry"
+          autoComplete="off"
+          enterKeyHint="done"
+          placeholder="coffee 3.20 cash yesterday"
+          aria-describedby="quick-entry-hint"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter fills the form instead of saving it.
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              apply()
+            }
+          }}
+        />
+        <Button type="button" variant="outline" onClick={apply}>
+          Fill in
+        </Button>
+      </div>
+      <p id="quick-entry-hint" className="sr-only">
+        Amount, payee, category, wallet and a day like yesterday or Friday, in
+        any order. Fills the fields below.
+      </p>
+    </div>
   )
 }

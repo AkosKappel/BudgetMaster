@@ -25,6 +25,26 @@ test('quick add saves an expense that shows up in activity', async ({
   )
 })
 
+test('a typed line fills the quick add form', async ({ page }) => {
+  await startDemo(page)
+  await page
+    .getByRole('button', { name: /add transaction|add expense/i })
+    .first()
+    .click()
+  const sheet = page.getByRole('dialog')
+  await sheet.getByLabel('Or type it').fill('Typed Bakery 4.80 groceries cash')
+  await sheet.getByLabel('Or type it').press('Enter')
+  await expect(sheet.getByLabel('Amount')).toHaveValue('4.80')
+  await expect(sheet.getByLabel('Paid to')).toHaveValue('Typed Bakery')
+  await sheet.getByRole('button', { name: /save/i }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
+
+  await page.goto('/activity?q=Typed%20Bakery')
+  await expect(
+    page.getByRole('button', { name: /Typed Bakery/ }),
+  ).toContainText('Groceries')
+})
+
 test('activity filters come from the URL', async ({ page }) => {
   await startDemo(page)
   await page.goto('/activity?type=income')
