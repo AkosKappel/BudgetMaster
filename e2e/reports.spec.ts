@@ -63,3 +63,20 @@ test('money flow and category trends describe last month', async ({ page }) => {
   const trends = page.getByRole('region', { name: 'Spending by category' })
   await expect(trends.getByRole('listitem').first()).toBeVisible()
 })
+
+test('the forecast lists the known payments of the next 90 days', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.goto('/reports')
+  const forecast = page.getByRole('region', { name: 'Next 90 days' })
+  await expect(
+    forecast.getByText(
+      /(Tightest on|Never lower than|Below zero from) .* Ends at/,
+    ),
+  ).toBeVisible()
+  await forecast.getByText('Show payments').click()
+  await expect(
+    forecast.getByRole('row', { name: /Acme Corp/ }).first(),
+  ).toBeVisible()
+})

@@ -20,6 +20,7 @@ import { listRecurringRules } from '@/server/recurring'
 import {
   getCashFlow,
   getCategoryTrends,
+  getForecast,
   getNetWorth,
   getSpendingCalendar,
 } from '@/server/reports'
@@ -106,6 +107,12 @@ export const netWorthQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'net-worth'],
     queryFn: () => getNetWorth({ data: { spaceId } }),
+  })
+
+export const forecastQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'forecast'],
+    queryFn: () => getForecast({ data: { spaceId } }),
   })
 
 export const spendingCalendarQuery = (spaceId: string) =>

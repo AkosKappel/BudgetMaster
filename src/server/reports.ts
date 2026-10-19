@@ -1,14 +1,21 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, between, eq, inArray, lte, sql, sum } from 'drizzle-orm'
+import { and, between, eq, gt, inArray, lte, sql, sum } from 'drizzle-orm'
 
 import { db } from '@/db'
-import { category, transaction, wallet } from '@/db/schema'
+import { category, recurringRule, transaction, wallet } from '@/db/schema'
+import {
+  changeFor,
+  type ForecastEvent,
+  projectBalance,
+  ruleDates,
+} from '@/lib/forecast'
 import { addDays, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
+import { walletBalances } from '@/server/wallet-balances'
 
 const MONTHS = 12
 
@@ -248,3 +255,71 @@ export const getCategoryTrends = createServerFn({ method: 'GET' })
   })
 
 export type CategoryTrends = Awaited<ReturnType<typeof getCategoryTrends>>
+
+const FORECAST_DAYS = 90
+
+// Balance of the space-currency wallets for the next 90 days: today's balance plus the
+// payments recurring rules will make and transactions already entered for later dates.
+// Everyday spending is not guessed, so the line is what is certain, not a prediction.
+export const getForecast = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const today = currentDay()
+    await createDueTransactions(space.id, today)
+    const until = addDays(today, FORECAST_DAYS)
+
+    const [wallets, rules, planned] = await Promise.all([
+      walletBalances(space.id, today),
+      db.query.recurringRule.findMany({
+        where: and(
+          eq(recurringRule.spaceId, space.id),
+          eq(recurringRule.paused, false),
+        ),
+        with: { category: { columns: { name: true } } },
+      }),
+      db.query.transaction.findMany({
+        where: and(
+          eq(transaction.spaceId, space.id),
+          gt(transaction.date, today),
+          lte(transaction.date, until),
+        ),
+        with: { category: { columns: { name: true } } },
+      }),
+    ])
+    const inBase = wallets.filter((w) => w.currency === space.baseCurrency)
+    const ids = new Set(inBase.map((w) => w.id))
+    const label = (m: {
+      payee: string | null
+      category: { name: string } | null
+    }) => m.payee ?? m.category?.name ?? 'Transfer'
+
+    const events: ForecastEvent[] = [
+      ...rules.flatMap((rule) =>
+        ruleDates(rule, today, until).map((date) => ({
+          id: `${rule.id}-${date}`,
+          date,
+          label: label(rule),
+          change: changeFor(rule, ids),
+        })),
+      ),
+      ...planned.map((t) => ({
+        id: t.id,
+        date: t.date,
+        label: label(t),
+        change: changeFor(t, ids),
+      })),
+    ]
+      .filter((e) => e.change !== 0)
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    const balance = inBase.reduce((sum, w) => sum + w.balance, 0)
+    return {
+      ...projectBalance(balance, today, FORECAST_DAYS, events),
+      events,
+      currency: space.baseCurrency,
+    }
+  })
+
+export type Forecast = Awaited<ReturnType<typeof getForecast>>

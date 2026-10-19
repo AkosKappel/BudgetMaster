@@ -4,12 +4,14 @@ import { ChevronLeft } from 'lucide-react'
 
 import { CashFlowChart } from '@/components/cash-flow-chart'
 import { CategoryTrends } from '@/components/category-trends'
+import { ForecastChart } from '@/components/forecast-chart'
 import { MoneyFlow } from '@/components/money-flow'
 import { NetWorthChart } from '@/components/net-worth-chart'
 import { SpendingCalendar } from '@/components/spending-calendar'
 import {
   cashFlowQuery,
   categoryTrendsQuery,
+  forecastQuery,
   netWorthQuery,
   spendingCalendarQuery,
   useActiveSpace,
@@ -20,6 +22,7 @@ export const Route = createFileRoute('/_app/reports')({
     Promise.all([
       context.queryClient.ensureQueryData(cashFlowQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(netWorthQuery(context.activeSpaceId)),
+      context.queryClient.ensureQueryData(forecastQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(
         spendingCalendarQuery(context.activeSpaceId),
       ),
@@ -37,6 +40,7 @@ function Reports() {
   const { data: netWorth } = useSuspenseQuery(netWorthQuery(space.id))
   const { data: calendar } = useSuspenseQuery(spendingCalendarQuery(space.id))
   const { data: trends } = useSuspenseQuery(categoryTrendsQuery(space.id))
+  const { data: forecast } = useSuspenseQuery(forecastQuery(space.id))
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,6 +78,16 @@ function Reports() {
           Net worth
         </h2>
         <NetWorthChart {...netWorth} />
+      </section>
+      <section aria-labelledby="forecast" className="flex flex-col gap-3">
+        <h2 id="forecast" className="font-semibold text-lg">
+          Next 90 days
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Today's balance with recurring and planned payments. Everyday spending
+          comes on top.
+        </p>
+        <ForecastChart {...forecast} />
       </section>
       <section aria-labelledby="calendar" className="flex flex-col gap-3">
         <h2 id="calendar" className="font-semibold text-lg">
