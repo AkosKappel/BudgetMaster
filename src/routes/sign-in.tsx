@@ -4,8 +4,8 @@ import { FlaskConical, KeyRound } from 'lucide-react'
 import {
   AuthPage,
   FormError,
-  GoogleSignIn,
   redirectSearch,
+  SocialSignIn,
   useAuthSubmit,
 } from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
@@ -41,7 +41,7 @@ function SignIn() {
 
   return (
     <AuthPage title="Sign in">
-      <GoogleSignIn redirect={search.redirect} />
+      <SocialSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {

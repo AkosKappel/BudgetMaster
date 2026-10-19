@@ -4,7 +4,7 @@ import { KeyRound, MailWarning, Monitor, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { FormError } from '@/components/auth-page'
+import { FormError, SOCIAL_PROVIDERS } from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
 import { QrCode } from '@/components/qr-code'
 import { Button } from '@/components/ui/button'
@@ -531,62 +531,71 @@ const accountsQuery = {
   },
 }
 
-// Google next to the password, when the server is set up for it. Better Auth refuses to
-// remove the last way to sign in.
+// Social providers next to the password, when the server is set up for them. Better Auth
+// refuses to remove the last way to sign in.
 function ConnectedAccounts() {
   const queryClient = useQueryClient()
   const { data: options } = useQuery(signInOptionsQuery)
+  const providers = SOCIAL_PROVIDERS.filter(({ id }) => options?.[id])
   const { data: accounts } = useQuery({
     ...accountsQuery,
-    enabled: Boolean(options?.google),
+    enabled: providers.length > 0,
   })
-  const google = accounts?.find((a) => a.providerId === 'google')
   const unlink = useMutation({
-    mutationFn: async (accountId: string) => {
+    mutationFn: async ({ accountId }: { accountId: string; label: string }) => {
       const { error } = await authClient.unlinkAccount({ accountId })
       if (error) throw new Error(error.message ?? 'Could not disconnect.')
     },
-    onSuccess: () => toast.success('Google disconnected'),
+    onSuccess: (_, { label }) => toast.success(`${label} disconnected`),
     onError: (e) => toast.error(e.message),
     onSettled: () => queryClient.invalidateQueries(accountsQuery),
   })
-  if (!options?.google || !accounts) return null
+  if (providers.length === 0 || !accounts) return null
 
   return (
     <details className="rounded-lg border bg-card px-4 py-3">
       <summary className="cursor-pointer font-medium">
         Connected accounts
       </summary>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <p className="min-w-0 flex-1 text-sm">
-          {google
-            ? 'Google is connected: you can sign in with it.'
-            : 'Connect Google to sign in without your password.'}
-        </p>
-        {google ? (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={unlink.isPending}
-            onClick={() => unlink.mutate(google.accountId)}
-          >
-            Disconnect Google
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              authClient.linkSocial({
-                provider: 'google',
-                callbackURL: '/settings',
-              })
-            }
-          >
-            Connect Google
-          </Button>
-        )}
-      </div>
+      <ul className="mt-3 flex flex-col gap-3">
+        {providers.map(({ id, label }) => {
+          const linked = accounts.find((a) => a.providerId === id)
+          return (
+            <li key={id} className="flex flex-wrap items-center gap-3">
+              <p className="min-w-0 flex-1 text-sm">
+                {linked
+                  ? `${label} is connected: you can sign in with it.`
+                  : `Connect ${label} to sign in without your password.`}
+              </p>
+              {linked ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={unlink.isPending}
+                  onClick={() =>
+                    unlink.mutate({ accountId: linked.accountId, label })
+                  }
+                >
+                  Disconnect {label}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    authClient.linkSocial({
+                      provider: id,
+                      callbackURL: '/settings',
+                    })
+                  }
+                >
+                  Connect {label}
+                </Button>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </details>
   )
 }

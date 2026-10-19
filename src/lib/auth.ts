@@ -49,18 +49,26 @@ export const auth = betterAuth({
       })
     },
   },
-  socialProviders:
-    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-      ? {
-          google: {
-            clientId: env.GOOGLE_CLIENT_ID,
-            clientSecret: env.GOOGLE_CLIENT_SECRET,
-          },
-        }
-      : {},
+  socialProviders: {
+    ...(env.GOOGLE_CLIENT_ID &&
+      env.GOOGLE_CLIENT_SECRET && {
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
+      }),
+    ...(env.GITHUB_CLIENT_ID &&
+      env.GITHUB_CLIENT_SECRET && {
+        github: {
+          clientId: env.GITHUB_CLIENT_ID,
+          clientSecret: env.GITHUB_CLIENT_SECRET,
+        },
+      }),
+  },
   account: {
     // Signing in with Google to an address that already has a password account adds Google
-    // to that account (Google verifies the address) instead of failing.
+    // to that account (Google verifies the address) instead of failing. GitHub links only
+    // when it reports the address as verified, Better Auth's default for untrusted providers.
     accountLinking: { enabled: true, trustedProviders: ['google'] },
   },
   user: {

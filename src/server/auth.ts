@@ -45,9 +45,10 @@ export const authMiddleware = createMiddleware({ type: 'function' }).server(
   },
 )
 
-// Which ways to sign in the server is set up for; Google needs its OAuth client in `.env`.
+// Which ways to sign in the server is set up for; each provider needs its OAuth client in `.env`.
 export const getSignInOptions = createServerFn({ method: 'GET' }).handler(
   () => ({
     google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+    github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
   }),
 )

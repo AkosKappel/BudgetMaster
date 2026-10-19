@@ -3,8 +3,8 @@ import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import {
   AuthPage,
   FormError,
-  GoogleSignIn,
   redirectSearch,
+  SocialSignIn,
   useAuthSubmit,
 } from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
@@ -39,7 +39,7 @@ function SignUp() {
 
   return (
     <AuthPage title="Create account">
-      <GoogleSignIn redirect={search.redirect} />
+      <SocialSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {

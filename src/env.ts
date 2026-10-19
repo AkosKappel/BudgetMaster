@@ -23,6 +23,16 @@ const schema = z.object({
     (value) => value || undefined,
     z.string().optional(),
   ),
+  // Optional: GitHub sign-in, the same way (GitHub, Settings, Developer settings, OAuth app,
+  // callback URL `<BETTER_AUTH_URL>/api/auth/callback/github`).
+  GITHUB_CLIENT_ID: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  GITHUB_CLIENT_SECRET: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
   // Must be on a domain verified in Resend; onboarding@resend.dev only reaches the account owner.
   EMAIL_FROM: z.string().default('BudgetMaster <onboarding@resend.dev>'),
 })
