@@ -32,3 +32,12 @@ test('the home budget card moves between budget months', async ({ page }) => {
   await nav.getByRole('button', { name: 'Next month' }).click()
   await expect(nav).toContainText('This month')
 })
+
+test('worth a look points out a subscription that got pricier', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await expect(
+    page.getByRole('region', { name: 'Worth a look' }),
+  ).toContainText('Spotify went up from €10.99 to €11.99 (+9 %)')
+})
