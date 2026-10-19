@@ -9,6 +9,7 @@ import { DemoBanner } from '@/components/demo-banner'
 import { QuickAddDrawer } from '@/components/quick-add'
 import { ShortcutsHelp } from '@/components/shortcuts-help'
 import { SpaceSwitcher } from '@/components/space-switcher'
+import { ThemeMenu } from '@/components/theme-switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formOptionsQuery, sessionQuery, spacesQuery } from '@/lib/queries'
 import { getSidebarCollapsed, saveSidebarCollapsed } from '@/lib/sidebar'
@@ -62,6 +63,7 @@ function AppShell() {
         <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden print:hidden">
           <SpaceSwitcher className="min-w-0 flex-1" />
           <SearchButton compact />
+          <ThemeMenu />
         </header>
         <OfflineNotice />
         <DemoBanner />

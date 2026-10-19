@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 
 import { Logo } from '@/components/logo'
+import { ThemeMenu } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 
 const LINKS = [
@@ -14,7 +15,7 @@ const LINKS = [
 
 export function PublicFooter() {
   return (
-    <footer className="text-muted-foreground text-sm">
+    <footer className="flex items-center justify-between gap-4 text-muted-foreground text-sm">
       <nav aria-label="Information">
         <ul className="flex flex-wrap gap-x-4 gap-y-2">
           {LINKS.map(({ to, label }) => (
@@ -29,6 +30,7 @@ export function PublicFooter() {
           ))}
         </ul>
       </nav>
+      <ThemeMenu className="shrink-0" />
     </footer>
   )
 }

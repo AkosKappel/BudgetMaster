@@ -31,6 +31,7 @@ import {
 import { useRef, useState } from 'react'
 
 import { useSignOut } from '@/components/auth-page'
+import { THEME_OPTIONS } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import {
   CommandDialog,
@@ -53,6 +54,7 @@ import {
   useSpaces,
   useSwitchSpace,
 } from '@/lib/queries'
+import { setTheme, THEMES, useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { useCommandPalette, useShortcutsHelp } from '@/stores/command-palette'
 import { useQuickAdd } from '@/stores/quick-add'
@@ -80,6 +82,7 @@ export function CommandPalette() {
   const { spaces } = useSpaces()
   const { switchTo } = useSwitchSpace()
   const openEdit = useQuickAdd((s) => s.openEdit)
+  const theme = useTheme()
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 200 })
   // Prefetched by the app layout; only listed once something is typed.
@@ -336,6 +339,23 @@ export function CommandPalette() {
             <Shapes />
             Manage categories
           </CommandItem>
+        </CommandGroup>
+
+        <CommandGroup heading="Theme">
+          {THEMES.map((value) => {
+            const { label, icon: Icon } = THEME_OPTIONS[value]
+            return (
+              <CommandItem
+                key={value}
+                value={`Theme ${label} appearance`}
+                onSelect={run(() => setTheme(value))}
+              >
+                <Icon />
+                {label} theme
+                {theme === value && <Check className="ml-auto" />}
+              </CommandItem>
+            )
+          })}
         </CommandGroup>
 
         <CommandGroup heading="Account">

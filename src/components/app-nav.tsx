@@ -18,6 +18,7 @@ import { SearchButton } from '@/components/command-palette'
 import { accountLabel } from '@/components/demo-banner'
 import { Logo, LogoMark } from '@/components/logo'
 import { SpaceSwitcher } from '@/components/space-switcher'
+import { ThemeMenu } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import { useCanWrite } from '@/lib/queries'
 import { cn } from '@/lib/utils'
@@ -194,6 +195,7 @@ export function Sidebar({
             </p>
           </div>
         )}
+        <ThemeMenu />
         <Button
           variant="ghost"
           size="icon"

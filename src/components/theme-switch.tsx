@@ -1,23 +1,35 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
-import { useState } from 'react'
 
-import { getTheme, setTheme, THEMES, type Theme } from '@/lib/theme'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { setTheme, THEMES, type Theme, useTheme } from '@/lib/theme'
 
-const OPTIONS: Record<Theme, { label: string; icon: typeof Sun }> = {
-  system: { label: 'System', icon: Monitor },
-  light: { label: 'Light', icon: Sun },
-  dark: { label: 'Dark', icon: Moon },
-}
+export const THEME_OPTIONS: Record<Theme, { label: string; icon: typeof Sun }> =
+  {
+    system: { label: 'System', icon: Monitor },
+    light: { label: 'Light', icon: Sun },
+    dark: { label: 'Dark', icon: Moon },
+  }
+
+const isTheme = (value: string): value is Theme =>
+  THEMES.some((theme) => theme === value)
 
 export function ThemeSwitch() {
-  const [theme, setChosen] = useState<Theme>(getTheme)
+  const theme = useTheme()
 
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-2 font-semibold text-lg">Appearance</legend>
       <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
         {THEMES.map((value) => {
-          const { label, icon: Icon } = OPTIONS[value]
+          const { label, icon: Icon } = THEME_OPTIONS[value]
           return (
             <label
               key={value}
@@ -28,10 +40,7 @@ export function ThemeSwitch() {
                 name="theme"
                 value={value}
                 checked={theme === value}
-                onChange={() => {
-                  setTheme(value)
-                  setChosen(value)
-                }}
+                onChange={() => setTheme(value)}
                 className="sr-only"
               />
               <Icon className="size-4" aria-hidden="true" />
@@ -41,5 +50,46 @@ export function ThemeSwitch() {
         })}
       </div>
     </fieldset>
+  )
+}
+
+// Compact control for the sidebar, the phone header and the public pages.
+export function ThemeMenu({ className }: { className?: string }) {
+  const theme = useTheme()
+  const { label, icon: Icon } = THEME_OPTIONS[theme]
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={className}
+          aria-label={`Theme: ${label}. Change theme`}
+          title="Theme"
+        >
+          <Icon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuLabel className="text-muted-foreground text-xs">
+          Theme
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => isTheme(value) && setTheme(value)}
+        >
+          {THEMES.map((value) => {
+            const { label, icon: ItemIcon } = THEME_OPTIONS[value]
+            return (
+              <DropdownMenuRadioItem key={value} value={value}>
+                <ItemIcon />
+                {label}
+              </DropdownMenuRadioItem>
+            )
+          })}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -184,8 +184,8 @@ function More() {
           </Link>
         </li>
       </ul>
-      <AccountSecurity />
       <ThemeSwitch />
+      <AccountSecurity />
       <AccountData />
     </div>
   )
