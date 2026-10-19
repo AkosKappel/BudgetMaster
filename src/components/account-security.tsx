@@ -1,16 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
+import { useRouteContext, useRouter } from '@tanstack/react-router'
 import { MailWarning, Monitor } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { FormError } from '@/components/auth-page'
 import { PasswordInput } from '@/components/password-input'
+import { QrCode } from '@/components/qr-code'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { APP_LOCALE } from '@/lib/money'
-import { devicesQuery } from '@/lib/queries'
+import { devicesQuery, sessionQuery } from '@/lib/queries'
 import { signOutDevice } from '@/server/devices'
 
 // Email confirmation and password change. Demo accounts have neither.
@@ -60,6 +62,15 @@ export function AccountSecurity() {
           Change password
         </summary>
         <ChangePasswordForm />
+      </details>
+      <details className="rounded-lg border bg-card px-4 py-3">
+        <summary className="cursor-pointer font-medium">
+          Two-step sign-in{' '}
+          <span className="font-normal text-muted-foreground">
+            ({user.twoFactorEnabled ? 'on' : 'off'})
+          </span>
+        </summary>
+        <TwoFactorSettings enabled={user.twoFactorEnabled} />
       </details>
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">
@@ -185,5 +196,229 @@ function SignedInDevices() {
         </li>
       ))}
     </ul>
+  )
+}
+
+type Setup =
+  | { step: 'scan'; uri: string; backupCodes: string[] }
+  | { step: 'codes'; backupCodes: string[] }
+
+// Turning it on: password, scan the QR code, confirm one code, then save the backup codes.
+// Better Auth only switches it on after the first code is confirmed.
+function TwoFactorSettings({ enabled }: { enabled: boolean }) {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const [setup, setSetup] = useState<Setup | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  const refreshUser = async () => {
+    // The app layout reads the user from this query with ensureQueryData, which would
+    // keep the stale copy.
+    await queryClient.fetchQuery({ ...sessionQuery, staleTime: 0 })
+    await router.invalidate()
+  }
+
+  const submit =
+    (action: (form: FormData) => Promise<void>) =>
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const form = event.currentTarget
+      setError(null)
+      setPending(true)
+      try {
+        await action(new FormData(form))
+        form.reset()
+      } catch (e) {
+        setError((e as Error).message)
+      } finally {
+        setPending(false)
+      }
+    }
+
+  const unwrap = <T,>(result: {
+    data: T | null
+    error: { message?: string } | null
+  }) => {
+    if (result.error || !result.data)
+      throw new Error(result.error?.message ?? 'Something went wrong.')
+    return result.data
+  }
+
+  if (setup?.step === 'scan') {
+    const secret = new URL(setup.uri).searchParams.get('secret') ?? ''
+    return (
+      <form
+        className="mt-4 flex max-w-sm flex-col gap-4"
+        onSubmit={submit(async (form) => {
+          unwrap(
+            await authClient.twoFactor.verifyTotp({
+              code: String(form.get('code')).replace(/\s/g, ''),
+            }),
+          )
+          setSetup({ step: 'codes', backupCodes: setup.backupCodes })
+          await refreshUser()
+          toast.success('Two-step sign-in is on')
+        })}
+      >
+        <p className="text-sm">
+          Scan the code with an authenticator app (Google Authenticator,
+          Microsoft Authenticator, 1Password, Bitwarden), then enter the 6-digit
+          code it shows.
+        </p>
+        <QrCode value={setup.uri} label="QR code for your authenticator app" />
+        <p className="text-muted-foreground text-sm">
+          Can't scan? Enter this key:{' '}
+          <code className="break-all font-mono text-foreground">{secret}</code>
+        </p>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="totp-code">Code from the app</Label>
+          <Input
+            id="totp-code"
+            name="code"
+            required
+            autoComplete="one-time-code"
+            inputMode="numeric"
+            pattern="[0-9 ]{6,7}"
+            maxLength={7}
+          />
+        </div>
+        <FormError message={error} />
+        <div className="flex gap-2">
+          <Button type="submit" disabled={pending}>
+            Turn on
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setSetup(null)}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    )
+  }
+
+  if (setup?.step === 'codes') {
+    return (
+      <div className="mt-4 flex max-w-sm flex-col gap-4">
+        <p className="text-sm">
+          Save these backup codes somewhere safe, like your password manager.
+          Each one signs you in once if you lose your phone. They are not shown
+          again.
+        </p>
+        <ul className="grid grid-cols-2 gap-1 rounded-md border bg-background p-3 font-mono text-sm">
+          {setup.backupCodes.map((code) => (
+            <li key={code}>{code}</li>
+          ))}
+        </ul>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await navigator.clipboard.writeText(setup.backupCodes.join('\n'))
+              toast.success('Backup codes copied')
+            }}
+          >
+            Copy codes
+          </Button>
+          <Button onClick={() => setSetup(null)}>I saved them</Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!enabled) {
+    return (
+      <form
+        className="mt-4 flex max-w-sm flex-col gap-4"
+        onSubmit={submit(async (form) => {
+          const data = unwrap(
+            await authClient.twoFactor.enable({
+              password: String(form.get('password')),
+              issuer: 'BudgetMaster',
+            }),
+          )
+          if (data.method !== 'totp') throw new Error('Unexpected answer.')
+          setSetup({
+            step: 'scan',
+            uri: data.totpURI,
+            backupCodes: data.backupCodes,
+          })
+        })}
+      >
+        <p className="text-muted-foreground text-sm">
+          After your password, also ask for a code from an authenticator app on
+          your phone, so a leaked password alone cannot open your finances.
+        </p>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="enable-2fa-password">Password</Label>
+          <PasswordInput
+            id="enable-2fa-password"
+            name="password"
+            autoComplete="current-password"
+            required
+          />
+        </div>
+        <FormError message={error} />
+        <Button type="submit" className="w-fit" disabled={pending}>
+          Set up
+        </Button>
+      </form>
+    )
+  }
+
+  return (
+    <form
+      className="mt-4 flex max-w-sm flex-col gap-4"
+      onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter
+        const action = submitter?.getAttribute('value')
+        return submit(async (form) => {
+          const password = String(form.get('password'))
+          if (action === 'codes') {
+            const data = unwrap(
+              await authClient.twoFactor.generateBackupCodes({ password }),
+            )
+            setSetup({ step: 'codes', backupCodes: data.backupCodes })
+            return
+          }
+          unwrap(await authClient.twoFactor.disable({ password }))
+          await refreshUser()
+          toast.success('Two-step sign-in is off')
+        })(event)
+      }}
+    >
+      <p className="text-muted-foreground text-sm">
+        Signing in asks for a code from your authenticator app. Confirm with
+        your password to get new backup codes (the old ones stop working) or to
+        turn it off.
+      </p>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="manage-2fa-password">Password</Label>
+        <PasswordInput
+          id="manage-2fa-password"
+          name="password"
+          autoComplete="current-password"
+          required
+        />
+      </div>
+      <FormError message={error} />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="submit"
+          value="codes"
+          variant="outline"
+          disabled={pending}
+        >
+          New backup codes
+        </Button>
+        <Button
+          type="submit"
+          value="disable"
+          variant="destructive"
+          disabled={pending}
+        >
+          Turn off
+        </Button>
+      </div>
+    </form>
   )
 }

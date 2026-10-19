@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { APIError } from 'better-auth/api'
-import { anonymous } from 'better-auth/plugins'
+import { anonymous, twoFactor } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { and, eq, ne } from 'drizzle-orm'
 
@@ -77,6 +77,8 @@ export const auth = betterAuth({
       // Each one sends an email.
       '/request-password-reset': { window: 3600, max: 5 },
       '/send-verification-email': { window: 3600, max: 5 },
+      // Six digits are guessable without a limit.
+      '/two-factor/*': { window: 60, max: 5 },
     },
   },
   plugins: [
@@ -85,6 +87,9 @@ export const auth = betterAuth({
       onLinkAccount: ({ anonymousUser, newUser }) =>
         keepDemoData(anonymousUser.user.id, newUser.user.id),
     }),
+    // Authenticator app codes (TOTP) with backup codes. "Trust this device" skips the
+    // code on that browser for 30 days.
+    twoFactor({ issuer: 'BudgetMaster' }),
     // Must stay last: it sets the cookies of the responses above.
     tanstackStartCookies(),
   ],

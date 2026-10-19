@@ -19,6 +19,7 @@ import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TwoFactorRouteImport } from './routes/two-factor'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
@@ -84,6 +85,11 @@ const SignUpRoute = SignUpRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TwoFactorRoute = TwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/terms': typeof TermsRoute
+  '/two-factor': typeof TwoFactorRoute
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/terms': typeof TermsRoute
+  '/two-factor': typeof TwoFactorRoute
   '/activity': typeof AppActivityRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/terms': typeof TermsRoute
+  '/two-factor': typeof TwoFactorRoute
   '/_app/activity': typeof AppActivityRoute
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/terms'
+    | '/two-factor'
     | '/activity'
     | '/budgets'
     | '/categories'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/terms'
+    | '/two-factor'
     | '/activity'
     | '/budgets'
     | '/categories'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/terms'
+    | '/two-factor'
     | '/_app/activity'
     | '/_app/budgets'
     | '/_app/categories'
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   TermsRoute: typeof TermsRoute
+  TwoFactorRoute: typeof TwoFactorRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/two-factor': {
+      id: '/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof TwoFactorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -604,6 +624,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   TermsRoute: TermsRoute,
+  TwoFactorRoute: TwoFactorRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

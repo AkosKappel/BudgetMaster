@@ -35,12 +35,20 @@ function Privacy() {
           Sessions: when you signed in, the IP address and the browser, so you
           stay signed in and sign-in attempts can be limited.
         </li>
+        <li>
+          With two-step sign-in on: the authenticator key and your backup codes,
+          both encrypted.
+        </li>
       </ul>
 
       <h2>Cookies</h2>
       <p>Only cookies the app needs, no tracking or advertising cookies:</p>
       <ul>
         <li>The Better Auth session cookies, to keep you signed in.</li>
+        <li>
+          With two-step sign-in on: a short-lived cookie between the password
+          and the code, and one for 30 days if you trust the browser.
+        </li>
         <li>
           <code>bm-space</code>: the space you looked at last.
         </li>

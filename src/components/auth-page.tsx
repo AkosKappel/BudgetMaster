@@ -46,14 +46,22 @@ export function useAuthSubmit(redirectTo = '/') {
   const [pending, setPending] = useState(false)
 
   async function run(
-    action: () => Promise<{ error: { message?: string } | null }>,
+    action: () => Promise<{
+      data?: unknown
+      error: { message?: string } | null
+    }>,
   ) {
     setError(null)
     setPending(true)
     try {
-      const { error } = await action()
+      const { data, error } = await action()
       if (error) {
         setError(error.message ?? 'Something went wrong. Try again.')
+        return
+      }
+      // The password was right, but the account also asks for an authenticator code.
+      if (data && typeof data === 'object' && 'twoFactorRedirect' in data) {
+        await navigate({ to: '/two-factor', search: { redirect: redirectTo } })
         return
       }
       queryClient.clear()
