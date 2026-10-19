@@ -19,7 +19,9 @@ services:
       - dbdata:/var/lib/postgresql
     # No host port: only the app reaches it. Use `docker compose exec db psql` for access.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U budgetmaster -d budgetmaster"]
+      # Over TCP: on the first start the image runs a temporary socket-only server, which
+      # would pass a socket check before the real one is up.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U budgetmaster -d budgetmaster"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -122,10 +124,18 @@ services:
     command:
       - |
         while true; do
-          pg_dump --format=custom --file="/backups/budgetmaster-$$(date +%F).dump" \
-            && find /backups -name 'budgetmaster-*.dump' -mtime +14 -delete \
-            && echo "backup written $$(date +%F)"
-          sleep 86400
+          # Written to a temporary file first, so a failed dump never leaves an empty file
+          # that looks like a backup; a failure is retried after 5 minutes.
+          if pg_dump --format=custom --file=/backups/.in-progress.dump; then
+            mv /backups/.in-progress.dump "/backups/budgetmaster-$$(date +%F).dump"
+            find /backups -name 'budgetmaster-*.dump' -mtime +14 -delete
+            echo "backup written $$(date +%F)"
+            sleep 86400
+          else
+            rm -f /backups/.in-progress.dump
+            echo "backup failed, retrying in 5 minutes"
+            sleep 300
+          fi
         done
     depends_on:
       db:
