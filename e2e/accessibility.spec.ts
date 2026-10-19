@@ -23,6 +23,8 @@ test('app pages have no axe violations', async ({ page }) => {
     ['/wallets', 'Wallets'],
     ['/recurring', 'Recurring'],
     ['/reports', 'Reports'],
+    ['/monthly-report', /Monthly report/],
+    ['/goals', 'Goals'],
     ['/tags', 'Tags'],
     ['/import', 'Import'],
     ['/rules', 'Rules'],
@@ -114,6 +116,7 @@ test('public pages have no axe violations', async ({ page }) => {
     ['/privacy', 'Privacy'],
     ['/terms', 'Terms of use'],
     ['/security', 'Security'],
+    ['/two-factor', 'Two-step sign-in'],
   ] as const) {
     await page.goto(path)
     await expect(
@@ -121,6 +124,10 @@ test('public pages have no axe violations', async ({ page }) => {
     ).toBeVisible()
     await expectNoAxeViolations(page)
   }
+  const robots = await (await page.request.get('/robots.txt')).text()
+  expect(robots).toMatch(/^Sitemap: http.*\/sitemap\.xml$/m)
+  const sitemap = await (await page.request.get('/sitemap.xml')).text()
+  expect(sitemap).toContain('/about</loc>')
   const securityTxt = await page.request.get('/.well-known/security.txt')
   expect(await securityTxt.text()).toContain('Contact: https://')
 })
