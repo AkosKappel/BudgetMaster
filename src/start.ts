@@ -6,9 +6,14 @@ import {
 import { setResponseHeaders } from '@tanstack/react-start/server'
 
 // Server functions that change data are POST requests; only those need the origin check.
-// Page loads stay open to links from other sites.
+// Page loads stay open to links from other sites. Behind the Tailscale proxy the app sees
+// plain http://, so an Origin header is compared with the public address (BETTER_AUTH_URL),
+// not the request URL; browsers usually pass on `Sec-Fetch-Site: same-origin` first.
 const csrf = createCsrfMiddleware({
   filter: ({ request }) => !['GET', 'HEAD', 'OPTIONS'].includes(request.method),
+  origin: (origin) =>
+    origin ===
+    new URL(process.env.BETTER_AUTH_URL ?? 'http://localhost:3000').origin,
 })
 
 // A fresh nonce per response lets the router's inline hydration scripts run under a strict
