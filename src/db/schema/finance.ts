@@ -543,6 +543,11 @@ export const spaceRelations = relations(space, ({ many }) => ({
   tags: many(tag),
   budgets: many(budget),
   savingsGoals: many(savingsGoal),
+  settlements: many(settlement),
+}))
+
+export const settlementRelations = relations(settlement, ({ one }) => ({
+  space: one(space, { fields: [settlement.spaceId], references: [space.id] }),
 }))
 
 export const savingsGoalRelations = relations(savingsGoal, ({ one }) => ({

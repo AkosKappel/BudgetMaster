@@ -10,7 +10,7 @@ import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 // Everything the user can see, as JSON: every space they belong to with its wallets,
-// categories, tags, budgets, goals, recurring rules and transactions. Amounts in minor units.
+// categories, tags, budgets, goals, settlements, recurring rules and transactions. Amounts in minor units.
 export const exportAllData = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
@@ -29,6 +29,7 @@ export const exportAllData = createServerFn({ method: 'GET' })
           tags: true,
           budgets: true,
           savingsGoals: true,
+          settlements: true,
         },
       }),
       db
