@@ -14,6 +14,8 @@ test('sign-in and sign-up pages have no axe violations', async ({ page }) => {
 })
 
 test('app pages have no axe violations', async ({ page }) => {
+  // Sixteen pages, each loaded and scanned.
+  test.setTimeout(150_000)
   await startDemo(page)
   for (const [path, heading] of [
     ['/', /Over budget by|Left to spend|Spent since/],

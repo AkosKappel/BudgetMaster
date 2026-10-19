@@ -20,9 +20,16 @@ test('the desktop sidebar collapses, remembers it and toggles with Ctrl+B', asyn
   // Rendered collapsed on the server, so the reload does not jump.
   const html = await (await page.request.get('/')).text()
   expect(html).toContain('md:grid-cols-[3.5rem_1fr]')
-  // The server already renders it collapsed; wait for hydration before using the hotkey.
-  await page.reload({ waitUntil: 'networkidle' })
+  // The server already renders it collapsed. Hotkeys work only once React has hydrated,
+  // and `networkidle` does not guarantee that on a busy machine: the search dialog opening
+  // on click does.
+  await page.reload()
   await expect.poll(width).toBeLessThan(80)
+  await expect(async () => {
+    await sidebar.getByRole('button', { name: 'Search' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  await page.keyboard.press('Escape')
 
   await page.keyboard.press('ControlOrMeta+b')
   await expect.poll(width).toBeGreaterThan(200)
