@@ -15,7 +15,7 @@ import { Guilloche } from '@/components/guilloche'
 import { TransactionRow } from '@/components/transaction-row'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatShortDate } from '@/lib/format-date'
+import { formatDayHeading, formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
 import {
@@ -61,6 +61,53 @@ function Home() {
       <PaceSection spaceId={space.id} month={month} />
 
       {month === 0 && <BudgetWarnings spaceId={space.id} />}
+
+      {month === 0 && data.upcoming.length > 0 && (
+        <section aria-labelledby="upcoming" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between">
+            <h2 id="upcoming" className="font-semibold text-lg">
+              Coming up
+            </h2>
+            <Link
+              to="/recurring"
+              className="text-muted-foreground text-sm underline"
+            >
+              Recurring
+            </Link>
+          </div>
+          <ul className="divide-y rounded-lg border bg-card">
+            {data.upcoming.map((r) => {
+              const Icon = iconFor(r.category?.icon ?? 'repeat')
+              return (
+                <li key={r.id} className="flex items-center gap-3 px-4 py-3">
+                  <Icon
+                    className="size-4 shrink-0"
+                    style={{ color: r.category?.color }}
+                    aria-hidden="true"
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">
+                      {r.payee ?? r.category?.name ?? 'Transfer'}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {r.nextDate && formatDayHeading(r.nextDate, data.today)},{' '}
+                      {r.wallet.name}
+                    </span>
+                  </span>
+                  <span className="font-medium">
+                    {r.type === 'transfer'
+                      ? formatMoney(r.amount, r.wallet.currency)
+                      : formatSignedMoney(
+                          r.type === 'income' ? r.amount : -r.amount,
+                          r.wallet.currency,
+                        )}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="wallets" className="flex flex-col gap-3">
         <h2 id="wallets" className="font-semibold text-lg">

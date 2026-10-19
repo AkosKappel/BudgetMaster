@@ -20,6 +20,7 @@ import {
   transactionTag,
 } from '@/db/schema'
 import { currencyDigits } from '@/lib/money'
+import { addDays } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import {
   type TransactionFilters,
@@ -69,7 +70,7 @@ export const getOverview = createServerFn({ method: 'GET' })
     const today = currentDay()
     await createDueTransactions(space.id, today)
     // Budget totals for Home come from the budget report (src/server/budgets.ts).
-    const [wallets, recent] = await Promise.all([
+    const [wallets, recent, upcoming] = await Promise.all([
       walletBalances(space.id, today),
       db.query.transaction.findMany({
         columns: transactionColumns,
@@ -79,8 +80,29 @@ export const getOverview = createServerFn({ method: 'GET' })
         orderBy: (t, { desc }) => [desc(t.date), desc(t.id)],
         limit: 5,
       }),
+      // Recurring payments due in the next week; today's are already booked above.
+      db.query.recurringRule.findMany({
+        columns: {
+          id: true,
+          type: true,
+          amount: true,
+          payee: true,
+          nextDate: true,
+        },
+        with: {
+          wallet: { columns: { name: true, currency: true } },
+          category: { columns: { name: true, icon: true, color: true } },
+        },
+        where: (r, { and, eq, lte }) =>
+          and(
+            eq(r.spaceId, space.id),
+            eq(r.paused, false),
+            lte(r.nextDate, addDays(today, 7)),
+          ),
+        orderBy: (r, { asc }) => [asc(r.nextDate), asc(r.payee)],
+      }),
     ])
-    return { today, wallets, recent }
+    return { today, wallets, recent, upcoming }
   })
 
 // `ilike` pattern that matches the text anywhere, with the user's % and _ taken literally.
