@@ -23,6 +23,13 @@
   color-scheme: dark;
 }
 
+/* Paper is white: print the light tokens whatever the theme. */
+@media print {
+  :root:root {
+    color-scheme: light;
+  }
+}
+
 /* "Security print": paper and ink like a banknote. Expenses are plain ink, income is
    ledger green, crimson is kept for overspending and destructive actions only. */
 :root {

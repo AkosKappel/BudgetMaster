@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, FileText } from 'lucide-react'
 
 import { CashFlowChart } from '@/components/cash-flow-chart'
 import { CategoryTrends } from '@/components/category-trends'
@@ -8,6 +8,7 @@ import { ForecastChart } from '@/components/forecast-chart'
 import { MoneyFlow } from '@/components/money-flow'
 import { NetWorthChart } from '@/components/net-worth-chart'
 import { SpendingCalendar } from '@/components/spending-calendar'
+import { Button } from '@/components/ui/button'
 import {
   cashFlowQuery,
   categoryTrendsQuery,
@@ -51,7 +52,15 @@ function Reports() {
         <ChevronLeft className="size-4" />
         More
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">Reports</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="font-semibold text-2xl tracking-tight">Reports</h1>
+        <Button variant="outline" asChild>
+          <Link to="/monthly-report">
+            <FileText />
+            Monthly report
+          </Link>
+        </Button>
+      </div>
       <section aria-labelledby="cash-flow" className="flex flex-col gap-3">
         <h2 id="cash-flow" className="font-semibold text-lg">
           Income and spending

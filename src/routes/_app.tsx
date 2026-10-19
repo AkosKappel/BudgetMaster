@@ -51,13 +51,13 @@ function AppShell() {
   return (
     <div
       className={cn(
-        'min-h-dvh md:grid',
+        'min-h-dvh md:grid print:block',
         collapsed ? 'md:grid-cols-[3.5rem_1fr]' : 'md:grid-cols-[15rem_1fr]',
       )}
     >
       <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <main className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pt-10 md:pb-10">
-        <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden">
+      <main className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pt-10 md:pb-10 print:max-w-none print:p-0">
+        <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden print:hidden">
           <SpaceSwitcher className="min-w-0 flex-1" />
           <SearchButton compact />
         </header>

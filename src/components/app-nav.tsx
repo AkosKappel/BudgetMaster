@@ -68,7 +68,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden print:hidden"
     >
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5">
         {[first, second].map((item) => (
@@ -113,7 +113,7 @@ export function Sidebar({
     <aside
       id="sidebar"
       className={cn(
-        'sticky top-0 hidden h-dvh flex-col gap-8 border-r bg-card py-6 md:flex',
+        'sticky top-0 hidden h-dvh flex-col gap-8 border-r bg-card py-6 md:flex print:hidden',
         collapsed ? 'items-center px-2' : 'px-4',
       )}
     >

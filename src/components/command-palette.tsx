@@ -7,6 +7,7 @@ import {
   ChartColumn,
   Check,
   Ellipsis,
+  FileText,
   FileUp,
   Gauge,
   House,
@@ -231,6 +232,12 @@ export function CommandPalette() {
           <CommandItem onSelect={run(() => navigate({ to: '/reports' }))}>
             <ChartColumn />
             Reports
+          </CommandItem>
+          <CommandItem
+            onSelect={run(() => navigate({ to: '/monthly-report' }))}
+          >
+            <FileText />
+            Monthly report
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/recurring' }))}>
             <Repeat />

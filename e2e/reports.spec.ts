@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { startDemo } from './helpers'
+import { expectNoAxeViolations, startDemo } from './helpers'
 
 test('cash flow shows a year of months that open in activity', async ({
   page,
@@ -79,4 +79,22 @@ test('the forecast lists the known payments of the next 90 days', async ({
   await expect(
     forecast.getByRole('row', { name: /Acme Corp/ }).first(),
   ).toBeVisible()
+})
+
+test('the monthly report sums up last month and goes back a month', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.goto('/reports')
+  await page.getByRole('link', { name: 'Monthly report' }).click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: /Monthly report/ }),
+  ).toBeVisible()
+  await expect(page.getByText(/You kept .* % of your income/)).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Top categories' }).locator('tbody tr'),
+  ).not.toHaveCount(0)
+  await page.getByRole('link', { name: 'Previous month' }).click()
+  await expect(page).toHaveURL(/month=-2/)
+  await expectNoAxeViolations(page)
 })
