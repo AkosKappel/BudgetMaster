@@ -129,6 +129,12 @@ test('a receipt photo is shrunk, saved with the transaction and shown again', as
   await expect(sheet.getByRole('img', { name: /Receipt photo/ })).toBeVisible()
   await sheet.getByRole('button', { name: /save/i }).click()
   await expect(page.getByText('Expense saved')).toBeVisible()
+  // The photo uploads right after the row; Home's recent list shows it once it is in.
+  await expect(
+    page
+      .getByRole('button', { name: /Receipt Kiosk/ })
+      .getByLabel('Receipt photo'),
+  ).toBeVisible()
 
   await page.goto('/activity?q=Receipt%20Kiosk')
   const row = page.getByRole('button', { name: /Receipt Kiosk/ })
