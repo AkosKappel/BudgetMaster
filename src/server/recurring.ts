@@ -1,10 +1,21 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, max, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  eq,
+  gte,
+  isNotNull,
+  isNull,
+  lte,
+  max,
+  sql,
+} from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { frequency, recurringRule, transaction } from '@/db/schema'
-import { addDays, nextOccurrence } from '@/lib/recurrence'
+import { frequency, recurringRule, transaction, wallet } from '@/db/schema'
+import { addDays, addMonths, nextOccurrence } from '@/lib/recurrence'
+import { findSubscriptions, yearlyCost } from '@/lib/subscriptions'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -35,7 +46,66 @@ export const listRecurringRules = createServerFn({ method: 'GET' })
         asc(recurringRule.nextDate),
         asc(recurringRule.payee),
       )
-    return { rules, canWrite: space.role !== 'viewer' }
+
+    // Expenses entered by hand in the last 13 months that look like a subscription, minus
+    // payees that already have a rule on that wallet.
+    const today = currentDay()
+    const [payments, wallets] = await Promise.all([
+      db
+        .select({
+          date: transaction.date,
+          payee: sql<string>`${transaction.payee}`,
+          amount: transaction.amount,
+          walletId: transaction.walletId,
+          categoryId: transaction.categoryId,
+        })
+        .from(transaction)
+        .where(
+          and(
+            eq(transaction.spaceId, space.id),
+            eq(transaction.type, 'expense'),
+            isNull(transaction.recurringRuleId),
+            isNotNull(transaction.payee),
+            gte(transaction.date, addMonths(today, -13)),
+            lte(transaction.date, today),
+          ),
+        ),
+      db
+        .select({ id: wallet.id, currency: wallet.currency })
+        .from(wallet)
+        .where(eq(wallet.spaceId, space.id)),
+    ])
+    const covered = new Set(
+      rules.map((r) => `${r.walletId}|${r.payee?.trim().toLowerCase()}`),
+    )
+    const suggestions = findSubscriptions(payments, today).filter(
+      (s) => !covered.has(`${s.walletId}|${s.payee.trim().toLowerCase()}`),
+    )
+
+    // What the running expense rules cost a year, in the space currency only (I-05).
+    const inBase = new Set(
+      wallets.filter((w) => w.currency === space.baseCurrency).map((w) => w.id),
+    )
+    const yearlyExpenses = rules
+      .filter(
+        (r) =>
+          r.type === 'expense' &&
+          !r.paused &&
+          r.nextDate &&
+          inBase.has(r.walletId),
+      )
+      .reduce(
+        (sum, r) => sum + yearlyCost(r.amount, r.frequency, r.interval),
+        0,
+      )
+
+    return {
+      rules,
+      suggestions,
+      yearlyExpenses,
+      currency: space.baseCurrency,
+      canWrite: space.role !== 'viewer',
+    }
   })
 
 export type RecurringRule = Awaited<

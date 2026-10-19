@@ -49,3 +49,26 @@ test('a recurring payment records what is due, once, and can be paused', async (
   await expect(page.getByText('Paused', { exact: true })).toBeVisible()
   await expect(gym).toContainText('Paused')
 })
+
+test('a payment entered by hand every month is offered as a recurring rule', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.goto('/recurring')
+  await expect(
+    page.getByText(/Recurring expenses cost .* a year/),
+  ).toBeVisible()
+  const suggestions = page.getByRole('region', {
+    name: 'Looks like a subscription',
+  })
+  await suggestions
+    .getByRole('button', { name: 'Make recurring: City Transit' })
+    .click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByLabel('Paid to (optional)')).toHaveValue(
+    'City Transit',
+  )
+  await dialog.getByRole('button', { name: 'Create recurring payment' }).click()
+  await expect(page.getByText('Recurring payment created')).toBeVisible()
+  await expect(suggestions).toBeHidden()
+})

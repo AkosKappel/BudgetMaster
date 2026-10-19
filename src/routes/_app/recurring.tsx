@@ -4,7 +4,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronLeft, Plus, Repeat } from 'lucide-react'
+import { ChevronLeft, Plus, Repeat, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -46,7 +46,11 @@ export const Route = createFileRoute('/_app/recurring')({
   component: Recurring,
 })
 
-type Editor = { mode: 'create' } | { mode: 'edit'; rule: RecurringRule }
+type Editor =
+  | { mode: 'create'; draft?: Partial<RuleValues> }
+  | { mode: 'edit'; rule: RecurringRule }
+
+const CADENCE_LABEL = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' }
 
 function Recurring() {
   const space = useActiveSpace()
@@ -55,6 +59,7 @@ function Recurring() {
   const queryClient = useQueryClient()
   const [editor, setEditor] = useState<Editor | null>(null)
   const editing = editor?.mode === 'edit' ? editor.rule : null
+  const draft = editor?.mode === 'create' ? editor.draft : undefined
   const today = currentDay()
 
   // New payments show up in balances, budgets and activity.
@@ -122,6 +127,17 @@ function Recurring() {
         Salary, rent and subscriptions are recorded on their due date, so you
         never type them again.
       </p>
+
+      {data.yearlyExpenses > 0 && (
+        <p className="text-sm">
+          Recurring expenses cost{' '}
+          <span className="font-medium">
+            {formatMoney(data.yearlyExpenses, data.currency)} a year
+          </span>{' '}
+          ({formatMoney(Math.round(data.yearlyExpenses / 12), data.currency)} a
+          month on average).
+        </p>
+      )}
 
       {data.rules.length === 0 ? (
         <EmptyState icon={Repeat}>
@@ -195,6 +211,67 @@ function Recurring() {
         </ul>
       )}
 
+      {data.canWrite && data.suggestions.length > 0 && (
+        <section aria-labelledby="suggestions" className="flex flex-col gap-3">
+          <h2
+            id="suggestions"
+            className="flex items-center gap-2 font-semibold text-lg"
+          >
+            <Sparkles className="size-4 text-note" aria-hidden="true" />
+            Looks like a subscription
+          </h2>
+          <p className="max-w-prose text-muted-foreground text-sm">
+            You enter these by hand at a steady rhythm. Make them recurring and
+            they are recorded for you, and show up in the forecast.
+          </p>
+          <ul className="divide-y rounded-lg border bg-card">
+            {data.suggestions.map((s) => {
+              const currency = currencyOf(s.walletId)
+              return (
+                <li
+                  key={`${s.walletId}-${s.payee}`}
+                  className="flex flex-wrap items-center gap-3 px-4 py-3"
+                >
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate font-medium">{s.payee}</span>
+                    <span className="text-muted-foreground text-sm">
+                      {CADENCE_LABEL[s.cadence]}, {s.count} payments, last{' '}
+                      {formatShortDate(s.lastDate)} ·{' '}
+                      {formatMoney(s.yearlyCost, currency)} a year
+                    </span>
+                  </span>
+                  <span className="font-medium tabular-nums">
+                    {formatSignedMoney(-s.amount, currency)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Make recurring: ${s.payee}`}
+                    onClick={() =>
+                      setEditor({
+                        mode: 'create',
+                        draft: {
+                          type: 'expense',
+                          walletId: s.walletId,
+                          categoryId: s.categoryId,
+                          amount: s.amount,
+                          payee: s.payee,
+                          frequency: s.cadence,
+                          interval: 1,
+                          startDate: s.nextDate,
+                        },
+                      })
+                    }
+                  >
+                    Make recurring
+                  </Button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+
       <Drawer
         open={editor !== null}
         onOpenChange={(open) => {
@@ -218,9 +295,10 @@ function Recurring() {
             </DrawerHeader>
             {editor && (
               <RecurringForm
-                key={editing?.id ?? 'new'}
+                key={editing?.id ?? draft?.payee ?? 'new'}
                 spaceId={space.id}
                 rule={editing ?? undefined}
+                draft={draft}
                 today={today}
                 pending={save.isPending}
                 error={save.error?.message}

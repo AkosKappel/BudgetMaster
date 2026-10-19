@@ -31,6 +31,7 @@ const minorToText = (minor: number, currency: string) =>
 export function RecurringForm({
   spaceId,
   rule,
+  draft,
   today,
   pending,
   error,
@@ -39,6 +40,8 @@ export function RecurringForm({
   spaceId: string
   // Absent for a new rule.
   rule?: RecurringRule
+  // Values for a new rule, e.g. from a detected subscription.
+  draft?: Partial<RuleValues>
   today: string
   pending: boolean
   error?: string
@@ -46,25 +49,26 @@ export function RecurringForm({
 }) {
   const { data: options } = useSuspenseQuery(formOptionsQuery(spaceId))
   const firstWallet = options.wallets[0]
-  const [type, setType] = useState<RuleType>(rule?.type ?? 'expense')
+  const initial: Partial<RuleValues> | undefined = rule ?? draft
+  const [type, setType] = useState<RuleType>(initial?.type ?? 'expense')
   const [walletId, setWalletId] = useState(
-    rule?.walletId ?? firstWallet?.id ?? '',
+    initial?.walletId ?? firstWallet?.id ?? '',
   )
-  const [toWalletId, setToWalletId] = useState(rule?.toWalletId ?? '')
-  const [categoryId, setCategoryId] = useState(rule?.categoryId ?? '')
+  const [toWalletId, setToWalletId] = useState(initial?.toWalletId ?? '')
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '')
   const wallet = options.wallets.find((w) => w.id === walletId)
   const currency = wallet?.currency ?? 'EUR'
   const [amount, setAmount] = useState(
-    rule ? minorToText(rule.amount, currency) : '',
+    initial?.amount ? minorToText(initial.amount, currency) : '',
   )
-  const [payee, setPayee] = useState(rule?.payee ?? '')
-  const [note, setNote] = useState(rule?.note ?? '')
+  const [payee, setPayee] = useState(initial?.payee ?? '')
+  const [note, setNote] = useState(initial?.note ?? '')
   const [frequencyValue, setFrequency] = useState<Frequency>(
-    rule?.frequency ?? 'monthly',
+    initial?.frequency ?? 'monthly',
   )
-  const [interval, setEvery] = useState(rule?.interval ?? 1)
-  const [startDate, setStartDate] = useState(rule?.startDate ?? today)
-  const [endDate, setEndDate] = useState(rule?.endDate ?? '')
+  const [interval, setEvery] = useState(initial?.interval ?? 1)
+  const [startDate, setStartDate] = useState(initial?.startDate ?? today)
+  const [endDate, setEndDate] = useState(initial?.endDate ?? '')
   const [localError, setLocalError] = useState<string | null>(null)
 
   if (!firstWallet) {
