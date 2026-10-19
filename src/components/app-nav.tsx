@@ -10,6 +10,7 @@ import {
   PanelLeftOpen,
   Plus,
   ReceiptText,
+  Settings,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -195,6 +196,11 @@ export function Sidebar({
           </div>
         )}
         <ThemeMenu />
+        <Button variant="ghost" size="icon" asChild>
+          <Link to="/settings" aria-label="Settings" title="Settings">
+            <Settings />
+          </Link>
+        </Button>
         <Button
           variant="ghost"
           size="icon"
