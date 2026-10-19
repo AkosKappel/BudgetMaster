@@ -85,10 +85,10 @@ function Privacy() {
 
       <h2>Your control</h2>
       <p>
-        Under More, Your data you can download everything as JSON or a space's
-        transactions as CSV, and delete your account. Deleting removes your
-        account and every space only you belong to. Demo accounts are deleted 48
-        hours after they start.
+        Under Settings, Your data you can download everything as JSON or a
+        space's transactions as CSV, and delete your account. Deleting removes
+        your account and every space only you belong to. Demo accounts are
+        deleted 48 hours after they start.
       </p>
 
       <h2>Questions</h2>

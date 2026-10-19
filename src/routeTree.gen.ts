@@ -34,6 +34,7 @@ import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppRecurringRouteImport } from './routes/_app/recurring'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppRulesRouteImport } from './routes/_app/rules'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppWalletsRouteImport } from './routes/_app/wallets'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
@@ -168,6 +169,11 @@ const AppRulesRoute = AppRulesRouteImport.update({
   path: '/rules',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTagsRoute = AppTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/recurring': typeof AppRecurringRoute
   '/reports': typeof AppReportsRoute
   '/rules': typeof AppRulesRoute
+  '/settings': typeof AppSettingsRoute
   '/tags': typeof AppTagsRoute
   '/wallets': typeof AppWalletsRoute
   '/welcome': typeof AppWelcomeRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByTo {
   '/recurring': typeof AppRecurringRoute
   '/reports': typeof AppReportsRoute
   '/rules': typeof AppRulesRoute
+  '/settings': typeof AppSettingsRoute
   '/tags': typeof AppTagsRoute
   '/wallets': typeof AppWalletsRoute
   '/welcome': typeof AppWelcomeRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/_app/recurring': typeof AppRecurringRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/rules': typeof AppRulesRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/tags': typeof AppTagsRoute
   '/_app/wallets': typeof AppWalletsRoute
   '/_app/welcome': typeof AppWelcomeRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/recurring'
     | '/reports'
     | '/rules'
+    | '/settings'
     | '/tags'
     | '/wallets'
     | '/welcome'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/recurring'
     | '/reports'
     | '/rules'
+    | '/settings'
     | '/tags'
     | '/wallets'
     | '/welcome'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/_app/recurring'
     | '/_app/reports'
     | '/_app/rules'
+    | '/_app/settings'
     | '/_app/tags'
     | '/_app/wallets'
     | '/_app/welcome'
@@ -626,6 +638,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRulesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/tags': {
       id: '/_app/tags'
       path: '/tags'
@@ -703,6 +722,7 @@ interface AppRouteChildren {
   AppRecurringRoute: typeof AppRecurringRoute
   AppReportsRoute: typeof AppReportsRoute
   AppRulesRoute: typeof AppRulesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppTagsRoute: typeof AppTagsRoute
   AppWalletsRoute: typeof AppWalletsRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
@@ -724,6 +744,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRecurringRoute: AppRecurringRoute,
   AppReportsRoute: AppReportsRoute,
   AppRulesRoute: AppRulesRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppTagsRoute: AppTagsRoute,
   AppWalletsRoute: AppWalletsRoute,
   AppWelcomeRoute: AppWelcomeRoute,

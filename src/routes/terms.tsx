@@ -26,7 +26,7 @@ function Terms() {
       <p>
         The app is offered without warranty. It may have bugs, change, be
         unavailable at times or stop. Keep your own copy of anything important
-        with the export under More, Your data.
+        with the export under Settings, Your data.
       </p>
 
       <h2>Not financial advice</h2>

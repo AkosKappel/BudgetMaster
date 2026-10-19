@@ -6,6 +6,7 @@ import {
   Goal,
   LogOut,
   Repeat,
+  Settings,
   Shapes,
   Tag,
   Users,
@@ -13,11 +14,8 @@ import {
   Wand,
 } from 'lucide-react'
 
-import { AccountData } from '@/components/account-data'
-import { AccountSecurity } from '@/components/account-security'
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/_app/more')({
@@ -48,6 +46,21 @@ function More() {
         </Button>
       </section>
       <ul className="divide-y rounded-lg border bg-card">
+        <li>
+          <Link
+            to="/settings"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Settings className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Settings</span>
+              <span className="text-muted-foreground text-sm">
+                Appearance, sign-in and security, your data
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
         <li>
           <Link
             to="/spaces"
@@ -184,9 +197,6 @@ function More() {
           </Link>
         </li>
       </ul>
-      <ThemeSwitch />
-      <AccountSecurity />
-      <AccountData />
     </div>
   )
 }

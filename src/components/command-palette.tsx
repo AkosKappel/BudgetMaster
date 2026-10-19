@@ -19,6 +19,7 @@ import {
   ReceiptText,
   Repeat,
   Search,
+  Settings,
   Settings2,
   Shapes,
   Sparkles,
@@ -359,6 +360,10 @@ export function CommandPalette() {
         </CommandGroup>
 
         <CommandGroup heading="Account">
+          <CommandItem onSelect={run(() => navigate({ to: '/settings' }))}>
+            <Settings />
+            Settings
+          </CommandItem>
           <CommandItem onSelect={run(() => setShortcutsOpen(true))}>
             <Keyboard />
             Keyboard shortcuts

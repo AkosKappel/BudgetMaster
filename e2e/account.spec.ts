@@ -15,7 +15,7 @@ test('a password can be changed, and the reset pages work without an inbox', asy
   await page.getByRole('button', { name: /create account/i }).click()
   await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
 
-  await page.goto('/more')
+  await page.goto('/settings')
   await expect(page.getByText(/so you can reset your password/)).toBeVisible()
   await page.locator('summary', { hasText: 'Change password' }).click()
   await page.getByLabel('Current password').fill('first-password-1')
@@ -85,7 +85,7 @@ test('two-step sign-in asks for an authenticator or backup code', async ({
   await page.getByRole('button', { name: /create account/i }).click()
   await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
 
-  await page.goto('/more')
+  await page.goto('/settings')
   await page.locator('summary', { hasText: 'Two-step sign-in' }).click()
   await page.locator('#enable-2fa-password').fill(password)
   await page.getByRole('button', { name: 'Set up' }).click()
@@ -138,7 +138,7 @@ test('a passkey can be added and used to sign in', async ({ page }) => {
   await page.getByRole('button', { name: /create account/i }).click()
   await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
 
-  await page.goto('/more')
+  await page.goto('/settings')
   await page.locator('summary', { hasText: 'Passkeys' }).click()
   await page.getByRole('button', { name: 'Add a passkey' }).click()
   await expect(page.getByText('Passkey added')).toBeVisible()

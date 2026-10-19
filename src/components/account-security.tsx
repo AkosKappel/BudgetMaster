@@ -26,7 +26,7 @@ export function AccountSecurity() {
     setSending(true)
     const { error } = await authClient.sendVerificationEmail({
       email: user.email,
-      callbackURL: '/more',
+      callbackURL: '/settings',
     })
     setSending(false)
     if (error) toast.error(error.message ?? 'Could not send the email.')
@@ -579,7 +579,7 @@ function ConnectedAccounts() {
             onClick={() =>
               authClient.linkSocial({
                 provider: 'google',
-                callbackURL: '/more',
+                callbackURL: '/settings',
               })
             }
           >

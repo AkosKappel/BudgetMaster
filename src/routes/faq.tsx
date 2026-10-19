@@ -37,7 +37,7 @@ const QUESTIONS: [string, React.ReactNode][] = [
   ],
   [
     'How do I get my data out, or delete it?',
-    'Under More, Your data: download everything as JSON or a space as CSV, or delete your account with all spaces only you belong to.',
+    'Under Settings, Your data: download everything as JSON or a space as CSV, or delete your account with all spaces only you belong to.',
   ],
   [
     'I found a bug or a security problem.',

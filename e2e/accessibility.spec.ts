@@ -33,6 +33,7 @@ test('app pages have no axe violations', async ({ page }) => {
     ['/rules', 'Rules'],
     ['/spaces', 'Spaces'],
     ['/more', 'More'],
+    ['/settings', 'Settings'],
   ] as const) {
     await page.goto(path)
     await expect(
