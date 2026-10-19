@@ -88,7 +88,7 @@ function InsightText({
           {insight.category} is up {insight.change} % on the same days last
           month: {money(insight.now)} against {money(insight.before)}
           {insight.weekendShare >= 60
-            ? `, ${insight.weekendShare} % of it on weekends.`
+            ? `, ${insight.weekendShare === 100 ? 'all' : `${insight.weekendShare} %`} of it on weekends.`
             : '.'}
         </p>
       )
