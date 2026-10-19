@@ -281,6 +281,10 @@ export const transaction = pgTable(
     }),
     // Who entered it; kept when that member leaves a shared space.
     createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    // Set for rows from a statement import, so the import can be undone.
+    importId: uuid().references((): AnyPgColumn => importBatch.id, {
+      onDelete: 'set null',
+    }),
     ...timestamps,
   },
   (t) => [
@@ -290,6 +294,7 @@ export const transaction = pgTable(
     index().on(t.walletId),
     index().on(t.toWalletId),
     index().on(t.categoryId),
+    index().on(t.importId),
   ],
 )
 
@@ -332,6 +337,29 @@ export const budget = pgTable(
     foreignKey({
       columns: [t.categoryId, t.spaceId],
       foreignColumns: [category.id, category.spaceId],
+    }).onDelete('cascade'),
+  ],
+)
+
+// One confirmed statement import (M-16): its transactions point here, so it can be undone
+// as a whole.
+export const importBatch = pgTable(
+  'import',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    walletId: uuid().notNull(),
+    fileName: text(),
+    count: integer().notNull(),
+    createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    idInSpace(t),
+    index().on(t.spaceId, t.createdAt.desc()),
+    foreignKey({
+      columns: [t.walletId, t.spaceId],
+      foreignColumns: [wallet.id, wallet.spaceId],
     }).onDelete('cascade'),
   ],
 )

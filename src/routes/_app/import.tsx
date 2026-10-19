@@ -1,4 +1,9 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ChevronLeft, CopyCheck, Upload } from 'lucide-react'
 import { useState } from 'react'
@@ -7,6 +12,14 @@ import { toast } from 'sonner'
 import { FormError } from '@/components/auth-page'
 import { categoryOrder } from '@/components/transaction-form'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { parseCsv } from '@/lib/csv'
@@ -20,13 +33,20 @@ import {
   parseDate,
   parseSignedAmount,
 } from '@/lib/import'
-import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
-import { formOptionsQuery, useActiveSpace } from '@/lib/queries'
+import {
+  APP_LOCALE,
+  currencyDigits,
+  formatSignedMoney,
+  parseAmount,
+} from '@/lib/money'
+import { formOptionsQuery, importsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import {
   getImportMapping,
+  type ImportRecord,
   importTransactions,
   reviewImport,
+  undoImport,
 } from '@/server/import'
 import { saveRules } from '@/server/rules'
 
@@ -127,6 +147,7 @@ function Import() {
   const navigate = useNavigate()
   const [walletId, setWalletId] = useState(options.wallets[0]?.id ?? '')
   const [header, setHeader] = useState<string[] | null>(null)
+  const [fileName, setFileName] = useState<string | undefined>()
   const [rows, setRows] = useState<string[][]>([])
   const [mapping, setMapping] = useState<Mapping | null>(null)
   // The columns came from the last import of a file with the same header row.
@@ -142,6 +163,7 @@ function Import() {
 
   const readFile = async (file: File) => {
     setError(null)
+    setFileName(file.name.slice(0, 200))
     const parsed = parseCsv(await file.text())
     if (parsed.length < 2) {
       setError('The file has no rows to import.')
@@ -193,6 +215,7 @@ function Import() {
           spaceId: space.id,
           walletId,
           rows: included,
+          fileName,
           layout:
             header && mapping
               ? { header: layoutHeader(header), mapping }
@@ -387,7 +410,90 @@ function Import() {
         />
       )}
       <FormError message={error} />
+      <RecentImports spaceId={space.id} />
     </div>
+  )
+}
+
+// The last imports with an undo, for a file mapped wrongly or imported into the wrong wallet.
+function RecentImports({ spaceId }: { spaceId: string }) {
+  const queryClient = useQueryClient()
+  const { data } = useQuery(importsQuery(spaceId))
+  const [confirming, setConfirming] = useState<ImportRecord | null>(null)
+  const undo = useMutation({
+    mutationFn: (id: string) => undoImport({ data: { spaceId, id } }),
+    onSuccess: async ({ count }) => {
+      await queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
+      toast.success(
+        `Import undone, ${count} ${count === 1 ? 'transaction' : 'transactions'} removed`,
+      )
+      setConfirming(null)
+    },
+    onError: (e) => toast.error(e.message),
+  })
+  if (!data || data.imports.length === 0) return null
+
+  return (
+    <section aria-labelledby="recent-imports" className="flex flex-col gap-3">
+      <h2 id="recent-imports" className="font-semibold text-lg">
+        Recent imports
+      </h2>
+      <ul className="divide-y rounded-lg border bg-card">
+        {data.imports.map((i) => (
+          <li key={i.id} className="flex items-center gap-3 px-4 py-3">
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-medium">
+                {i.fileName ?? 'Statement'}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                {new Date(i.createdAt).toLocaleDateString(APP_LOCALE, {
+                  day: 'numeric',
+                  month: 'short',
+                })}{' '}
+                into {i.walletName}, {i.remaining} of {i.count}{' '}
+                {i.count === 1 ? 'transaction' : 'transactions'} left
+              </span>
+            </span>
+            {data.canWrite && (
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label={`Undo import: ${i.fileName ?? 'Statement'}`}
+                onClick={() => setConfirming(i)}
+              >
+                Undo
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+      <Dialog
+        open={confirming !== null}
+        onOpenChange={(open) => !open && setConfirming(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Undo this import?</DialogTitle>
+            <DialogDescription>
+              Deletes the {confirming?.remaining} transactions it created from{' '}
+              {confirming?.walletName}, including any you have edited since.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirming(null)}>
+              Keep it
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={undo.isPending}
+              onClick={() => confirming && undo.mutate(confirming.id)}
+            >
+              Undo import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
   )
 }
 

@@ -11,6 +11,7 @@ import { getBudgetReport } from '@/server/budgets'
 import { listCategories } from '@/server/categories'
 import { listDevices } from '@/server/devices'
 import { listGoals } from '@/server/goals'
+import { listImports } from '@/server/import'
 import {
   getOverview,
   listTransactions,
@@ -120,6 +121,12 @@ export const goalsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'goals'],
     queryFn: () => listGoals({ data: { spaceId } }),
+  })
+
+export const importsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'imports'],
+    queryFn: () => listImports({ data: { spaceId } }),
   })
 
 export const spendingCalendarQuery = (spaceId: string) =>

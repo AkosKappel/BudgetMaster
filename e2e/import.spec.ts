@@ -67,4 +67,14 @@ test('a bank CSV is reviewed, imported, and recognised the second time', async (
   await expect(
     page.getByRole('button', { name: 'Import 0 transactions' }),
   ).toBeDisabled()
+
+  // Undo takes the whole import back out.
+  await page.getByRole('button', { name: 'Undo import: statement.csv' }).click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Undo import' })
+    .click()
+  await expect(page.getByText(/Import undone, 3 transactions/)).toBeVisible()
+  await page.goto('/activity?q=E2E')
+  await expect(page.getByText('No transactions match')).toBeVisible()
 })

@@ -6,6 +6,7 @@ import { db } from '@/db'
 import {
   categorizationRule,
   category,
+  importBatch,
   importMapping,
   transaction,
   wallet,
@@ -173,6 +174,7 @@ export const importTransactions = createServerFn({ method: 'POST' })
         .array(stagedRow.extend({ categoryId: z.uuid() }))
         .min(1)
         .max(MAX_ROWS),
+      fileName: z.string().max(200).optional(),
       // Remembered for the next file with the same header row.
       layout: z
         .object({ header: headerInput, mapping: importMappingSchema })
@@ -210,8 +212,19 @@ export const importTransactions = createServerFn({ method: 'POST' })
       } as const
     })
     await db.transaction(async (tx) => {
-      for (let i = 0; i < rows.length; i += 500) {
-        await tx.insert(transaction).values(rows.slice(i, i + 500))
+      const [batch] = await tx
+        .insert(importBatch)
+        .values({
+          spaceId: space.id,
+          walletId: data.walletId,
+          fileName: data.fileName || null,
+          count: rows.length,
+          createdBy: context.user.id,
+        })
+        .returning({ id: importBatch.id })
+      const linked = rows.map((row) => ({ ...row, importId: batch.id }))
+      for (let i = 0; i < linked.length; i += 500) {
+        await tx.insert(transaction).values(linked.slice(i, i + 500))
       }
       if (data.layout) {
         const saved = {
@@ -232,4 +245,72 @@ export const importTransactions = createServerFn({ method: 'POST' })
       }
     })
     return { count: rows.length }
+  })
+
+// The last imports of the space, newest first, with how many of their rows still exist.
+export const listImports = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const imports = await db
+      .select({
+        id: importBatch.id,
+        fileName: importBatch.fileName,
+        count: importBatch.count,
+        createdAt: importBatch.createdAt,
+        walletName: wallet.name,
+        remaining:
+          sql<number>`(select count(*) from ${transaction} where ${transaction.importId} = ${importBatch.id})`.mapWith(
+            Number,
+          ),
+      })
+      .from(importBatch)
+      .innerJoin(wallet, eq(wallet.id, importBatch.walletId))
+      .where(eq(importBatch.spaceId, space.id))
+      .orderBy(desc(importBatch.createdAt))
+      .limit(10)
+    return {
+      imports: imports.map((i) => ({
+        ...i,
+        createdAt: i.createdAt.toISOString(),
+      })),
+      canWrite: space.role !== 'viewer',
+    }
+  })
+
+export type ImportRecord = Awaited<
+  ReturnType<typeof listImports>
+>['imports'][number]
+
+// Deletes every transaction the import created, edited ones included, and the record.
+export const undoImport = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ id: z.uuid() }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    if (space.role === 'viewer')
+      throw new Error('Viewers cannot change this space.')
+    return db.transaction(async (tx) => {
+      const [batch] = await tx
+        .select({ id: importBatch.id })
+        .from(importBatch)
+        .where(
+          and(eq(importBatch.spaceId, space.id), eq(importBatch.id, data.id)),
+        )
+        .for('update')
+      if (!batch) throw new Error('That import was already undone.')
+      // Rows first: deleting the record would only unlink them (set null).
+      const deleted = await tx
+        .delete(transaction)
+        .where(
+          and(
+            eq(transaction.spaceId, space.id),
+            eq(transaction.importId, batch.id),
+          ),
+        )
+        .returning({ id: transaction.id })
+      await tx.delete(importBatch).where(eq(importBatch.id, batch.id))
+      return { count: deleted.length }
+    })
   })
