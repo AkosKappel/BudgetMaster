@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { notifyOtherTabs } from '@/components/app-sync'
 
+import { haptic } from '@/lib/haptics'
 import { overviewQuery, transactionsQuery } from '@/lib/queries'
 import type { LedgerTransaction, TransactionCursor } from '@/server/ledger'
 import {
@@ -120,6 +121,7 @@ export function useSaveTransaction(spaceId: string) {
         ? createTransaction({ data: input })
         : updateTransaction({ data: input }),
     onMutate: async ({ optimistic }) => {
+      haptic('confirm')
       await queryClient.cancelQueries({ queryKey: spaceKey })
       const previous = {
         list: queryClient.getQueryData(transactionsQuery(spaceId).queryKey),
@@ -195,6 +197,7 @@ export function useDeleteWithUndo(spaceId: string) {
         })
     }
 
+    haptic('delete')
     toast('Transaction deleted', {
       description: row.payee ?? row.category?.name ?? undefined,
       duration: 5000,
