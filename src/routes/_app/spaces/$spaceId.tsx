@@ -10,6 +10,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { FormError } from '@/components/auth-page'
+import { MemberBalances } from '@/components/member-balances'
 import { SpaceSettingsForm } from '@/components/space-settings-form'
 import { Button } from '@/components/ui/button'
 import {
@@ -152,6 +153,7 @@ function SpaceSettingsPage() {
       {!space.personal && (
         <>
           <Members space={space} onChange={refresh} />
+          <MemberBalances spaceId={space.id} />
           {isOwner && <Invites space={space} onChange={refresh} />}
         </>
       )}

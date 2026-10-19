@@ -60,6 +60,7 @@ const transactionColumns = {
   payee: true,
   note: true,
   recurringRuleId: true,
+  paidBy: true,
 } as const
 
 export const getOverview = createServerFn({ method: 'GET' })

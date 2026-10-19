@@ -7,6 +7,7 @@ import {
 import { useState } from 'react'
 import type { TransactionFilters } from '@/lib/transaction-filters'
 import { getSession, getSignInOptions } from '@/server/auth'
+import { getBalances } from '@/server/balances'
 import { getBudgetReport } from '@/server/budgets'
 import { listCategories } from '@/server/categories'
 import { listDevices } from '@/server/devices'
@@ -193,6 +194,12 @@ export const spaceDetailsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'details'],
     queryFn: () => getSpaceDetails({ data: { spaceId } }),
+  })
+
+export const balancesQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'balances'],
+    queryFn: () => getBalances({ data: { spaceId } }),
   })
 
 export const activityQuery = (spaceId: string) =>

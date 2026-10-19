@@ -42,6 +42,8 @@ interface FormValues {
   date: string
   note: string
   tagIds: string[]
+  // A member who paid from their own money (shared spaces); empty for shared money.
+  paidBy: string
   // Parts of a split receipt; empty when the transaction has one category.
   splits: { categoryId: string; amount: string }[]
 }
@@ -62,6 +64,7 @@ const formSchema = z
     date: z.iso.date('Choose a date.'),
     note: z.string().max(2000),
     tagIds: z.array(z.string()),
+    paidBy: z.string(),
     splits: z.array(z.object({ categoryId: z.string(), amount: z.string() })),
   })
   .superRefine((value, ctx) => {
@@ -139,6 +142,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         date: transaction.date,
         note: transaction.note ?? '',
         tagIds: transaction.tags.map(({ tag }) => tag.id),
+        paidBy: transaction.paidBy ?? '',
         splits: transaction.splits.map((p) => ({
           categoryId: p.category.id,
           amount: toInputAmount(p.amount, transaction.wallet.currency),
@@ -155,6 +159,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         date: localTodayIso(),
         note: '',
         tagIds: [],
+        paidBy: '',
         splits: [],
       }
 
@@ -191,6 +196,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       const id = transaction?.id ?? uuidv7()
       const payee = isTransfer ? null : value.payee.trim() || null
       const note = value.note.trim() || null
+      const paidBy = (value.type === 'expense' && value.paidBy) || null
 
       save.mutate({
         mode: transaction ? 'edit' : 'create',
@@ -207,6 +213,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           payee,
           note,
           tagIds,
+          paidBy,
           splits: splits.map((p) => ({ ...p, note: null })),
         },
         optimistic: {
@@ -217,6 +224,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           toAmount,
           payee,
           note,
+          paidBy,
           recurringRuleId: transaction?.recurringRuleId ?? null,
           category:
             !isTransfer && !split && cat
@@ -607,6 +615,36 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                   </div>
                 )}
               </form.Field>
+              {type === 'expense' && options.members.length > 0 && (
+                <form.Field name="paidBy">
+                  {(field) => (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="paid-by">Paid by</Label>
+                      <select
+                        id="paid-by"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-describedby="paid-by-hint"
+                        className="h-10 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+                      >
+                        <option value="">Shared money</option>
+                        {options.members.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.id === user.id ? `${m.name} (you)` : m.name}
+                          </option>
+                        ))}
+                      </select>
+                      <p
+                        id="paid-by-hint"
+                        className="text-muted-foreground text-xs"
+                      >
+                        Someone who paid from their own money gets it back from
+                        the others in equal shares.
+                      </p>
+                    </div>
+                  )}
+                </form.Field>
+              )}
             </>
           )
         }

@@ -21,10 +21,12 @@ import {
   category,
   importBatch,
   recurringRule,
+  spaceMember,
   tag,
   transaction,
   transactionSplit,
   transactionTag,
+  user,
   wallet,
 } from '@/db/schema'
 import { logActivity, RESTORE_DAYS } from '@/server/activity-log'
@@ -39,7 +41,7 @@ export const getFormOptions = createServerFn({ method: 'GET' })
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    const [wallets, categories, tags, rules] = await Promise.all([
+    const [wallets, categories, tags, rules, members] = await Promise.all([
       db
         .select({
           id: wallet.id,
@@ -76,12 +78,20 @@ export const getFormOptions = createServerFn({ method: 'GET' })
         })
         .from(categorizationRule)
         .where(eq(categorizationRule.spaceId, space.id)),
+      db
+        .select({ id: spaceMember.userId, name: user.name })
+        .from(spaceMember)
+        .innerJoin(user, eq(user.id, spaceMember.userId))
+        .where(eq(spaceMember.spaceId, space.id))
+        .orderBy(asc(spaceMember.createdAt)),
     ])
     return {
       wallets,
       categories,
       tags,
       rules,
+      // "Paid by" is offered only when there is someone to share with (I-09).
+      members: members.length > 1 ? members : [],
       canWrite: space.role !== 'viewer',
     }
   })
@@ -154,6 +164,8 @@ const transactionInput = spaceInput.extend({
   payee: optionalText(120),
   note: optionalText(2000),
   tagIds: z.array(z.uuid()).max(20),
+  // Shared spaces: the member who paid an expense from their own money (I-09).
+  paidBy: z.string().min(1).nullable().default(null),
   // Parts of a split receipt (M-14): none, or at least two that add up to the amount.
   splits: z
     .array(
@@ -185,7 +197,8 @@ async function prepare(userId: string, input: ValidInput) {
       throw new Error('The parts must add up to the amount.')
   }
   const splitCategoryIds = [...new Set(input.splits.map((p) => p.categoryId))]
-  const [movement, tags, splitCategories] = await Promise.all([
+  const paidBy = input.type === 'expense' ? input.paidBy : null
+  const [movement, tags, splitCategories, payer] = await Promise.all([
     checkMovement(space.id, input, { split }),
     input.tagIds.length
       ? db
@@ -204,7 +217,20 @@ async function prepare(userId: string, input: ValidInput) {
             ),
           )
       : Promise.resolve([]),
+    paidBy
+      ? db
+          .select({ userId: spaceMember.userId })
+          .from(spaceMember)
+          .where(
+            and(
+              eq(spaceMember.spaceId, space.id),
+              eq(spaceMember.userId, paidBy),
+            ),
+          )
+      : Promise.resolve([]),
   ])
+  if (paidBy && payer.length === 0)
+    throw new Error('The payer must be a member of the space.')
   if (tags.length !== new Set(input.tagIds).size)
     throw new Error('Unknown tag.')
   if (
@@ -225,6 +251,7 @@ async function prepare(userId: string, input: ValidInput) {
       ...movement,
       payee: input.payee,
       note: input.note,
+      paidBy,
     },
     tagIds: [...new Set(input.tagIds)],
     splits: input.splits.map((p) => ({
@@ -337,6 +364,7 @@ export const deleteTransaction = createServerFn({ method: 'POST' })
           toAmount: deleted.toAmount,
           note: deleted.note,
           createdBy: deleted.createdBy,
+          paidBy: deleted.paidBy,
           recurringRuleId: deleted.recurringRuleId,
           importId: deleted.importId,
           tagIds: tags.map((t) => t.tagId),
@@ -439,6 +467,7 @@ export const restoreTransaction = createServerFn({ method: 'POST' })
       payee: details.payee,
       note: snapshot.note,
       createdBy: snapshot.createdBy,
+      paidBy: snapshot.paidBy ?? null,
       recurringRuleId: rules[0]?.id ?? null,
       importId: imports[0]?.id ?? null,
     }

@@ -287,6 +287,9 @@ export const transaction = pgTable(
     }),
     // Who entered it; kept when that member leaves a shared space.
     createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    // Shared spaces (I-09): the member who paid an expense out of their own pocket, so the
+    // others owe them a share. Null means shared money, such as a joint account.
+    paidBy: text().references(() => user.id, { onDelete: 'set null' }),
     // Set for rows from a statement import, so the import can be undone.
     importId: uuid().references((): AnyPgColumn => importBatch.id, {
       onDelete: 'set null',
@@ -397,6 +400,8 @@ export interface DeletedTransaction {
   toAmount: number | null
   note: string | null
   createdBy: string | null
+  // Missing in snapshots from before I-09.
+  paidBy?: string | null
   recurringRuleId: string | null
   importId: string | null
   tagIds: string[]
@@ -415,6 +420,31 @@ export const activityEvent = pgTable(
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index().on(t.spaceId, t.createdAt.desc())],
+)
+
+// A member paying another back in a shared space (I-09). Not a transaction: the money moves
+// outside the space's wallets, only the balances between members change.
+export const settlement = pgTable(
+  'settlement',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    fromUserId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    toUserId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    amount: money().notNull(),
+    date: date().notNull(),
+    createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    ...timestamps,
+  },
+  (t) => [
+    check('settlement_amount_positive', sql`${t.amount} > 0`),
+    check('settlement_two_members', sql`${t.fromUserId} <> ${t.toUserId}`),
+    index().on(t.spaceId, t.date.desc()),
+  ],
 )
 
 // One confirmed statement import (M-16): its transactions point here, so it can be undone

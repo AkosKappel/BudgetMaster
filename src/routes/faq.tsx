@@ -32,6 +32,10 @@ const QUESTIONS: [string, React.ReactNode][] = [
     'Yes. Create a shared space under More, Spaces and send an invite link. Everyone keeps their own personal space next to it.',
   ],
   [
+    'We pay for some things ourselves. Can it split costs?',
+    'Yes. In a shared space, set "Paid by" when someone paid from their own money (a wallet like "Out of pocket" keeps track of it). The space page shows who owes whom, suggests the payments that settle everything and records them.',
+  ],
+  [
     'What happens to the demo data?',
     'Every demo is private to you. It is deleted 48 hours after you start it, unless you create an account from the banner; then you keep everything.',
   ],

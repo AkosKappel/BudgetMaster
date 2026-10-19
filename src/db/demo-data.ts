@@ -27,7 +27,10 @@ import {
 
 type NewTransaction = typeof transaction.$inferInsert
 type NewWallet = Omit<typeof wallet.$inferInsert, 'spaceId'>
-type Extra = Pick<NewTransaction, 'payee' | 'note' | 'toAmount' | 'createdBy'>
+type Extra = Pick<
+  NewTransaction,
+  'payee' | 'note' | 'toAmount' | 'createdBy' | 'paidBy'
+>
 
 // mulberry32: tiny seeded PRNG, so every run produces the same data.
 let seed = 2026
