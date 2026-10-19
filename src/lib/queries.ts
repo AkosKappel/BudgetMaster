@@ -24,6 +24,7 @@ import {
   getCategoryTrends,
   getForecast,
   getNetWorth,
+  getPriceChanges,
   getSpendingCalendar,
 } from '@/server/reports'
 import { listRules } from '@/server/rules'
@@ -127,6 +128,12 @@ export const importsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'imports'],
     queryFn: () => listImports({ data: { spaceId } }),
+  })
+
+export const priceChangesQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'price-changes'],
+    queryFn: () => getPriceChanges({ data: { spaceId } }),
   })
 
 export const spendingCalendarQuery = (spaceId: string) =>

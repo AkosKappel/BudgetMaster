@@ -98,3 +98,15 @@ test('the monthly report sums up last month and goes back a month', async ({
   await expect(page).toHaveURL(/month=-2/)
   await expectNoAxeViolations(page)
 })
+
+test('prices you pay compare regular payees with a year ago', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.goto('/reports')
+  const prices = page.getByRole('region', { name: 'Prices you pay' })
+  await expect(prices.getByText(/regular payees/)).toBeVisible()
+  await expect(
+    prices.getByRole('listitem').filter({ hasText: 'Netflix' }),
+  ).toContainText('→')
+})

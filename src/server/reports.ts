@@ -1,5 +1,15 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, between, eq, gt, inArray, lte, sql, sum } from 'drizzle-orm'
+import {
+  and,
+  between,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  lte,
+  sql,
+  sum,
+} from 'drizzle-orm'
 
 import { db } from '@/db'
 import { category, recurringRule, transaction, wallet } from '@/db/schema'
@@ -9,7 +19,8 @@ import {
   projectBalance,
   ruleDates,
 } from '@/lib/forecast'
-import { addDays, budgetPeriod } from '@/lib/recurrence'
+import { priceChanges } from '@/lib/price-changes'
+import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -323,3 +334,32 @@ export const getForecast = createServerFn({ method: 'GET' })
   })
 
 export type Forecast = Awaited<ReturnType<typeof getForecast>>
+
+// Typical amounts per payee now against a year ago (I-16), space-currency wallets only.
+export const getPriceChanges = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const today = currentDay()
+    const purchases = await db
+      .select({
+        date: transaction.date,
+        payee: sql<string>`${transaction.payee}`,
+        amount: transaction.amount,
+      })
+      .from(transaction)
+      .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+      .where(
+        and(
+          eq(transaction.spaceId, space.id),
+          eq(wallet.currency, space.baseCurrency),
+          eq(transaction.type, 'expense'),
+          isNotNull(transaction.payee),
+          between(transaction.date, addMonths(today, -15), today),
+        ),
+      )
+    return { ...priceChanges(purchases, today), currency: space.baseCurrency }
+  })
+
+export type PriceChanges = Awaited<ReturnType<typeof getPriceChanges>>

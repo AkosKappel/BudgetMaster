@@ -7,6 +7,7 @@ import { CategoryTrends } from '@/components/category-trends'
 import { ForecastChart } from '@/components/forecast-chart'
 import { MoneyFlow } from '@/components/money-flow'
 import { NetWorthChart } from '@/components/net-worth-chart'
+import { PriceChanges } from '@/components/price-changes'
 import { SpendingCalendar } from '@/components/spending-calendar'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +15,7 @@ import {
   categoryTrendsQuery,
   forecastQuery,
   netWorthQuery,
+  priceChangesQuery,
   spendingCalendarQuery,
   useActiveSpace,
 } from '@/lib/queries'
@@ -24,6 +26,9 @@ export const Route = createFileRoute('/_app/reports')({
       context.queryClient.ensureQueryData(cashFlowQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(netWorthQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(forecastQuery(context.activeSpaceId)),
+      context.queryClient.ensureQueryData(
+        priceChangesQuery(context.activeSpaceId),
+      ),
       context.queryClient.ensureQueryData(
         spendingCalendarQuery(context.activeSpaceId),
       ),
@@ -42,6 +47,7 @@ function Reports() {
   const { data: calendar } = useSuspenseQuery(spendingCalendarQuery(space.id))
   const { data: trends } = useSuspenseQuery(categoryTrendsQuery(space.id))
   const { data: forecast } = useSuspenseQuery(forecastQuery(space.id))
+  const { data: prices } = useSuspenseQuery(priceChangesQuery(space.id))
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,6 +103,16 @@ function Reports() {
           comes on top.
         </p>
         <ForecastChart {...forecast} />
+      </section>
+      <section aria-labelledby="prices" className="flex flex-col gap-3">
+        <h2 id="prices" className="font-semibold text-lg">
+          Prices you pay
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          The usual amount per payee in the last three months against the same
+          months a year ago.
+        </p>
+        <PriceChanges {...prices} />
       </section>
       <section aria-labelledby="calendar" className="flex flex-col gap-3">
         <h2 id="calendar" className="font-semibold text-lg">
