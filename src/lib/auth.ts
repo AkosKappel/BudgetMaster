@@ -49,6 +49,20 @@ export const auth = betterAuth({
       })
     },
   },
+  socialProviders:
+    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? {
+          google: {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+          },
+        }
+      : {},
+  account: {
+    // Signing in with Google to an address that already has a password account adds Google
+    // to that account (Google verifies the address) instead of failing.
+    accountLinking: { enabled: true, trustedProviders: ['google'] },
+  },
   user: {
     // The client confirms with the password, so a stolen open session alone cannot do it.
     deleteUser: { enabled: true, beforeDelete: removeOwnSpaces },

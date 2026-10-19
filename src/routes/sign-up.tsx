@@ -3,6 +3,7 @@ import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import {
   AuthPage,
   FormError,
+  GoogleSignIn,
   redirectSearch,
   useAuthSubmit,
 } from '@/components/auth-page'
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
-import { sessionQuery } from '@/lib/queries'
+import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { withCanonical } from '@/lib/site'
 
 export const Route = createFileRoute('/sign-up')({
@@ -22,6 +23,8 @@ export const Route = createFileRoute('/sign-up')({
     if (session && !session.user.demoExpiresAt)
       throw redirect({ to: search.redirect ?? '/' })
   },
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(signInOptionsQuery),
   head: () =>
     withCanonical('/sign-up', {
       meta: [{ title: 'Create account | BudgetMaster' }],
@@ -36,6 +39,7 @@ function SignUp() {
 
   return (
     <AuthPage title="Create account">
+      <GoogleSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {

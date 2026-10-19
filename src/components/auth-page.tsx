@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -6,7 +6,9 @@ import { z } from 'zod'
 import { Guilloche } from '@/components/guilloche'
 import { Logo } from '@/components/logo'
 import { PublicFooter } from '@/components/public-page'
+import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
+import { signInOptionsQuery } from '@/lib/queries'
 
 // `?redirect=` on the auth pages: same-site paths only, never `//other.site`.
 export const redirectSearch = z.object({
@@ -96,4 +98,71 @@ export function useSignOut() {
     queryClient.clear()
     await navigate({ to: '/sign-in', search: { redirect } })
   }
+}
+
+// "Continue with Google", shown only when the server has a Google OAuth client. The browser
+// leaves for Google and comes back to `redirect` (or `newUserRedirect` for a new account).
+export function GoogleSignIn({
+  redirect = '/',
+  newUserRedirect = '/welcome',
+}: {
+  redirect?: string
+  newUserRedirect?: string
+}) {
+  const { data } = useSuspenseQuery(signInOptionsQuery)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+  if (!data.google) return null
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        disabled={pending}
+        onClick={async () => {
+          setError(null)
+          setPending(true)
+          const result = await authClient.signIn.social({
+            provider: 'google',
+            callbackURL: redirect,
+            newUserCallbackURL: newUserRedirect,
+            errorCallbackURL: '/sign-in',
+          })
+          if (result.error) {
+            setError(result.error.message ?? 'Could not reach Google.')
+            setPending(false)
+          }
+        }}
+      >
+        <GoogleLogo />
+        Continue with Google
+      </Button>
+      <FormError message={error} />
+    </div>
+  )
+}
+
+function GoogleLogo() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3a7.16 7.16 0 0 1-10.67-3.76H1.38v3.1A12 12 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.39 14.33a7.2 7.2 0 0 1 0-4.66v-3.1H1.38a12 12 0 0 0 0 10.86l4.01-3.1Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.77c1.76 0 3.34.6 4.59 1.8l3.44-3.45A11.96 11.96 0 0 0 1.38 6.57l4.01 3.1A7.16 7.16 0 0 1 12 4.77Z"
+      />
+    </svg>
+  )
 }

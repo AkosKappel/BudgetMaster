@@ -47,6 +47,10 @@ function Privacy() {
           members of a shared space.
         </li>
         <li>
+          If you sign in with Google: your Google account id, name and email
+          address. Nothing else from your Google account is read.
+        </li>
+        <li>
           Passkeys you add: their public key and a name. The private key never
           leaves your device.
         </li>

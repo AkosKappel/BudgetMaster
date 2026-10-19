@@ -13,6 +13,16 @@ const schema = z.object({
     (value) => value || undefined,
     z.string().startsWith('re_').optional(),
   ),
+  // Optional: Google sign-in is offered only when both are set (Google Cloud console, OAuth
+  // client, redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google`).
+  GOOGLE_CLIENT_ID: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  GOOGLE_CLIENT_SECRET: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
   // Must be on a domain verified in Resend; onboarding@resend.dev only reaches the account owner.
   EMAIL_FROM: z.string().default('BudgetMaster <onboarding@resend.dev>'),
 })

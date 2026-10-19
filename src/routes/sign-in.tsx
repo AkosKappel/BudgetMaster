@@ -4,6 +4,7 @@ import { FlaskConical, KeyRound } from 'lucide-react'
 import {
   AuthPage,
   FormError,
+  GoogleSignIn,
   redirectSearch,
   useAuthSubmit,
 } from '@/components/auth-page'
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/demo'
-import { sessionQuery } from '@/lib/queries'
+import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { withCanonical } from '@/lib/site'
 
 export const Route = createFileRoute('/sign-in')({
@@ -24,6 +25,8 @@ export const Route = createFileRoute('/sign-in')({
     if (session && !session.user.demoExpiresAt)
       throw redirect({ to: search.redirect ?? '/' })
   },
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(signInOptionsQuery),
   head: () =>
     withCanonical('/sign-in', { meta: [{ title: 'Sign in | BudgetMaster' }] }),
   component: SignIn,
@@ -38,6 +41,7 @@ function SignIn() {
 
   return (
     <AuthPage title="Sign in">
+      <GoogleSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {

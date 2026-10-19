@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { describeDevice } from '@/lib/devices'
 import { APP_LOCALE } from '@/lib/money'
-import { devicesQuery, sessionQuery } from '@/lib/queries'
+import { devicesQuery, sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { signOutDevice } from '@/server/devices'
 
 // Email confirmation and password change. Demo accounts have neither.
@@ -73,6 +73,7 @@ export function AccountSecurity() {
         </summary>
         <TwoFactorSettings enabled={user.twoFactorEnabled} />
       </details>
+      <ConnectedAccounts />
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">Passkeys</summary>
         <Passkeys />
@@ -518,5 +519,74 @@ function Passkeys() {
         Add a passkey
       </Button>
     </div>
+  )
+}
+
+const accountsQuery = {
+  queryKey: ['linked-accounts'],
+  queryFn: async () => {
+    const { data, error } = await authClient.listAccounts()
+    if (error) throw new Error(error.message ?? 'Could not load accounts.')
+    return data
+  },
+}
+
+// Google next to the password, when the server is set up for it. Better Auth refuses to
+// remove the last way to sign in.
+function ConnectedAccounts() {
+  const queryClient = useQueryClient()
+  const { data: options } = useQuery(signInOptionsQuery)
+  const { data: accounts } = useQuery({
+    ...accountsQuery,
+    enabled: Boolean(options?.google),
+  })
+  const google = accounts?.find((a) => a.providerId === 'google')
+  const unlink = useMutation({
+    mutationFn: async (accountId: string) => {
+      const { error } = await authClient.unlinkAccount({ accountId })
+      if (error) throw new Error(error.message ?? 'Could not disconnect.')
+    },
+    onSuccess: () => toast.success('Google disconnected'),
+    onError: (e) => toast.error(e.message),
+    onSettled: () => queryClient.invalidateQueries(accountsQuery),
+  })
+  if (!options?.google || !accounts) return null
+
+  return (
+    <details className="rounded-lg border bg-card px-4 py-3">
+      <summary className="cursor-pointer font-medium">
+        Connected accounts
+      </summary>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <p className="min-w-0 flex-1 text-sm">
+          {google
+            ? 'Google is connected: you can sign in with it.'
+            : 'Connect Google to sign in without your password.'}
+        </p>
+        {google ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={unlink.isPending}
+            onClick={() => unlink.mutate(google.accountId)}
+          >
+            Disconnect Google
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              authClient.linkSocial({
+                provider: 'google',
+                callbackURL: '/more',
+              })
+            }
+          >
+            Connect Google
+          </Button>
+        )}
+      </div>
+    </details>
   )
 }

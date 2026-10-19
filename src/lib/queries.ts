@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { TransactionFilters } from '@/lib/transaction-filters'
-import { getSession } from '@/server/auth'
+import { getSession, getSignInOptions } from '@/server/auth'
 import { getBudgetReport } from '@/server/budgets'
 import { listCategories } from '@/server/categories'
 import { listDevices } from '@/server/devices'
@@ -43,6 +43,12 @@ export const sessionQuery = queryOptions({
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],
   queryFn: () => listDevices(),
+})
+
+export const signInOptionsQuery = queryOptions({
+  queryKey: ['sign-in-options'],
+  queryFn: () => getSignInOptions(),
+  staleTime: Number.POSITIVE_INFINITY,
 })
 
 export const spacesQuery = queryOptions({

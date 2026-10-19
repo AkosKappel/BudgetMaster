@@ -65,6 +65,8 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in .env}
       RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY in .env}
       EMAIL_FROM: ${EMAIL_FROM:-BudgetMaster <onboarding@resend.dev>}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     ports:
       - "127.0.0.1:${APP_PORT:-8085}:3000"
     depends_on:

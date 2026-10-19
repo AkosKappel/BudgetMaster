@@ -2,6 +2,7 @@ import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 
 import { DEMO_LIFETIME_HOURS } from '@/db/demo-accounts'
+import { env } from '@/env'
 import { auth } from '@/lib/auth'
 
 export const getSession = createServerFn({ method: 'GET' }).handler(
@@ -42,4 +43,11 @@ export const authMiddleware = createMiddleware({ type: 'function' }).server(
     if (!session) throw new Error('Not signed in')
     return next({ context: { user: session.user } })
   },
+)
+
+// Which ways to sign in the server is set up for; Google needs its OAuth client in `.env`.
+export const getSignInOptions = createServerFn({ method: 'GET' }).handler(
+  () => ({
+    google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+  }),
 )
