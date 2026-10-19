@@ -3,7 +3,11 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
 
 import { SIDEBAR_HOTKEY, Sidebar, TabBar } from '@/components/app-nav'
-import { CrossTabSync, OfflineNotice } from '@/components/app-sync'
+import {
+  CrossTabSync,
+  OfflineNotice,
+  PullToRefresh,
+} from '@/components/app-sync'
 import { CommandPalette, SearchButton } from '@/components/command-palette'
 import { DemoBanner } from '@/components/demo-banner'
 import { QuickAddDrawer } from '@/components/quick-add'
@@ -75,6 +79,7 @@ function AppShell() {
       <QuickAddDrawer />
       <CommandPalette />
       <CrossTabSync />
+      <PullToRefresh />
       <ShortcutsHelp />
     </div>
   )
