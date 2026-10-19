@@ -1,7 +1,7 @@
 import { and, eq, lt } from 'drizzle-orm'
 
 import type { db } from '@/db'
-import { activityEvent } from '@/db/schema'
+import { activityEvent, type DeletedTransaction } from '@/db/schema'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles (a module-level helper next to server functions kept the database driver in the
@@ -12,6 +12,9 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 // How long the log keeps an entry: enough to settle "who changed this?", without keeping
 // a second copy of every amount forever.
 const KEEP_DAYS = 180
+
+// How long a deleted transaction can be restored from the log.
+export const RESTORE_DAYS = 30
 
 // The activity log of the space (I-13), written in the same database transaction. Old
 // entries of the space are trimmed on the way.
@@ -29,6 +32,7 @@ export async function logActivity(
     date: string
   },
   before?: { payee: string | null; amount: number; date: string },
+  snapshot?: DeletedTransaction,
 ) {
   await tx
     .delete(activityEvent)
@@ -53,6 +57,7 @@ export async function logActivity(
       amount: row.amount,
       date: row.date,
       before,
+      snapshot,
     },
   })
 }

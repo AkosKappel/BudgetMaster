@@ -24,3 +24,41 @@ test('an invite to a shared space is emailed and shown as a link', async ({
   ).toContainText('Nothing yet')
   await expectNoAxeViolations(page)
 })
+
+test('a deleted transaction can be restored from recent changes', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page
+    .getByRole('button', { name: /add transaction|add expense/i })
+    .first()
+    .click()
+  const sheet = page.getByRole('dialog')
+  await sheet.getByLabel('Amount').fill('7.70')
+  await sheet.getByLabel('Paid to').fill('Restore Bakery')
+  await sheet.getByText('Groceries', { exact: true }).click()
+  await sheet.getByRole('button', { name: /save/i }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
+
+  await page.goto('/activity?q=Restore%20Bakery')
+  await page.getByRole('button', { name: /Restore Bakery/ }).click()
+  await page.getByRole('button', { name: 'Delete transaction' }).click()
+  // The server deletes it once the undo toast closes.
+  await expect(page.getByText('Transaction deleted')).toBeVisible()
+  await expect(page.getByText('Transaction deleted')).toBeHidden({
+    timeout: 15_000,
+  })
+
+  await page.goto('/spaces')
+  await page.getByRole('link', { name: /Personal/ }).click()
+  const changes = page.getByRole('region', { name: 'Recent changes' })
+  await expect(changes).toContainText('You deleted Restore Bakery, €7.70')
+  await changes.getByRole('button', { name: 'Restore' }).first().click()
+  await expect(page.getByText('Transaction restored')).toBeVisible()
+  await expect(changes).toContainText('You added Restore Bakery, €7.70')
+
+  await page.goto('/activity?q=Restore%20Bakery')
+  await expect(
+    page.getByRole('button', { name: /Restore Bakery/ }),
+  ).toContainText('Groceries')
+})

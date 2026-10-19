@@ -42,6 +42,7 @@ import {
   updateMemberRole,
   updateSpaceSettings,
 } from '@/server/space-admin'
+import { restoreTransaction } from '@/server/transactions'
 
 export const Route = createFileRoute('/_app/spaces/$spaceId')({
   loader: ({ context, params }) =>
@@ -152,10 +153,14 @@ function SpaceSettingsPage() {
         <>
           <Members space={space} onChange={refresh} />
           {isOwner && <Invites space={space} onChange={refresh} />}
-          <RecentChanges spaceId={space.id} />
-          <DangerZone space={space} />
         </>
       )}
+      <RecentChanges
+        spaceId={space.id}
+        canWrite={space.role !== 'viewer'}
+        shared={!space.personal}
+      />
+      {!space.personal && <DangerZone space={space} />}
     </div>
   )
 }
@@ -582,10 +587,28 @@ function DangerZone({ space }: { space: Details }) {
   )
 }
 
-// Who added, changed or deleted what: trust when several people keep one ledger. Loaded in
-// the browser, so times are in the viewer's own zone.
-function RecentChanges({ spaceId }: { spaceId: string }) {
+// Who added, changed or deleted what: trust when several people keep one ledger, and a
+// way back for a deletion whose undo toast was missed. Loaded in the browser, so times are
+// in the viewer's own zone.
+function RecentChanges({
+  spaceId,
+  canWrite,
+  shared,
+}: {
+  spaceId: string
+  canWrite: boolean
+  shared: boolean
+}) {
+  const queryClient = useQueryClient()
   const { data: events } = useQuery(activityQuery(spaceId))
+  const restore = useMutation({
+    mutationFn: restoreTransaction,
+    onSuccess: () => {
+      toast.success('Transaction restored')
+      return queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
+    },
+    onError: (e) => toast.error(e.message),
+  })
   if (!events) return null
 
   return (
@@ -595,29 +618,44 @@ function RecentChanges({ spaceId }: { spaceId: string }) {
       </h2>
       {events.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          Nothing yet. Changes to transactions show up here for every member.
+          Nothing yet. Changes to transactions show up here
+          {shared ? ' for every member' : ''}.
         </p>
       ) : (
         <ul className="divide-y rounded-lg border bg-card text-sm">
           {events.map((e) => (
-            <li key={e.id} className="flex flex-col gap-0.5 px-4 py-2.5">
-              <span>
-                <span className="font-medium">
-                  {e.isMe ? 'You' : (e.userName ?? 'A former member')}
-                </span>{' '}
-                {describeActivity(e)}
+            <li key={e.id} className="flex items-center gap-3 px-4 py-2.5">
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span>
+                  <span className="font-medium">
+                    {e.isMe ? 'You' : (e.userName ?? 'A former member')}
+                  </span>{' '}
+                  {describeActivity(e)}
+                </span>
+                <time
+                  dateTime={e.createdAt}
+                  className="text-muted-foreground text-xs"
+                >
+                  {new Date(e.createdAt).toLocaleString(APP_LOCALE, {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </time>
               </span>
-              <time
-                dateTime={e.createdAt}
-                className="text-muted-foreground text-xs"
-              >
-                {new Date(e.createdAt).toLocaleString(APP_LOCALE, {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </time>
+              {canWrite && e.restorable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={restore.isPending}
+                  onClick={() =>
+                    restore.mutate({ data: { spaceId, eventId: e.id } })
+                  }
+                >
+                  Restore
+                </Button>
+              )}
             </li>
           ))}
         </ul>

@@ -387,6 +387,20 @@ export interface ActivityDetails {
   date: string
   // For a change: the values before it.
   before?: { payee: string | null; amount: number; date: string }
+  // For a deletion: everything needed to restore it from the log.
+  snapshot?: DeletedTransaction
+}
+
+export interface DeletedTransaction {
+  categoryId: string | null
+  toWalletId: string | null
+  toAmount: number | null
+  note: string | null
+  createdBy: string | null
+  recurringRuleId: string | null
+  importId: string | null
+  tagIds: string[]
+  splits: { categoryId: string; amount: number; note: string | null }[]
 }
 
 export const activityEvent = pgTable(

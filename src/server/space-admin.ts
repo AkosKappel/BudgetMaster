@@ -10,6 +10,7 @@ import {
   space,
   spaceInvite,
   spaceMember,
+  transaction,
   user,
   wallet,
 } from '@/db/schema'
@@ -17,6 +18,7 @@ import { createSpace as insertSpace } from '@/db/spaces'
 import { env } from '@/env'
 import { CURRENCIES } from '@/lib/currencies'
 import { linkEmail } from '@/lib/email'
+import { RESTORE_DAYS } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { ACTIVE_SPACE_COOKIE, spaceInput } from '@/server/spaces'
@@ -400,6 +402,11 @@ export const listActivity = createServerFn({ method: 'GET' })
         userId: activityEvent.userId,
         userName: user.name,
         currency: sql<string>`coalesce(${wallet.currency}, ${member.baseCurrency})`,
+        // A recent deletion with a snapshot whose transaction is not back yet.
+        restorable: sql<boolean>`${activityEvent.action} = 'deleted'
+          and ${activityEvent.details} ? 'snapshot'
+          and ${activityEvent.createdAt} > now() - make_interval(days => ${RESTORE_DAYS})
+          and not exists (select 1 from ${transaction} where ${transaction.id} = ${activityEvent.transactionId})`,
       })
       .from(activityEvent)
       .leftJoin(user, eq(user.id, activityEvent.userId))

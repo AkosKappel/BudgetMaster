@@ -4,6 +4,7 @@ import {
   asc,
   desc,
   eq,
+  gte,
   ilike,
   inArray,
   isNotNull,
@@ -15,15 +16,18 @@ import { z } from 'zod'
 
 import { db } from '@/db'
 import {
+  activityEvent,
   categorizationRule,
   category,
+  importBatch,
+  recurringRule,
   tag,
   transaction,
   transactionSplit,
   transactionTag,
   wallet,
 } from '@/db/schema'
-import { logActivity } from '@/server/activity-log'
+import { logActivity, RESTORE_DAYS } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { checkMovement } from '@/server/movement'
@@ -305,13 +309,163 @@ export const deleteTransaction = createServerFn({ method: 'POST' })
     if (space.role === 'viewer')
       throw new Error('Viewers cannot change this space.')
     await db.transaction(async (tx) => {
+      // Tags and splits go with the row (cascade), so the log keeps them for a restore.
+      const [tags, splits] = await Promise.all([
+        tx
+          .select({ tagId: transactionTag.tagId })
+          .from(transactionTag)
+          .where(eq(transactionTag.transactionId, data.id)),
+        tx
+          .select({
+            categoryId: transactionSplit.categoryId,
+            amount: transactionSplit.amount,
+            note: transactionSplit.note,
+          })
+          .from(transactionSplit)
+          .where(eq(transactionSplit.transactionId, data.id)),
+      ])
       const [deleted] = await tx
         .delete(transaction)
         .where(
           and(eq(transaction.id, data.id), eq(transaction.spaceId, space.id)),
         )
         .returning()
-      if (deleted) await logActivity(tx, context.user.id, 'deleted', deleted)
+      if (deleted)
+        await logActivity(tx, context.user.id, 'deleted', deleted, undefined, {
+          categoryId: deleted.categoryId,
+          toWalletId: deleted.toWalletId,
+          toAmount: deleted.toAmount,
+          note: deleted.note,
+          createdBy: deleted.createdBy,
+          recurringRuleId: deleted.recurringRuleId,
+          importId: deleted.importId,
+          tagIds: tags.map((t) => t.tagId),
+          splits,
+        })
     })
     return { id: data.id }
+  })
+
+// Puts a deleted transaction back from its snapshot in the activity log (I-13), with its
+// tags and splits. Links to a recurring rule, an import or tags that are gone since are
+// dropped; a missing wallet or category stops the restore.
+export const restoreTransaction = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ eventId: z.uuid() }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    if (space.role === 'viewer')
+      throw new Error('Viewers cannot change this space.')
+    const [event] = await db
+      .select()
+      .from(activityEvent)
+      .where(
+        and(
+          eq(activityEvent.id, data.eventId),
+          eq(activityEvent.spaceId, space.id),
+          eq(activityEvent.action, 'deleted'),
+          gte(
+            activityEvent.createdAt,
+            new Date(Date.now() - RESTORE_DAYS * 86_400_000),
+          ),
+        ),
+      )
+    const snapshot = event?.details.snapshot
+    if (!event || !snapshot) throw new Error('This deletion cannot be undone.')
+    const { details } = event
+
+    const walletIds = [details.walletId, snapshot.toWalletId].filter(
+      (id): id is string => id !== null,
+    )
+    const categoryIds = [
+      snapshot.categoryId,
+      ...snapshot.splits.map((p) => p.categoryId),
+    ].filter((id): id is string => id !== null)
+    const [wallets, categories, rules, imports, tags] = await Promise.all([
+      db
+        .select({ id: wallet.id })
+        .from(wallet)
+        .where(
+          and(eq(wallet.spaceId, space.id), inArray(wallet.id, walletIds)),
+        ),
+      categoryIds.length
+        ? db
+            .select({ id: category.id })
+            .from(category)
+            .where(
+              and(
+                eq(category.spaceId, space.id),
+                inArray(category.id, categoryIds),
+              ),
+            )
+        : Promise.resolve([]),
+      snapshot.recurringRuleId
+        ? db
+            .select({ id: recurringRule.id })
+            .from(recurringRule)
+            .where(eq(recurringRule.id, snapshot.recurringRuleId))
+        : Promise.resolve([]),
+      snapshot.importId
+        ? db
+            .select({ id: importBatch.id })
+            .from(importBatch)
+            .where(eq(importBatch.id, snapshot.importId))
+        : Promise.resolve([]),
+      snapshot.tagIds.length
+        ? db
+            .select({ id: tag.id })
+            .from(tag)
+            .where(
+              and(eq(tag.spaceId, space.id), inArray(tag.id, snapshot.tagIds)),
+            )
+        : Promise.resolve([]),
+    ])
+    if (
+      wallets.length !== new Set(walletIds).size ||
+      categories.length !== new Set(categoryIds).size
+    )
+      throw new Error('Its wallet or category no longer exists.')
+
+    const row = {
+      id: event.transactionId,
+      spaceId: space.id,
+      type: details.type,
+      date: details.date,
+      walletId: details.walletId,
+      amount: details.amount,
+      categoryId: snapshot.categoryId,
+      toWalletId: snapshot.toWalletId,
+      toAmount: snapshot.toAmount,
+      payee: details.payee,
+      note: snapshot.note,
+      createdBy: snapshot.createdBy,
+      recurringRuleId: rules[0]?.id ?? null,
+      importId: imports[0]?.id ?? null,
+    }
+    await db.transaction(async (tx) => {
+      const inserted = await tx
+        .insert(transaction)
+        .values(row)
+        .onConflictDoNothing({ target: transaction.id })
+        .returning({ id: transaction.id })
+      if (!inserted.length) throw new Error('It has been restored already.')
+      if (snapshot.splits.length)
+        await tx.insert(transactionSplit).values(
+          snapshot.splits.map((p) => ({
+            ...p,
+            spaceId: space.id,
+            transactionId: row.id,
+          })),
+        )
+      if (tags.length)
+        await tx.insert(transactionTag).values(
+          tags.map((t) => ({
+            spaceId: space.id,
+            transactionId: row.id,
+            tagId: t.id,
+          })),
+        )
+      await logActivity(tx, context.user.id, 'created', row)
+    })
+    return { id: row.id }
   })
