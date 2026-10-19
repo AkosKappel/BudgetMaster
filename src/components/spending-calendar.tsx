@@ -14,7 +14,7 @@ function levelOf(total: number, cuts: number[]) {
 const quantile = (sorted: number[], q: number) =>
   sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0
 
-// One column per week (Monday on top), like a contribution calendar. The colours carry no
+// One column per week (the user's first day of the week on top), like a contribution calendar. The colours carry no
 // information the text does not: the summary and the table list the busy days.
 export function SpendingCalendar({ days, currency }: Calendar) {
   const money = (minor: number) => formatMoney(minor, currency)

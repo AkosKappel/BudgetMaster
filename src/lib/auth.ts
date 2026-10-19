@@ -5,6 +5,7 @@ import { APIError } from 'better-auth/api'
 import { anonymous, twoFactor } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { and, eq, ne } from 'drizzle-orm'
+import { z } from 'zod'
 
 import { db } from '@/db'
 import { createDemoSpace, keepDemoData } from '@/db/demo-accounts'
@@ -72,6 +73,15 @@ export const auth = betterAuth({
     accountLinking: { enabled: true, trustedProviders: ['google'] },
   },
   user: {
+    additionalFields: {
+      weekStartsOn: {
+        type: 'number',
+        defaultValue: 1,
+        input: true,
+        // Monday or Sunday; anything else from the client is refused.
+        validator: { input: z.union([z.literal(0), z.literal(1)]) },
+      },
+    },
     // The client confirms with the password, so a stolen open session alone cannot do it.
     deleteUser: { enabled: true, beforeDelete: removeOwnSpaces },
   },

@@ -19,6 +19,8 @@ export const user = pgTable('user', {
   isAnonymous: boolean('is_anonymous').default(false),
   // Better Auth twoFactor plugin: an authenticator code is asked after the password.
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
+  // Better Auth additional field: 1 for Monday, 0 for Sunday (calendars and weekly views).
+  weekStartsOn: integer('week_starts_on').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

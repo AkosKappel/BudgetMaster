@@ -155,14 +155,19 @@ export const getNetWorth = createServerFn({ method: 'GET' })
 
 export type NetWorth = Awaited<ReturnType<typeof getNetWorth>>
 
-// Spending per day for the last 26 full weeks plus this one, Monday first, for the calendar.
+// Spending per day for the last 26 full weeks plus this one, starting on the user's first
+// day of the week, for the calendar.
 export const getSpendingCalendar = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7
+    const weekday =
+      (new Date(`${today}T00:00:00Z`).getUTCDay() -
+        context.user.weekStartsOn +
+        7) %
+      7
     const from = addDays(today, -weekday - 26 * 7)
 
     const rows = await db

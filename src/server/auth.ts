@@ -17,6 +17,7 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
       isAnonymous,
       createdAt,
       twoFactorEnabled,
+      weekStartsOn,
     } = session.user
     // A demo user's data is deleted after DEMO_LIFETIME_HOURS (src/db/demo-accounts.ts).
     const demoExpiresAt = isAnonymous
@@ -32,6 +33,7 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
         emailVerified,
         demoExpiresAt,
         twoFactorEnabled: Boolean(twoFactorEnabled),
+        weekStartsOn,
       },
     }
   },
