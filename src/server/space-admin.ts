@@ -7,7 +7,9 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { space, spaceInvite, spaceMember, user } from '@/db/schema'
 import { createSpace as insertSpace } from '@/db/spaces'
+import { env } from '@/env'
 import { CURRENCIES } from '@/lib/currencies'
+import { linkEmail } from '@/lib/email'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { ACTIVE_SPACE_COOKIE, spaceInput } from '@/server/spaces'
@@ -137,6 +139,8 @@ export const createInvite = createServerFn({ method: 'POST' })
     spaceInput.extend({
       email: z.email('Enter an email address.').trim().toLowerCase(),
       role: z.enum(['editor', 'viewer']),
+      // Also send the link by email; the owner always gets it to share another way.
+      sendEmail: z.boolean().default(false),
     }),
   )
   .handler(async ({ context, data }) => {
@@ -178,7 +182,17 @@ export const createInvite = createServerFn({ method: 'POST' })
         expiresAt: new Date(Date.now() + INVITE_DAYS * 86_400_000),
       })
     })
-    return { token }
+    if (data.sendEmail) {
+      await linkEmail({
+        to: data.email,
+        subject: `${context.user.name} invited you to ${owner.name} on BudgetMaster`,
+        intro: `${context.user.name} invited you to the shared space "${owner.name}" on BudgetMaster, as ${data.role === 'editor' ? 'an editor' : 'a viewer'}. Sign in or create an account with this email address to join.`,
+        action: 'Join the space',
+        url: `${new URL(env.BETTER_AUTH_URL).origin}/invite/${token}`,
+        outro: `The link works once and for ${INVITE_DAYS} days. If you do not know ${context.user.name}, ignore this email.`,
+      })
+    }
+    return { token, emailed: data.sendEmail }
   })
 
 export const revokeInvite = createServerFn({ method: 'POST' })

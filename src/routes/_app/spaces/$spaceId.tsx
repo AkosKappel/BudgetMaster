@@ -271,14 +271,19 @@ function Invites({
   space: Details
   onChange: () => Promise<unknown>
 }) {
-  const [link, setLink] = useState<{ email: string; url: string } | null>(null)
+  const [link, setLink] = useState<{
+    email: string
+    url: string
+    emailed: boolean
+  } | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const create = useMutation({
     mutationFn: createInvite,
-    onSuccess: async ({ token }, { data }) => {
+    onSuccess: async ({ token, emailed }, { data }) => {
       setLink({
         email: data.email,
         url: `${window.location.origin}/invite/${token}`,
+        emailed,
       })
       formRef.current?.reset()
       await onChange()
@@ -308,6 +313,7 @@ function Invites({
               spaceId: space.id,
               email: String(form.get('email')),
               role: form.get('role') === 'viewer' ? 'viewer' : 'editor',
+              sendEmail: form.get('send-email') === 'on',
             },
           })
         }}
@@ -337,9 +343,18 @@ function Invites({
             </select>
           </div>
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="send-email"
+            defaultChecked
+            className="size-4"
+          />
+          Email the invite to them
+        </label>
         <p id="invite-hint" className="text-muted-foreground text-sm">
-          You get a link to send yourself. It works once, only for this email,
-          for 7 days.
+          You also get the link to send another way. It works once, only for
+          this email, for 7 days.
         </p>
         <FormError message={create.error?.message ?? null} />
         <Button
@@ -358,8 +373,11 @@ function Invites({
           role="status"
         >
           <p className="text-sm">
-            Send this link to <span className="font-medium">{link.email}</span>.
-            It is shown only now.
+            {link.emailed ? 'Emailed to ' : 'Send this link to '}
+            <span className="font-medium">{link.email}</span>.{' '}
+            {link.emailed
+              ? 'You can also share the link yourself; it is shown only now.'
+              : 'It is shown only now.'}
           </p>
           <Input
             readOnly
