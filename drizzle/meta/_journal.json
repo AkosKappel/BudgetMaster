@@ -85,6 +85,13 @@
       "when": 1792402272387,
       "tag": "0011_transaction_split",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792407806061,
+      "tag": "0012_budget_rollover",
+      "breakpoints": true
     }
   ]
 }

@@ -363,6 +363,8 @@ export const budget = pgTable(
     spaceId: spaceId(),
     categoryId: uuid(),
     amount: money().notNull(),
+    // What is left at the end of a budget month is added to the next one (one month only).
+    rollover: boolean().default(false).notNull(),
     ...timestamps,
   },
   (t) => [

@@ -47,7 +47,13 @@ export const Route = createFileRoute('/_app/budgets')({
 
 // What the budget sheet edits: an existing budget, or a new one for a chosen category.
 type Editing =
-  | { mode: 'edit'; categoryId: string | null; name: string; amount: number }
+  | {
+      mode: 'edit'
+      categoryId: string | null
+      name: string
+      amount: number
+      rollover: boolean
+    }
   | { mode: 'new' }
 
 function Budgets() {
@@ -127,6 +133,7 @@ function Budgets() {
                   categoryId: null,
                   name: 'All spending',
                   amount: data.overall?.amount ?? 0,
+                  rollover: false,
                 })
               }
             >
@@ -215,6 +222,11 @@ function Budgets() {
                     currency={data.currency}
                     daysLeft={data.isCurrent ? data.daysLeft : undefined}
                   />
+                  {b.carried > 0 && (
+                    <span className="text-muted-foreground text-xs">
+                      Includes {money(b.carried)} left over from last month
+                    </span>
+                  )}
                 </>
               )
               return (
@@ -227,7 +239,8 @@ function Budgets() {
                           mode: 'edit',
                           categoryId: b.categoryId,
                           name: b.name,
-                          amount: b.amount,
+                          amount: b.monthlyAmount,
+                          rollover: b.rollover,
                         })
                       }
                       className="flex w-full flex-col gap-2 px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
@@ -342,7 +355,12 @@ function BudgetSheet({
               ? editing.categoryId
               : String(form.get('category'))
             save.mutate({
-              data: { spaceId, categoryId: categoryId || null, amount },
+              data: {
+                spaceId,
+                categoryId: categoryId || null,
+                amount,
+                rollover: form.get('rollover') === 'on',
+              },
             })
           }}
         >
@@ -407,6 +425,22 @@ function BudgetSheet({
               />
             </div>
           </div>
+          {!(isEdit && editing.categoryId === null) && (
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="rollover"
+                defaultChecked={isEdit && editing.rollover}
+                className="mt-0.5"
+              />
+              <span>
+                Carry over what is left
+                <span className="block text-muted-foreground">
+                  Money not spent this month is added to next month's limit.
+                </span>
+              </span>
+            </label>
+          )}
           <FormError message={error} />
           <div className="flex gap-2">
             {hasBudget && (

@@ -1146,6 +1146,9 @@ export async function addPersonalBudgets(alex: Ledger) {
       spaceId: alex.spaceId,
       categoryId: alex.categories.Pets,
       amount: money(50),
+      // Shows a carried-over limit: nothing is spent on pets, and the budget is old enough.
+      rollover: true,
+      createdAt: new Date(`${start}T00:00:00Z`),
     },
     {
       spaceId: alex.spaceId,

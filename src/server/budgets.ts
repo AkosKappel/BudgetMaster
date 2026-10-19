@@ -45,69 +45,84 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
     const expensesIn = (from: string, to: string) =>
       movementsIn('expense', from, to)
 
-    const [byCategory, byDay, categories, budgets, [incomeRow]] =
-      await Promise.all([
-        // Per category from the category lines, so a split receipt counts in each part.
-        db
-          .select({
-            categoryId: categoryLines.categoryId,
-            total: sum(categoryLines.amount).mapWith(Number),
-          })
-          .from(categoryLines)
-          .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
-          .where(
-            and(
-              eq(categoryLines.spaceId, space.id),
-              eq(categoryLines.type, 'expense'),
-              eq(wallet.currency, space.baseCurrency),
-              between(categoryLines.date, period.start, asOf),
-            ),
-          )
-          .groupBy(categoryLines.categoryId),
-        db
-          .select({
-            date: transaction.date,
-            total: sum(transaction.amount).mapWith(Number),
-          })
-          .from(transaction)
-          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-          .where(expensesIn(previous.start, asOf))
-          .groupBy(transaction.date),
-        db
-          .select({
-            id: category.id,
-            name: category.name,
-            icon: category.icon,
-            color: category.color,
-            parentId: category.parentId,
-            archived: sql<boolean>`${category.archivedAt} is not null`,
-          })
-          .from(category)
-          .where(
-            and(eq(category.spaceId, space.id), eq(category.type, 'expense')),
+    // Per category from the category lines, so a split receipt counts in each part.
+    const spentByCategory = (from: string, to: string) =>
+      db
+        .select({
+          categoryId: categoryLines.categoryId,
+          total: sum(categoryLines.amount).mapWith(Number),
+        })
+        .from(categoryLines)
+        .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
+        .where(
+          and(
+            eq(categoryLines.spaceId, space.id),
+            eq(categoryLines.type, 'expense'),
+            eq(wallet.currency, space.baseCurrency),
+            between(categoryLines.date, from, to),
           ),
-        db
-          .select({
-            id: budget.id,
-            categoryId: budget.categoryId,
-            amount: budget.amount,
-          })
-          .from(budget)
-          .where(eq(budget.spaceId, space.id)),
-        db
-          .select({ total: sum(transaction.amount).mapWith(Number) })
-          .from(transaction)
-          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-          .where(movementsIn('income', period.start, asOf)),
-      ])
+        )
+        .groupBy(categoryLines.categoryId)
+
+    const [
+      byCategory,
+      byPreviousCategory,
+      byDay,
+      categories,
+      budgets,
+      [incomeRow],
+    ] = await Promise.all([
+      spentByCategory(period.start, asOf),
+      spentByCategory(previous.start, previous.end),
+      db
+        .select({
+          date: transaction.date,
+          total: sum(transaction.amount).mapWith(Number),
+        })
+        .from(transaction)
+        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .where(expensesIn(previous.start, asOf))
+        .groupBy(transaction.date),
+      db
+        .select({
+          id: category.id,
+          name: category.name,
+          icon: category.icon,
+          color: category.color,
+          parentId: category.parentId,
+          archived: sql<boolean>`${category.archivedAt} is not null`,
+        })
+        .from(category)
+        .where(
+          and(eq(category.spaceId, space.id), eq(category.type, 'expense')),
+        ),
+      db
+        .select({
+          id: budget.id,
+          categoryId: budget.categoryId,
+          amount: budget.amount,
+          rollover: budget.rollover,
+          createdAt: budget.createdAt,
+        })
+        .from(budget)
+        .where(eq(budget.spaceId, space.id)),
+      db
+        .select({ total: sum(transaction.amount).mapWith(Number) })
+        .from(transaction)
+        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .where(movementsIn('income', period.start, asOf)),
+    ])
 
     const own = new Map(byCategory.map((r) => [r.categoryId, r.total]))
+    const ownBefore = new Map(
+      byPreviousCategory.map((r) => [r.categoryId, r.total]),
+    )
     const childrenOf = (id: string) =>
       categories.filter((c) => c.parentId === id)
     // A parent's total includes its children (one level, see D-07).
-    const rolledUp = (id: string) =>
-      (own.get(id) ?? 0) +
-      childrenOf(id).reduce((sum, c) => sum + (own.get(c.id) ?? 0), 0)
+    const rolledUp = (id: string, totals = own) =>
+      (totals.get(id) ?? 0) +
+      childrenOf(id).reduce((sum, c) => sum + (totals.get(c.id) ?? 0), 0)
     const spent = byCategory.reduce((sum, r) => sum + r.total, 0)
 
     const breakdown = categories
@@ -146,6 +161,12 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       .flatMap((b) => {
         const cat = categories.find((c) => c.id === b.categoryId)
         if (!cat) return []
+        // Unspent money from last month, if the budget already existed then. Overspending
+        // is not carried, so a limit never drops below the monthly amount.
+        const carried =
+          b.rollover && b.createdAt < new Date(`${period.start}T00:00:00Z`)
+            ? Math.max(0, b.amount - rolledUp(cat.id, ownBefore))
+            : 0
         return [
           {
             id: b.id,
@@ -154,7 +175,11 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
             icon: cat.icon,
             color: cat.color,
             isParent: childrenOf(cat.id).length > 0,
-            amount: b.amount,
+            // The limit for this month: the monthly amount plus what was carried over.
+            amount: b.amount + carried,
+            monthlyAmount: b.amount,
+            carried,
+            rollover: b.rollover,
             spent: rolledUp(cat.id),
           },
         ]
@@ -209,6 +234,7 @@ export const setBudget = createServerFn({ method: 'POST' })
     spaceInput.extend({
       categoryId: z.uuid().nullable(),
       amount: z.int().positive().max(Number.MAX_SAFE_INTEGER),
+      rollover: z.boolean().default(false),
     }),
   )
   .handler(async ({ context, data }) => {
@@ -232,10 +258,15 @@ export const setBudget = createServerFn({ method: 'POST' })
         spaceId: space.id,
         categoryId: data.categoryId,
         amount: data.amount,
+        rollover: data.rollover,
       })
       .onConflictDoUpdate({
         target: [budget.spaceId, budget.categoryId],
-        set: { amount: data.amount, updatedAt: new Date() },
+        set: {
+          amount: data.amount,
+          rollover: data.rollover,
+          updatedAt: new Date(),
+        },
       })
   })
 
