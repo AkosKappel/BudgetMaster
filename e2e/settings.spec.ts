@@ -15,4 +15,6 @@ test('the first day of the week is saved on the account', async ({ page }) => {
     .toMatchObject({ user: { weekStartsOn: 0 } })
   await page.reload()
   await expect(sunday).toBeChecked()
+  // Without ANTHROPIC_API_KEY on the server, AI features are not offered at all.
+  await expect(page.getByText('AI features')).toHaveCount(0)
 })

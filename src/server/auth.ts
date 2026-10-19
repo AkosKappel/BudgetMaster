@@ -19,6 +19,7 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
       createdAt,
       twoFactorEnabled,
       weekStartsOn,
+      aiEnabled,
     } = session.user
     // A demo user's data is deleted after DEMO_LIFETIME_HOURS (src/db/demo-accounts.ts).
     const demoExpiresAt = isAnonymous
@@ -35,6 +36,7 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
         demoExpiresAt,
         twoFactorEnabled: Boolean(twoFactorEnabled),
         weekStartsOn,
+        aiEnabled,
       },
     }
   },
@@ -65,5 +67,7 @@ export const getSignInOptions = createServerFn({ method: 'GET' }).handler(
   () => ({
     google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
     github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+    // Not a sign-in method, but the same kind of switch: Settings offers AI features only then.
+    ai: Boolean(env.ANTHROPIC_API_KEY),
   }),
 )

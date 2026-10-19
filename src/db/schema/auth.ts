@@ -21,6 +21,8 @@ export const user = pgTable('user', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   // Better Auth additional field: 1 for Monday, 0 for Sunday (calendars and weekly views).
   weekStartsOn: integer('week_starts_on').default(1).notNull(),
+  // Better Auth additional field: the user agreed to send receipts to Claude (M-18, AI-01).
+  aiEnabled: boolean('ai_enabled').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

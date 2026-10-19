@@ -113,6 +113,13 @@
       "when": 1792410806980,
       "tag": "0015_receipt",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792422815099,
+      "tag": "0016_ai_opt_in",
+      "breakpoints": true
     }
   ]
 }

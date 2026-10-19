@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -7,7 +7,7 @@ import { AccountData } from '@/components/account-data'
 import { AccountSecurity } from '@/components/account-security'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { authClient } from '@/lib/auth-client'
-import { sessionQuery } from '@/lib/queries'
+import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/settings')({
   head: () => ({ meta: [{ title: 'Settings | BudgetMaster' }] }),
@@ -20,6 +20,7 @@ function Settings() {
       <h1 className="font-semibold text-2xl tracking-tight">Settings</h1>
       <ThemeSwitch />
       <WeekStart />
+      <AiFeatures />
       <AccountSecurity />
       <AccountData />
     </div>
@@ -75,6 +76,53 @@ function WeekStart() {
           </label>
         ))}
       </div>
+    </fieldset>
+  )
+}
+
+// M-18: AI features are opt-in per user, with what leaves the app said plainly. Offered
+// only when the server has an Anthropic API key, and not to demo users.
+function AiFeatures() {
+  const { user } = Route.useRouteContext()
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const { data: options } = useQuery(signInOptionsQuery)
+  const [enabled, setEnabled] = useState(user.aiEnabled)
+  if (!options?.ai || user.demoExpiresAt) return null
+
+  async function change(next: boolean) {
+    setEnabled(next)
+    const { error } = await authClient.updateUser({ aiEnabled: next })
+    if (error) {
+      setEnabled(!next)
+      toast.error(error.message ?? 'Could not save. Try again.')
+      return
+    }
+    // The quick add form asks the server whether to offer reading receipts.
+    await queryClient.invalidateQueries()
+    router.invalidate()
+  }
+
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 font-semibold text-lg">AI features</legend>
+      <label className="flex max-w-prose items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => change(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          Read receipt photos with Claude
+          <span className="block text-muted-foreground">
+            When you tap "Fill in from photo", that photo and the names of your
+            expense categories are sent to Anthropic's Claude API to read the
+            total, date and shop. Nothing else is sent, and nothing is sent
+            unless you tap it.
+          </span>
+        </span>
+      </label>
     </fieldset>
   )
 }

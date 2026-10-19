@@ -7,7 +7,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { Link, useRouteContext } from '@tanstack/react-router'
-import { Camera, Plus, Split, Trash2, X } from 'lucide-react'
+import { Camera, Plus, Sparkles, Split, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -19,12 +19,13 @@ import { iconFor } from '@/lib/icons'
 import { currencyDigits, formatMoney, parseAmount } from '@/lib/money'
 import { useDeleteWithUndo, useSaveTransaction } from '@/lib/mutations'
 import { formOptionsQuery, payeesQuery, useActiveSpace } from '@/lib/queries'
-import { parseQuickEntry } from '@/lib/quick-entry'
+import { parseQuickEntry, type QuickEntry } from '@/lib/quick-entry'
 import { addDays, localTodayIso } from '@/lib/recurrence'
 import { resizeImage } from '@/lib/resize-image'
 import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
 import { uuidv7 } from '@/lib/uuid'
+import { readReceipt } from '@/server/ai'
 import type { LedgerTransaction } from '@/server/ledger'
 import { deleteReceipt, saveReceipt } from '@/server/receipts'
 import type { TransactionType } from '@/stores/quick-add'
@@ -285,6 +286,32 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
     },
   })
 
+  // Fills the form from a typed line (AI-02) or a read receipt (AI-01); fields the source
+  // did not mention keep their value.
+  const fillIn = (entry: QuickEntry) => {
+    const type = entry.type ?? form.getFieldValue('type')
+    if (entry.type) {
+      form.setFieldValue('type', entry.type)
+      form.setFieldValue('splits', [])
+    }
+    if (entry.amount) form.setFieldValue('amount', entry.amount)
+    if (entry.walletId) form.setFieldValue('walletId', entry.walletId)
+    if (entry.date) form.setFieldValue('date', entry.date)
+    if (entry.payee) form.setFieldValue('payee', entry.payee)
+    // A rule for the payee fills the category when the source named none.
+    const categoryId =
+      entry.categoryId ??
+      (entry.payee
+        ? ruleFor(entry.payee, type, options.rules)?.categoryId
+        : undefined)
+    const current = options.categories.find(
+      (c) => c.id === form.getFieldValue('categoryId'),
+    )
+    if (categoryId) form.setFieldValue('categoryId', categoryId)
+    else if (current && current.type !== type)
+      form.setFieldValue('categoryId', '')
+  }
+
   if (!options.canWrite) {
     return (
       <p className="px-4 pb-6 text-muted-foreground">
@@ -320,34 +347,15 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
     >
       {!transaction && (
         <QuickEntryField
-          onParse={(text) => {
-            const entry = parseQuickEntry(text, {
-              today: localTodayIso(),
-              wallets: options.wallets,
-              categories: options.categories,
-            })
-            const type = entry.type ?? form.getFieldValue('type')
-            if (entry.type) {
-              form.setFieldValue('type', entry.type)
-              form.setFieldValue('splits', [])
-            }
-            if (entry.amount) form.setFieldValue('amount', entry.amount)
-            if (entry.walletId) form.setFieldValue('walletId', entry.walletId)
-            if (entry.date) form.setFieldValue('date', entry.date)
-            if (entry.payee) form.setFieldValue('payee', entry.payee)
-            // A rule for the payee fills the category when the line named none.
-            const categoryId =
-              entry.categoryId ??
-              (entry.payee
-                ? ruleFor(entry.payee, type, options.rules)?.categoryId
-                : undefined)
-            const current = options.categories.find(
-              (c) => c.id === form.getFieldValue('categoryId'),
+          onParse={(text) =>
+            fillIn(
+              parseQuickEntry(text, {
+                today: localTodayIso(),
+                wallets: options.wallets,
+                categories: options.categories,
+              }),
             )
-            if (categoryId) form.setFieldValue('categoryId', categoryId)
-            else if (current && current.type !== type)
-              form.setFieldValue('categoryId', '')
-          }}
+          }
         />
       )}
 
@@ -771,6 +779,22 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         version={transaction?.receiptVersion ?? null}
         change={receiptChange}
         onChange={setReceiptChange}
+        read={
+          options.canReadReceipts
+            ? async (image) => {
+                const result = await readReceipt({
+                  data: { spaceId: space.id, image },
+                })
+                fillIn({
+                  type: 'expense',
+                  amount: result.amount ?? undefined,
+                  date: result.date ?? undefined,
+                  payee: result.payee ?? undefined,
+                  categoryId: result.categoryId ?? undefined,
+                })
+              }
+            : undefined
+        }
       />
 
       <div className="sticky bottom-0 -mx-4 flex gap-2 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
@@ -1097,14 +1121,18 @@ function ReceiptField({
   version,
   change,
   onChange,
+  read,
 }: {
   transactionId?: string
   version: number | null
   change: ReceiptChange
   onChange: (change: ReceiptChange) => void
+  // Fills the form from the photo with Claude (AI-01), when the user switched it on.
+  read?: (image: string) => Promise<void>
 }) {
   const [error, setError] = useState<string | null>(null)
   const [reading, setReading] = useState(false)
+  const [analysing, setAnalysing] = useState(false)
   const current =
     change && change !== 'remove'
       ? change.image
@@ -1116,7 +1144,7 @@ function ReceiptField({
     <div className="flex flex-col gap-2">
       <span className="font-medium text-sm">Receipt</span>
       {current ? (
-        <div className="flex items-end gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <a
             href={current}
             target="_blank"
@@ -1129,6 +1157,30 @@ function ReceiptField({
               className="h-24 w-auto rounded-md border object-cover"
             />
           </a>
+          {read && change && change !== 'remove' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={analysing}
+              onClick={async () => {
+                setError(null)
+                setAnalysing(true)
+                try {
+                  await read(change.image)
+                } catch (err) {
+                  setError(
+                    err instanceof Error ? err.message : 'Could not read it.',
+                  )
+                } finally {
+                  setAnalysing(false)
+                }
+              }}
+            >
+              <Sparkles />
+              {analysing ? 'Reading' : 'Fill in from photo'}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

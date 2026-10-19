@@ -81,6 +81,12 @@ export const auth = betterAuth({
         // Monday or Sunday; anything else from the client is refused.
         validator: { input: z.union([z.literal(0), z.literal(1)]) },
       },
+      aiEnabled: {
+        type: 'boolean',
+        defaultValue: false,
+        input: true,
+        validator: { input: z.boolean() },
+      },
     },
     // The client confirms with the password, so a stolen open session alone cannot do it.
     deleteUser: { enabled: true, beforeDelete: removeOwnSpaces },

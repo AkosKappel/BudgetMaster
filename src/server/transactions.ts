@@ -29,6 +29,7 @@ import {
   user,
   wallet,
 } from '@/db/schema'
+import { env } from '@/env'
 import { logActivity, RESTORE_DAYS } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -92,6 +93,11 @@ export const getFormOptions = createServerFn({ method: 'GET' })
       rules,
       // "Paid by" is offered only when there is someone to share with (I-09).
       members: members.length > 1 ? members : [],
+      // AI-01: the server has a key and the user opted in (demo users cannot).
+      canReadReceipts:
+        Boolean(env.ANTHROPIC_API_KEY) &&
+        context.user.aiEnabled &&
+        !context.user.isAnonymous,
       canWrite: space.role !== 'viewer',
     }
   })

@@ -48,6 +48,12 @@ function Privacy() {
           space can open them, and they are deleted with it.
         </li>
         <li>
+          Only if you switch on AI features in Settings and tap "Fill in from
+          photo": that receipt photo and your expense category names go to
+          Anthropic's Claude API, which reads the total, date and shop. Nothing
+          else is sent to it.
+        </li>
+        <li>
           A log of who added, changed or deleted which transaction, shown to the
           members of a shared space.
         </li>

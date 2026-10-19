@@ -33,6 +33,12 @@ const schema = z.object({
     (value) => value || undefined,
     z.string().optional(),
   ),
+  // Optional: AI features (reading receipt photos with Claude) are offered only when set,
+  // and each user still opts in under Settings.
+  ANTHROPIC_API_KEY: z.preprocess(
+    (value) => value || undefined,
+    z.string().startsWith('sk-ant-').optional(),
+  ),
   // Must be on a domain verified in Resend; onboarding@resend.dev only reaches the account owner.
   EMAIL_FROM: z.string().default('BudgetMaster <onboarding@resend.dev>'),
 })
