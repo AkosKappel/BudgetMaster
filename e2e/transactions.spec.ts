@@ -46,3 +46,41 @@ test('the command palette opens activity filtered by a category', async ({
   await expect(page).toHaveURL(/\/activity\?category=/)
   await expect(page.getByRole('button', { name: /Filters/ })).toContainText('1')
 })
+
+test('a receipt split across categories counts in each of them', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page
+    .getByRole('button', { name: /add transaction|add expense/i })
+    .first()
+    .click()
+  const sheet = page.getByRole('dialog')
+  await sheet.getByLabel('Amount').fill('30')
+  await sheet.getByLabel('Paid to').fill('E2E Market')
+  await sheet.getByText('Groceries', { exact: true }).click()
+  await sheet.getByRole('button', { name: 'Split across categories' }).click()
+  await sheet.getByLabel('Amount of part 1').fill('20')
+  await sheet
+    .getByLabel('Category of part 2')
+    .selectOption({ label: 'Shopping' })
+  await expect(sheet.getByText('€10.00 left to assign')).toBeVisible()
+  // Too much is refused before it reaches the server.
+  await sheet.getByLabel('Amount of part 2').fill('15')
+  await expect(sheet.getByText('€5.00 too much')).toBeVisible()
+  await sheet.getByRole('button', { name: /save/i }).click()
+  await expect(
+    sheet.getByText('The parts must add up to the amount.'),
+  ).toBeVisible()
+  await sheet.getByLabel('Amount of part 2').fill('10')
+  await expect(sheet.getByText('Adds up')).toBeVisible()
+  await sheet.getByRole('button', { name: /save/i }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
+
+  await page.goto('/activity?q=E2E%20Market')
+  await expect(page.getByRole('button', { name: /E2E Market/ })).toContainText(
+    'Groceries + Shopping',
+  )
+  await page.getByRole('button', { name: /E2E Market/ }).click()
+  await expect(page.getByLabel('Amount of part 1')).toHaveValue('20.00')
+})

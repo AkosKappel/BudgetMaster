@@ -78,6 +78,13 @@
       "when": 1792401463304,
       "tag": "0010_rate_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792402272387,
+      "tag": "0011_transaction_split",
+      "breakpoints": true
     }
   ]
 }

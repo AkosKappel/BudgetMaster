@@ -7,6 +7,7 @@ import { budget, category, transaction, wallet } from '@/db/schema'
 import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { authMiddleware } from '@/server/auth'
+import { categoryLines } from '@/server/category-lines'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
@@ -46,15 +47,23 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
 
     const [byCategory, byDay, categories, budgets, [incomeRow]] =
       await Promise.all([
+        // Per category from the category lines, so a split receipt counts in each part.
         db
           .select({
-            categoryId: transaction.categoryId,
-            total: sum(transaction.amount).mapWith(Number),
+            categoryId: categoryLines.categoryId,
+            total: sum(categoryLines.amount).mapWith(Number),
           })
-          .from(transaction)
-          .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-          .where(expensesIn(period.start, asOf))
-          .groupBy(transaction.categoryId),
+          .from(categoryLines)
+          .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
+          .where(
+            and(
+              eq(categoryLines.spaceId, space.id),
+              eq(categoryLines.type, 'expense'),
+              eq(wallet.currency, space.baseCurrency),
+              between(categoryLines.date, period.start, asOf),
+            ),
+          )
+          .groupBy(categoryLines.categoryId),
         db
           .select({
             date: transaction.date,

@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Repeat, Trash2 } from 'lucide-react'
+import { ArrowLeftRight, Repeat, Split, Trash2 } from 'lucide-react'
 import { animate, motion, type PanInfo, useMotionValue } from 'motion/react'
 import { useRef } from 'react'
 
@@ -30,12 +30,24 @@ export function TransactionRow({
   const x = useMotionValue(0)
   const dragged = useRef(false)
   const isTransfer = t.type === 'transfer'
-  const Icon = isTransfer ? ArrowLeftRight : iconFor(t.category?.icon)
+  const isSplit = t.splits.length > 0
+  const Icon = isTransfer
+    ? ArrowLeftRight
+    : isSplit
+      ? Split
+      : iconFor(t.category?.icon)
   const color = t.category?.color ?? 'var(--muted-foreground)'
-  const title = t.payee ?? t.category?.name ?? 'Transfer'
+  // A split names its categories in order of size: "Groceries + Household".
+  const categoryName = isSplit
+    ? t.splits
+        .toSorted((a, b) => b.amount - a.amount)
+        .map((p) => p.category.name)
+        .join(' + ')
+    : t.category?.name
+  const title = t.payee ?? categoryName ?? 'Transfer'
   const details = isTransfer
     ? [`${t.wallet.name} to ${t.toWallet?.name}`]
-    : [t.payee ? t.category?.name : null, t.wallet.name]
+    : [t.payee ? categoryName : null, t.wallet.name]
   if (showAuthor && t.author) details.push(`by ${t.author.name.split(' ')[0]}`)
   const planned = t.date > today
   const currency = t.wallet.currency

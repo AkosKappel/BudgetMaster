@@ -13,7 +13,12 @@ import {
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { category, transaction, transactionTag } from '@/db/schema'
+import {
+  category,
+  transaction,
+  transactionSplit,
+  transactionTag,
+} from '@/db/schema'
 import { currencyDigits } from '@/lib/money'
 import { currentDay } from '@/lib/today'
 import {
@@ -36,6 +41,12 @@ const transactionWith = {
   tags: {
     columns: {},
     with: { tag: { columns: { id: true, name: true, color: true } } },
+  },
+  splits: {
+    columns: { id: true, amount: true, note: true },
+    with: {
+      category: { columns: { id: true, name: true, icon: true, color: true } },
+    },
   },
 } as const
 
@@ -86,19 +97,27 @@ function filterConditions(filters: TransactionFilters, digits: number) {
   }
   if (filters.type) conditions.push(eq(t.type, filters.type))
   if (filters.category) {
-    // A parent category includes the spending on its subcategories.
+    // A parent category includes the spending on its subcategories, and a split
+    // transaction matches when one of its parts does.
+    const categories = db
+      .select({ id: category.id })
+      .from(category)
+      .where(
+        or(
+          eq(category.id, filters.category),
+          eq(category.parentId, filters.category),
+        ),
+      )
     conditions.push(
-      inArray(
-        t.categoryId,
-        db
-          .select({ id: category.id })
-          .from(category)
-          .where(
-            or(
-              eq(category.id, filters.category),
-              eq(category.parentId, filters.category),
-            ),
-          ),
+      or(
+        inArray(t.categoryId, categories),
+        inArray(
+          t.id,
+          db
+            .select({ id: transactionSplit.transactionId })
+            .from(transactionSplit)
+            .where(inArray(transactionSplit.categoryId, categories)),
+        ),
       ),
     )
   }

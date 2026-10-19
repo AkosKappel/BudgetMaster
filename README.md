@@ -15,7 +15,7 @@ Status: MVP feature-complete, not deployed yet. **Try the demo** on the sign-in 
 
 ## Features
 
-- **Capture:** quick add in a few seconds with payee memory and sums like `12+4.50` in amount fields, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks, review, remembered column layouts per bank and undo of a whole import.
+- **Capture:** quick add in a few seconds with payee memory sums like `12+4.50` in amount fields and receipts split across categories, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks, review, remembered column layouts per bank and undo of a whole import.
 - **Understand:** activity grouped by day with search and filters kept in the URL, reports with income and spending per month, net worth, a spending calendar, a 90-day balance forecast, a printable monthly report and how prices at regular payees changed in a year.
 - **Plan:** a monthly budget and limits per category, a budget month that can start on payday, a spending pace chart and warnings on Home, savings goals, and subscriptions spotted in what you enter by hand.
 - **Organise:** wallets in their own currencies, categories with subcategories (merge or delete duplicates), tags; the command palette finds all of them.

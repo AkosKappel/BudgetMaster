@@ -9,6 +9,7 @@ import {
   category,
   recurringRule,
   transaction,
+  transactionSplit,
 } from '@/db/schema'
 import { ICONS } from '@/lib/icons'
 import { authMiddleware } from '@/server/auth'
@@ -185,19 +186,23 @@ export const deleteCategory = createServerFn({ method: 'POST' })
     const target = await findCategory(space.id, data.id)
     if (target.children > 0)
       throw new Error('Delete or move its subcategories first.')
-    const [[{ used }], [{ rules }]] = await Promise.all([
+    const [[{ used }], [{ parts }], [{ rules }]] = await Promise.all([
       db
         .select({ used: count() })
         .from(transaction)
         .where(eq(transaction.categoryId, target.id)),
       db
+        .select({ parts: count() })
+        .from(transactionSplit)
+        .where(eq(transactionSplit.categoryId, target.id)),
+      db
         .select({ rules: count() })
         .from(recurringRule)
         .where(eq(recurringRule.categoryId, target.id)),
     ])
-    if (used + rules > 0)
+    if (used + parts + rules > 0)
       throw new Error(
-        `"${target.name}" is used by ${plural(used, 'transaction')}${rules ? ` and ${plural(rules, 'recurring payment')}` : ''}. Merge it into another category or archive it.`,
+        `"${target.name}" is used by ${plural(used + parts, 'transaction')}${rules ? ` and ${plural(rules, 'recurring payment')}` : ''}. Merge it into another category or archive it.`,
       )
     await db.delete(category).where(eq(category.id, target.id))
   })
@@ -225,6 +230,10 @@ export const mergeCategory = createServerFn({ method: 'POST' })
         .update(transaction)
         .set({ categoryId: target.id })
         .where(eq(transaction.categoryId, source.id))
+      await tx
+        .update(transactionSplit)
+        .set({ categoryId: target.id })
+        .where(eq(transactionSplit.categoryId, source.id))
       await tx
         .update(recurringRule)
         .set({ categoryId: target.id })

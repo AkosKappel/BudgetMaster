@@ -214,7 +214,13 @@ type MovementTable = {
   toWalletId: AnyPgColumn
 }
 
-const movementConstraints = (name: string, t: MovementTable) => [
+// Transactions may leave the category empty when they are split (M-14): the server then
+// requires at least two `transaction_split` rows that add up to the amount.
+const movementConstraints = (
+  name: string,
+  t: MovementTable,
+  { splittable = false } = {},
+) => [
   check(`${name}_amount_positive`, sql`${t.amount} > 0`),
   check(
     `${name}_to_amount_positive`,
@@ -223,7 +229,7 @@ const movementConstraints = (name: string, t: MovementTable) => [
   check(
     `${name}_shape`,
     sql`(${t.type} = 'transfer' and ${t.toWalletId} is not null and ${t.toWalletId} <> ${t.walletId} and ${t.categoryId} is null)
-      or (${t.type} <> 'transfer' and ${t.toWalletId} is null and ${t.toAmount} is null and ${t.categoryId} is not null)`,
+      or (${t.type} <> 'transfer' and ${t.toWalletId} is null and ${t.toAmount} is null${splittable ? sql`` : sql` and ${t.categoryId} is not null`})`,
   ),
   foreignKey({
     name: `${name}_wallet_fk`,
@@ -288,7 +294,7 @@ export const transaction = pgTable(
     ...timestamps,
   },
   (t) => [
-    ...movementConstraints('transaction', t),
+    ...movementConstraints('transaction', t, { splittable: true }),
     idInSpace(t),
     index().on(t.spaceId, t.date.desc()),
     index().on(t.walletId),
@@ -316,6 +322,34 @@ export const transactionTag = pgTable(
       foreignColumns: [tag.id, tag.spaceId],
     }).onDelete('cascade'),
     index().on(t.tagId),
+  ],
+)
+
+// One part of a split transaction (M-14): a receipt across several categories. The parts
+// of a transaction add up to its amount (checked by the server) and use categories of the
+// transaction's type.
+export const transactionSplit = pgTable(
+  'transaction_split',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    transactionId: uuid().notNull(),
+    categoryId: uuid().notNull(),
+    amount: money().notNull(),
+    note: text(),
+  },
+  (t) => [
+    check('transaction_split_amount_positive', sql`${t.amount} > 0`),
+    foreignKey({
+      columns: [t.transactionId, t.spaceId],
+      foreignColumns: [transaction.id, transaction.spaceId],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.categoryId, t.spaceId],
+      foreignColumns: [category.id, category.spaceId],
+    }),
+    index().on(t.transactionId),
+    index().on(t.categoryId),
   ],
 )
 
@@ -527,7 +561,22 @@ export const transactionRelations = relations(transaction, ({ one, many }) => ({
   }),
   author: one(user, { fields: [transaction.createdBy], references: [user.id] }),
   tags: many(transactionTag),
+  splits: many(transactionSplit),
 }))
+
+export const transactionSplitRelations = relations(
+  transactionSplit,
+  ({ one }) => ({
+    transaction: one(transaction, {
+      fields: [transactionSplit.transactionId],
+      references: [transaction.id],
+    }),
+    category: one(category, {
+      fields: [transactionSplit.categoryId],
+      references: [category.id],
+    }),
+  }),
+)
 
 export const transactionTagRelations = relations(transactionTag, ({ one }) => ({
   transaction: one(transaction, {

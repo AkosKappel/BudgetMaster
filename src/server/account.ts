@@ -37,7 +37,10 @@ export const exportAllData = createServerFn({ method: 'GET' })
         .where(inArray(recurringRule.spaceId, spaceIds)),
       db.query.transaction.findMany({
         where: (t, { inArray }) => inArray(t.spaceId, spaceIds),
-        with: { tags: { columns: { tagId: true } } },
+        with: {
+          tags: { columns: { tagId: true } },
+          splits: { columns: { categoryId: true, amount: true, note: true } },
+        },
         orderBy: (t, { asc }) => [asc(t.date), asc(t.id)],
       }),
     ])
@@ -75,6 +78,7 @@ export const exportTransactionsCsv = createServerFn({ method: 'GET' })
           with: { parent: { columns: { name: true } } },
         },
         tags: { with: { tag: { columns: { name: true } } } },
+        splits: { with: { category: { columns: { name: true } } } },
       },
       orderBy: [asc(transaction.date), asc(transaction.id)],
     })
@@ -107,7 +111,15 @@ export const exportTransactionsCsv = createServerFn({ method: 'GET' })
           t.wallet.name,
           t.toWallet?.name ?? null,
           t.toAmount === null ? null : decimal(t.toAmount, toCurrency),
-          parent ?? t.category?.name ?? null,
+          // A split receipt lists its parts: "Groceries 12.40; Household 8.00".
+          t.splits.length
+            ? t.splits
+                .map(
+                  (p) =>
+                    `${p.category.name} ${decimal(p.amount, t.wallet.currency)}`,
+                )
+                .join('; ')
+            : (parent ?? t.category?.name ?? null),
           parent ? (t.category?.name ?? null) : null,
           t.payee,
           t.note,

@@ -19,6 +19,7 @@ import {
   category,
   tag,
   transaction,
+  transactionSplit,
   transactionTag,
   wallet,
 } from '@/db/schema'
@@ -149,6 +150,17 @@ const transactionInput = spaceInput.extend({
   payee: optionalText(120),
   note: optionalText(2000),
   tagIds: z.array(z.uuid()).max(20),
+  // Parts of a split receipt (M-14): none, or at least two that add up to the amount.
+  splits: z
+    .array(
+      z.object({
+        categoryId: z.uuid(),
+        amount: z.int().positive().max(Number.MAX_SAFE_INTEGER),
+        note: optionalText(200),
+      }),
+    )
+    .max(20)
+    .default([]),
 })
 export type TransactionInput = z.input<typeof transactionInput>
 type ValidInput = z.output<typeof transactionInput>
@@ -160,17 +172,42 @@ async function prepare(userId: string, input: ValidInput) {
   if (space.role === 'viewer')
     throw new Error('Viewers cannot change this space.')
 
-  const [movement, tags] = await Promise.all([
-    checkMovement(space.id, input),
+  const split = input.splits.length > 0
+  if (split) {
+    if (input.splits.length < 2)
+      throw new Error('A split needs at least two parts.')
+    const total = input.splits.reduce((sum, p) => sum + p.amount, 0)
+    if (total !== input.amount)
+      throw new Error('The parts must add up to the amount.')
+  }
+  const splitCategoryIds = [...new Set(input.splits.map((p) => p.categoryId))]
+  const [movement, tags, splitCategories] = await Promise.all([
+    checkMovement(space.id, input, { split }),
     input.tagIds.length
       ? db
           .select({ id: tag.id })
           .from(tag)
           .where(and(eq(tag.spaceId, space.id), inArray(tag.id, input.tagIds)))
       : Promise.resolve([]),
+    split
+      ? db
+          .select({ id: category.id, type: category.type })
+          .from(category)
+          .where(
+            and(
+              eq(category.spaceId, space.id),
+              inArray(category.id, splitCategoryIds),
+            ),
+          )
+      : Promise.resolve([]),
   ])
   if (tags.length !== new Set(input.tagIds).size)
     throw new Error('Unknown tag.')
+  if (
+    splitCategories.length !== splitCategoryIds.length ||
+    splitCategories.some((c) => c.type !== input.type)
+  )
+    throw new Error(`Choose ${input.type} categories for the parts.`)
 
   return {
     space,
@@ -186,6 +223,11 @@ async function prepare(userId: string, input: ValidInput) {
       note: input.note,
     },
     tagIds: [...new Set(input.tagIds)],
+    splits: input.splits.map((p) => ({
+      ...p,
+      spaceId: space.id,
+      transactionId: input.id,
+    })),
   }
 }
 
@@ -193,7 +235,7 @@ export const createTransaction = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(transactionInput)
   .handler(async ({ context, data }) => {
-    const { row, tagIds } = await prepare(context.user.id, data)
+    const { row, tagIds, splits } = await prepare(context.user.id, data)
     await db.transaction(async (tx) => {
       // A retried request with the same id is a no-op.
       const inserted = await tx
@@ -203,6 +245,8 @@ export const createTransaction = createServerFn({ method: 'POST' })
         .returning({ id: transaction.id })
       if (inserted.length)
         await logActivity(tx, context.user.id, 'created', row)
+      if (inserted.length && splits.length)
+        await tx.insert(transactionSplit).values(splits)
       if (inserted.length && tagIds.length) {
         await tx.insert(transactionTag).values(
           tagIds.map((tagId) => ({
@@ -220,7 +264,7 @@ export const updateTransaction = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(transactionInput)
   .handler(async ({ context, data }) => {
-    const { row, tagIds } = await prepare(context.user.id, data)
+    const { row, tagIds, splits } = await prepare(context.user.id, data)
     const { id, spaceId, ...changes } = row
     await db.transaction(async (tx) => {
       const [before] = await tx
@@ -235,6 +279,10 @@ export const updateTransaction = createServerFn({ method: 'POST' })
       if (!before) throw new Error('Transaction not found.')
       await tx.update(transaction).set(changes).where(eq(transaction.id, id))
       await logActivity(tx, context.user.id, 'updated', row, before)
+      await tx
+        .delete(transactionSplit)
+        .where(eq(transactionSplit.transactionId, id))
+      if (splits.length) await tx.insert(transactionSplit).values(splits)
       await tx
         .delete(transactionTag)
         .where(eq(transactionTag.transactionId, id))

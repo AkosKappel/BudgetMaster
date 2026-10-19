@@ -26,6 +26,7 @@ import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { yearReview } from '@/lib/year-review'
 import { authMiddleware } from '@/server/auth'
+import { categoryLines } from '@/server/category-lines'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
@@ -218,23 +219,24 @@ export const getCategoryTrends = createServerFn({ method: 'GET' })
         })
         .from(category)
         .where(eq(category.spaceId, space.id)),
+      // Category lines: a split receipt counts in each of its categories.
       db
         .select({
-          categoryId: transaction.categoryId,
-          date: transaction.date,
-          total: sum(transaction.amount).mapWith(Number),
+          categoryId: categoryLines.categoryId,
+          date: categoryLines.date,
+          total: sum(categoryLines.amount).mapWith(Number),
         })
-        .from(transaction)
-        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .from(categoryLines)
+        .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
         .where(
           and(
-            eq(transaction.spaceId, space.id),
+            eq(categoryLines.spaceId, space.id),
             eq(wallet.currency, space.baseCurrency),
-            inArray(transaction.type, ['income', 'expense']),
-            between(transaction.date, periods[0].start, today),
+            inArray(categoryLines.type, ['income', 'expense']),
+            between(categoryLines.date, periods[0].start, today),
           ),
         )
-        .groupBy(transaction.categoryId, transaction.date),
+        .groupBy(categoryLines.categoryId, categoryLines.date),
     ])
 
     const topOf = (id: string | null) => {
@@ -375,7 +377,7 @@ export const getYearReview = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    const [rows, [range]] = await Promise.all([
+    const [rows, [range], [topCategory]] = await Promise.all([
       db
         .select({
           date: transaction.date,
@@ -406,11 +408,38 @@ export const getYearReview = createServerFn({ method: 'GET' })
         })
         .from(transaction)
         .where(eq(transaction.spaceId, space.id)),
+      // From category lines, so split receipts count in each of their categories.
+      db
+        .select({
+          name: category.name,
+          total: sum(categoryLines.amount).mapWith(Number),
+          count: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(categoryLines)
+        .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
+        .innerJoin(category, eq(category.id, categoryLines.categoryId))
+        .where(
+          and(
+            eq(categoryLines.spaceId, space.id),
+            eq(wallet.currency, space.baseCurrency),
+            eq(categoryLines.type, 'expense'),
+            between(
+              categoryLines.date,
+              `${data.year}-01-01`,
+              `${data.year}-12-31`,
+            ),
+            lte(categoryLines.date, today),
+          ),
+        )
+        .groupBy(category.name)
+        .orderBy(sql`2 desc`)
+        .limit(1),
     ])
     const thisYear = Number(today.slice(0, 4))
     const firstYear = range?.first ? Number(range.first.slice(0, 4)) : thisYear
     return {
       ...yearReview(rows, data.year, today),
+      topCategory: topCategory ?? null,
       years: Array.from(
         { length: thisYear - firstYear + 1 },
         (_, i) => thisYear - i,

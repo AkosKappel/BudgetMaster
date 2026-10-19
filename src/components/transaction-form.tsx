@@ -6,7 +6,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { Link, useRouteContext } from '@tanstack/react-router'
-import { Trash2 } from 'lucide-react'
+import { Plus, Split, Trash2, X } from 'lucide-react'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -40,6 +40,8 @@ interface FormValues {
   date: string
   note: string
   tagIds: string[]
+  // Parts of a split receipt; empty when the transaction has one category.
+  splits: { categoryId: string; amount: string }[]
 }
 
 const amountField = z
@@ -58,6 +60,7 @@ const formSchema = z
     date: z.iso.date('Choose a date.'),
     note: z.string().max(2000),
     tagIds: z.array(z.string()),
+    splits: z.array(z.object({ categoryId: z.string(), amount: z.string() })),
   })
   .superRefine((value, ctx) => {
     if (value.type === 'transfer') {
@@ -68,6 +71,15 @@ const formSchema = z
           message: 'Choose a different wallet to move the money to.',
         })
       }
+    } else if (value.splits.length > 0) {
+      if (
+        value.splits.some((p) => !p.categoryId || !(parseAmount(p.amount) ?? 0))
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: ['splits'],
+          message: 'Give every part a category and an amount.',
+        })
     } else if (!value.categoryId) {
       ctx.addIssue({
         code: 'custom',
@@ -125,6 +137,10 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         date: transaction.date,
         note: transaction.note ?? '',
         tagIds: transaction.tags.map(({ tag }) => tag.id),
+        splits: transaction.splits.map((p) => ({
+          categoryId: p.category.id,
+          amount: toInputAmount(p.amount, transaction.wallet.currency),
+        })),
       }
     : {
         type: initialType,
@@ -137,6 +153,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         date: localTodayIso(),
         note: '',
         tagIds: [],
+        splits: [],
       }
 
   const form = useForm({
@@ -153,6 +170,20 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       const toAmount = crossCurrency
         ? (parseAmount(value.toAmount, currencyDigits(to.currency)) ?? amount)
         : null
+      const splits = isTransfer
+        ? []
+        : value.splits.map((p) => ({
+            categoryId: p.categoryId,
+            amount: parseAmount(p.amount, currencyDigits(from.currency)) ?? 0,
+          }))
+      const split = splits.length > 0
+      if (split && splits.reduce((sum, p) => sum + p.amount, 0) !== amount) {
+        form.setFieldMeta('splits', (meta) => ({
+          ...meta,
+          errorMap: { onSubmit: 'The parts must add up to the amount.' },
+        }))
+        return
+      }
       const cat = options.categories.find((c) => c.id === value.categoryId)
       const tagIds = isTransfer ? [] : value.tagIds
       const id = transaction?.id ?? uuidv7()
@@ -168,12 +199,13 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           date: value.date,
           walletId: from.id,
           amount,
-          categoryId: isTransfer ? null : value.categoryId,
+          categoryId: isTransfer || split ? null : value.categoryId,
           toWalletId: isTransfer ? value.toWalletId : null,
           toAmount,
           payee,
           note,
           tagIds,
+          splits: splits.map((p) => ({ ...p, note: null })),
         },
         optimistic: {
           id,
@@ -185,9 +217,27 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           note,
           recurringRuleId: transaction?.recurringRuleId ?? null,
           category:
-            !isTransfer && cat
+            !isTransfer && !split && cat
               ? { id: cat.id, name: cat.name, icon: cat.icon, color: cat.color }
               : null,
+          splits: splits.flatMap((p, i) => {
+            const c = options.categories.find((x) => x.id === p.categoryId)
+            return c
+              ? [
+                  {
+                    id: `${id}-${i}`,
+                    amount: p.amount,
+                    note: null,
+                    category: {
+                      id: c.id,
+                      name: c.name,
+                      icon: c.icon,
+                      color: c.color,
+                    },
+                  },
+                ]
+              : []
+          }),
           wallet: { id: from.id, name: from.name, currency: from.currency },
           toWallet:
             isTransfer && to
@@ -258,6 +308,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                     if (current && current.type !== t.value) {
                       form.setFieldValue('categoryId', '')
                     }
+                    form.setFieldValue('splits', [])
                   }}
                   className="sr-only"
                 />
@@ -425,44 +476,89 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                   </div>
                 )}
               </form.Field>
-              <form.Field name="categoryId">
-                {(field) => (
-                  <fieldset className="flex flex-col gap-2">
-                    <legend className="mb-2 font-medium text-sm">
-                      Category
-                    </legend>
-                    <div className="flex flex-wrap gap-2">
-                      {categoryOrder(options.categories, type).map((c) => {
-                        const Icon = iconFor(c.icon)
-                        return (
-                          <label
-                            key={c.id}
-                            className={cn(
-                              'flex h-9 cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 text-sm has-checked:border-foreground has-checked:bg-foreground has-checked:text-background has-focus-visible:ring-2 has-focus-visible:ring-ring',
-                              c.parentId && 'ml-1',
+              <form.Subscribe selector={(s) => s.values.splits.length > 0}>
+                {(isSplit) =>
+                  isSplit ? (
+                    <form.Subscribe
+                      selector={(s) => [s.values.amount, s.values.walletId]}
+                    >
+                      {([total, walletId]) => (
+                        <form.Field name="splits">
+                          {(field) => (
+                            <SplitEditor
+                              value={field.state.value}
+                              onChange={field.handleChange}
+                              errors={field.state.meta.errors}
+                              total={total}
+                              currency={walletById(walletId)?.currency ?? 'EUR'}
+                              categories={categoryOrder(
+                                options.categories,
+                                type,
+                              )}
+                            />
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Subscribe>
+                  ) : (
+                    <form.Field name="categoryId">
+                      {(field) => (
+                        <fieldset className="flex flex-col gap-2">
+                          <legend className="mb-2 font-medium text-sm">
+                            Category
+                          </legend>
+                          <div className="flex flex-wrap gap-2">
+                            {categoryOrder(options.categories, type).map(
+                              (c) => {
+                                const Icon = iconFor(c.icon)
+                                return (
+                                  <label
+                                    key={c.id}
+                                    className={cn(
+                                      'flex h-9 cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 text-sm has-checked:border-foreground has-checked:bg-foreground has-checked:text-background has-focus-visible:ring-2 has-focus-visible:ring-ring',
+                                      c.parentId && 'ml-1',
+                                    )}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name="categoryId"
+                                      value={c.id}
+                                      checked={field.state.value === c.id}
+                                      onChange={() => field.handleChange(c.id)}
+                                      className="sr-only"
+                                    />
+                                    <Icon
+                                      className="size-4"
+                                      style={{ color: c.color }}
+                                    />
+                                    {c.name}
+                                  </label>
+                                )
+                              },
                             )}
+                          </div>
+                          <FieldError errors={field.state.meta.errors} />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-fit"
+                            onClick={() =>
+                              form.setFieldValue('splits', [
+                                { categoryId: field.state.value, amount: '' },
+                                { categoryId: '', amount: '' },
+                              ])
+                            }
                           >
-                            <input
-                              type="radio"
-                              name="categoryId"
-                              value={c.id}
-                              checked={field.state.value === c.id}
-                              onChange={() => field.handleChange(c.id)}
-                              className="sr-only"
-                            />
-                            <Icon
-                              className="size-4"
-                              style={{ color: c.color }}
-                            />
-                            {c.name}
-                          </label>
-                        )
-                      })}
-                    </div>
-                    <FieldError errors={field.state.meta.errors} />
-                  </fieldset>
-                )}
-              </form.Field>
+                            <Split />
+                            Split across categories
+                          </Button>
+                        </fieldset>
+                      )}
+                    </form.Field>
+                  )
+                }
+              </form.Subscribe>
               <form.Field name="walletId">
                 {(field) => (
                   <div className="flex flex-col gap-2">
@@ -706,5 +802,123 @@ function AmountSum({ value, currency }: { value: string; currency: string }) {
     <p className="text-muted-foreground text-sm" aria-live="polite">
       {minor === null ? 'Not a valid sum' : `= ${formatMoney(minor, currency)}`}
     </p>
+  )
+}
+
+// The parts of a split receipt (M-14): a category and an amount each, with what is still
+// left to assign. Removing all but one part turns the split off again.
+function SplitEditor({
+  value,
+  onChange,
+  errors,
+  total,
+  currency,
+  categories,
+}: {
+  value: { categoryId: string; amount: string }[]
+  onChange: (value: { categoryId: string; amount: string }[]) => void
+  errors: unknown[]
+  total: string
+  currency: string
+  categories: Category[]
+}) {
+  const digits = currencyDigits(currency)
+  const assigned = value.reduce(
+    (sum, p) => sum + (parseAmount(p.amount, digits) ?? 0),
+    0,
+  )
+  const left = (parseAmount(total, digits) ?? 0) - assigned
+  const update = (index: number, change: Partial<(typeof value)[number]>) =>
+    onChange(value.map((p, i) => (i === index ? { ...p, ...change } : p)))
+  const remove = (index: number) => {
+    const rest = value.filter((_, i) => i !== index)
+    // One part left is no split: it becomes the category.
+    onChange(rest.length < 2 ? [] : rest)
+  }
+
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 font-medium text-sm">
+        Split across categories
+      </legend>
+      <ul className="flex flex-col gap-2">
+        {value.map((part, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: parts have no id until saved, and their order is stable
+          <li key={i} className="flex gap-2">
+            <select
+              aria-label={`Category of part ${i + 1}`}
+              className="h-9 min-w-0 flex-1 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+              value={part.categoryId}
+              onChange={(e) => update(i, { categoryId: e.target.value })}
+            >
+              <option value="">Category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.parentId ? `  ${c.name}` : c.name}
+                </option>
+              ))}
+            </select>
+            <Input
+              aria-label={`Amount of part ${i + 1}`}
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="0.00"
+              className="w-28"
+              value={part.amount}
+              onChange={(e) => update(i, { amount: e.target.value })}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Remove part ${i + 1}`}
+              onClick={() => remove(i)}
+            >
+              <X />
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            onChange([
+              ...value,
+              {
+                categoryId: '',
+                // The next part starts with what is still unassigned.
+                amount: left > 0 ? (left / 10 ** digits).toFixed(digits) : '',
+              },
+            ])
+          }
+        >
+          <Plus />
+          Add a part
+        </Button>
+        <p
+          aria-live="polite"
+          className={cn('text-sm', left !== 0 && 'text-muted-foreground')}
+        >
+          {left === 0
+            ? 'Adds up'
+            : left > 0
+              ? `${formatMoney(left, currency)} left to assign`
+              : `${formatMoney(-left, currency)} too much`}
+        </p>
+      </div>
+      <FieldError errors={errors} />
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="w-fit"
+        onClick={() => onChange([])}
+      >
+        Don't split
+      </Button>
+    </fieldset>
   )
 }

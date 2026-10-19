@@ -19,8 +19,14 @@ export interface Movement {
 // the space, a category of the matching type (not for transfers), a different target wallet
 // for transfers, and `toAmount` only when a transfer changes currency. Returns the
 // normalised fields to store.
-export async function checkMovement(spaceId: string, input: Movement) {
+// A split transaction (M-14) has no category of its own; its parts are checked separately.
+export async function checkMovement(
+  spaceId: string,
+  input: Movement,
+  { split = false } = {},
+) {
   const isTransfer = input.type === 'transfer'
+  if (split && isTransfer) throw new Error('Transfers cannot be split.')
   const walletIds = [input.walletId, input.toWalletId].filter(
     (id): id is string => id !== null,
   )
@@ -29,7 +35,7 @@ export async function checkMovement(spaceId: string, input: Movement) {
       .select({ id: wallet.id, currency: wallet.currency })
       .from(wallet)
       .where(and(eq(wallet.spaceId, spaceId), inArray(wallet.id, walletIds))),
-    input.categoryId && !isTransfer
+    input.categoryId && !isTransfer && !split
       ? db
           .select({ type: category.type })
           .from(category)
@@ -48,13 +54,13 @@ export async function checkMovement(spaceId: string, input: Movement) {
   if (isTransfer) {
     if (!to || to.id === from.id)
       throw new Error('Choose a different target wallet.')
-  } else if (!cat || cat.type !== input.type) {
+  } else if (!split && (!cat || cat.type !== input.type)) {
     throw new Error(`Choose an ${input.type} category.`)
   }
   const sameCurrency = !isTransfer || to?.currency === from.currency
 
   return {
-    categoryId: isTransfer ? null : input.categoryId,
+    categoryId: isTransfer || split ? null : input.categoryId,
     toWalletId: isTransfer ? input.toWalletId : null,
     toAmount: sameCurrency ? null : (input.toAmount ?? input.amount),
   }

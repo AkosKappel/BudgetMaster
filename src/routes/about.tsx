@@ -46,7 +46,8 @@ function About() {
       <ul>
         <li>
           Record income, expenses and transfers in a few seconds with quick add.
-          Known payees fill in their usual category and wallet.
+          Known payees fill in their usual category and wallet, and one receipt
+          can be split across several categories.
         </li>
         <li>
           Track wallets for bank accounts, cards, cash and savings, each in its
