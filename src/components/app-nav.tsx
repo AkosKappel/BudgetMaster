@@ -183,12 +183,12 @@ export function Sidebar({
       </nav>
       <div
         className={cn(
-          'mt-auto flex items-center gap-2 border-t pt-4',
-          collapsed && 'w-full flex-col',
+          'mt-auto flex items-center gap-1 border-t pt-4',
+          collapsed ? 'w-full flex-col' : 'flex-wrap',
         )}
       >
         {!collapsed && (
-          <div className="min-w-0 flex-1 px-3">
+          <div className="mb-2 min-w-0 basis-full px-3">
             <p className="truncate font-medium text-sm">{user.name}</p>
             <p className="truncate text-muted-foreground text-xs">
               {accountLabel(user)}

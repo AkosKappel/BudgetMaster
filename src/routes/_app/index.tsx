@@ -87,7 +87,9 @@ function Home() {
                   />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">
-                      {r.payee ?? r.category?.name ?? 'Transfer'}
+                      {r.type === 'transfer'
+                        ? `Transfer to ${r.toWallet?.name}`
+                        : (r.payee ?? r.category?.name)}
                     </span>
                     <span className="text-muted-foreground text-xs">
                       {r.nextDate && formatDayHeading(r.nextDate, data.today)},{' '}

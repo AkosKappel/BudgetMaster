@@ -91,6 +91,7 @@ export const getOverview = createServerFn({ method: 'GET' })
         },
         with: {
           wallet: { columns: { name: true, currency: true } },
+          toWallet: { columns: { name: true } },
           category: { columns: { name: true, icon: true, color: true } },
         },
         where: (r, { and, eq, lte }) =>

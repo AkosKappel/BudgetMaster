@@ -599,6 +599,10 @@ export const recurringRuleRelations = relations(
       fields: [recurringRule.walletId],
       references: [wallet.id],
     }),
+    toWallet: one(wallet, {
+      fields: [recurringRule.toWalletId],
+      references: [wallet.id],
+    }),
     category: one(category, {
       fields: [recurringRule.categoryId],
       references: [category.id],
