@@ -457,6 +457,8 @@ export async function seedAlex(ledger: Ledger, alexId: string) {
       frequency: 'monthly',
       interval: 1,
       startDate: addDays(start, 14),
+      // The latest charge is the first at the new price, for "Worth a look" on Home.
+      previousAmount: { amount: money(10.99), until: addDays(today, -31) },
     },
     {
       type: 'expense',
