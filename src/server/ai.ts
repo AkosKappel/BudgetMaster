@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
 import { createServerFn } from '@tanstack/react-start'
 import { and, eq, isNull } from 'drizzle-orm'
@@ -8,25 +7,10 @@ import { db } from '@/db'
 import { category } from '@/db/schema'
 import { env } from '@/env'
 import { decodeReceipt } from '@/lib/receipt-image'
+import { anthropic, countRead } from '@/server/anthropic'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
-
-// Each read costs money on the owner's API key: a ceiling per user and day.
-// In memory, which is enough with one app instance; a restart only resets the count.
-const READS_PER_DAY = 30
-const readsToday = new Map<string, { day: string; count: number }>()
-
-function countRead(userId: string) {
-  const day = new Date().toISOString().slice(0, 10)
-  const entry = readsToday.get(userId)
-  const count = entry?.day === day ? entry.count + 1 : 1
-  if (count > READS_PER_DAY)
-    throw new Error('That is enough receipts for today. Try again tomorrow.')
-  readsToday.set(userId, { day, count })
-}
-
-let client: Anthropic | undefined
 
 // Reads a receipt photo with Claude (AI-01): total, date, shop and one of the space's
 // expense categories, for the quick add form to fill in. Only for users who switched AI
@@ -82,8 +66,7 @@ export const readReceipt = createServerFn({ method: 'POST' })
         .describe('The best fitting category from the list, or null.'),
     })
 
-    client ??= new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    const response = await client.beta.messages.parse({
+    const response = await anthropic().beta.messages.parse({
       model: 'claude-opus-5-5',
       max_tokens: 2000,
       betas: ['server-side-fallback-2026-07-01'],
