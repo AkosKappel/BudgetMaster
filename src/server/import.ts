@@ -3,7 +3,14 @@ import { and, between, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { categorizationRule, category, transaction, wallet } from '@/db/schema'
+import {
+  categorizationRule,
+  category,
+  importMapping,
+  transaction,
+  wallet,
+} from '@/db/schema'
+import { headerKey, importMappingSchema } from '@/lib/import'
 import { addDays } from '@/lib/recurrence'
 import { ruleFor } from '@/lib/rules'
 import { authMiddleware } from '@/server/auth'
@@ -11,6 +18,29 @@ import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 const MAX_ROWS = 1000
+
+const headerInput = z.array(z.string().max(200)).min(1).max(100)
+
+// The columns this space used last time for a file with the same header row.
+export const getImportMapping = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ header: headerInput }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const [saved] = await db
+      .select({
+        mapping: importMapping.mapping,
+        walletId: importMapping.walletId,
+      })
+      .from(importMapping)
+      .where(
+        and(
+          eq(importMapping.spaceId, space.id),
+          eq(importMapping.header, headerKey(data.header)),
+        ),
+      )
+    return saved ?? null
+  })
 
 async function requireWallet(
   userId: string,
@@ -143,6 +173,10 @@ export const importTransactions = createServerFn({ method: 'POST' })
         .array(stagedRow.extend({ categoryId: z.uuid() }))
         .min(1)
         .max(MAX_ROWS),
+      // Remembered for the next file with the same header row.
+      layout: z
+        .object({ header: headerInput, mapping: importMappingSchema })
+        .optional(),
     }),
   )
   .handler(async ({ context, data }) => {
@@ -178,6 +212,23 @@ export const importTransactions = createServerFn({ method: 'POST' })
     await db.transaction(async (tx) => {
       for (let i = 0; i < rows.length; i += 500) {
         await tx.insert(transaction).values(rows.slice(i, i + 500))
+      }
+      if (data.layout) {
+        const saved = {
+          mapping: data.layout.mapping,
+          walletId: data.walletId,
+        }
+        await tx
+          .insert(importMapping)
+          .values({
+            ...saved,
+            spaceId: space.id,
+            header: headerKey(data.layout.header),
+          })
+          .onConflictDoUpdate({
+            target: [importMapping.spaceId, importMapping.header],
+            set: { ...saved, updatedAt: new Date() },
+          })
       }
     })
     return { count: rows.length }

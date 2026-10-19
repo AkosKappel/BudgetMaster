@@ -2,7 +2,13 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { parseCsv } from './csv.ts'
-import { guessDateFormat, parseDate, parseSignedAmount } from './import.ts'
+import {
+  fitsHeader,
+  guessDateFormat,
+  headerKey,
+  parseDate,
+  parseSignedAmount,
+} from './import.ts'
 import { parseAmount } from './money.ts'
 
 test('parseCsv guesses the delimiter and handles quotes', () => {
@@ -46,4 +52,23 @@ test('parseSignedAmount reads bank sign conventions', () => {
   assert.equal(parseSignedAmount('12.50-', parse), -1250)
   assert.equal(parseSignedAmount('€ 7,00', parse), 700)
   assert.equal(parseSignedAmount('', parse), null)
+})
+
+test('headerKey ignores case and spacing, fitsHeader checks every column', () => {
+  assert.equal(
+    headerKey(['Datum ', 'Betrag', 'Empfänger']),
+    headerKey(['datum', ' BETRAG', 'empfänger']),
+  )
+  assert.notEqual(headerKey(['Date', 'Amount']), headerKey(['Amount', 'Date']))
+  const mapping = {
+    date: 0,
+    dateFormat: 'DD.MM.YYYY' as const,
+    amount: 1,
+    outColumn: 1,
+    inColumn: 2,
+    split: false,
+    payee: -1,
+  }
+  assert.equal(fitsHeader(mapping, ['a', 'b', 'c']), true)
+  assert.equal(fitsHeader(mapping, ['a', 'b']), false)
 })

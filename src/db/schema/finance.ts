@@ -9,6 +9,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -19,6 +20,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 
+import type { ImportMapping } from '@/lib/import'
 import { user } from './auth'
 
 // Money is stored in minor units (cents) as bigint. `mode: 'number'` is exact up to 2^53,
@@ -332,6 +334,22 @@ export const budget = pgTable(
       foreignColumns: [category.id, category.spaceId],
     }).onDelete('cascade'),
   ],
+)
+
+// The CSV columns a space used for one bank's export, found again by its header row (M-16),
+// so the next statement from that bank needs no setup. The wallet is a default only.
+export const importMapping = pgTable(
+  'import_mapping',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    // The header cells, trimmed and lowercased, joined by a unit separator.
+    header: text().notNull(),
+    mapping: jsonb().$type<ImportMapping>().notNull(),
+    walletId: uuid().references(() => wallet.id, { onDelete: 'set null' }),
+    ...timestamps,
+  },
+  (t) => [unique().on(t.spaceId, t.header)],
 )
 
 // Money put aside for something (I-02): the wallet's balance is the progress, in the

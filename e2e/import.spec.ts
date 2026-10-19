@@ -59,8 +59,10 @@ test('a bank CSV is reviewed, imported, and recognised the second time', async (
     page.getByRole('button', { name: /E2E Shop; Main St/ }),
   ).toContainText('−€9.90')
 
-  // The same file again: every row is already there, so nothing is selected.
+  // The same file again: the layout is remembered, and every row is already there,
+  // so nothing is selected.
   await upload(page)
+  await expect(page.getByText(/Same layout as your last import/)).toBeVisible()
   await expect(page.getByText('Possible duplicate')).toHaveCount(3)
   await expect(
     page.getByRole('button', { name: 'Import 0 transactions' }),

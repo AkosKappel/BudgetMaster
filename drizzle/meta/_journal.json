@@ -43,6 +43,13 @@
       "when": 1792395953520,
       "tag": "0005_savings_goal",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792396177088,
+      "tag": "0006_import_mapping",
+      "breakpoints": true
     }
   ]
 }

@@ -14,14 +14,20 @@ import { formatShortDate } from '@/lib/format-date'
 import {
   DATE_FORMATS,
   type DateFormat,
+  fitsHeader,
   guessDateFormat,
+  type ImportMapping,
   parseDate,
   parseSignedAmount,
 } from '@/lib/import'
 import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
 import { formOptionsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
-import { importTransactions, reviewImport } from '@/server/import'
+import {
+  getImportMapping,
+  importTransactions,
+  reviewImport,
+} from '@/server/import'
 import { saveRules } from '@/server/rules'
 
 export const Route = createFileRoute('/_app/import')({
@@ -36,16 +42,11 @@ export const Route = createFileRoute('/_app/import')({
 const selectClass =
   'h-9 w-full rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm'
 
-interface Mapping {
-  date: number
-  dateFormat: DateFormat
-  // One signed column, or separate columns for money out and money in.
-  amount: number
-  outColumn: number
-  inColumn: number
-  split: boolean
-  payee: number
-}
+type Mapping = ImportMapping
+
+// Within the server's limits, the same way for lookup and save.
+const layoutHeader = (header: string[]) =>
+  header.slice(0, 100).map((cell) => cell.slice(0, 200))
 
 interface Staged {
   date: string
@@ -128,6 +129,8 @@ function Import() {
   const [header, setHeader] = useState<string[] | null>(null)
   const [rows, setRows] = useState<string[][]>([])
   const [mapping, setMapping] = useState<Mapping | null>(null)
+  // The columns came from the last import of a file with the same header row.
+  const [remembered, setRemembered] = useState(false)
   const [reviewed, setReviewed] = useState<Reviewed[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -144,9 +147,17 @@ function Import() {
       setError('The file has no rows to import.')
       return
     }
-    setHeader(parsed[0])
-    setRows(parsed.slice(1))
-    setMapping(guessMapping(parsed[0], parsed.slice(1)))
+    const [fileHeader, ...fileRows] = parsed
+    const saved = await getImportMapping({
+      data: { spaceId: space.id, header: layoutHeader(fileHeader) },
+    }).catch(() => null)
+    const reuse = saved !== null && fitsHeader(saved.mapping, fileHeader)
+    if (reuse && options.wallets.some((w) => w.id === saved.walletId))
+      setWalletId(saved.walletId ?? walletId)
+    setHeader(fileHeader)
+    setRows(fileRows)
+    setMapping(reuse ? saved.mapping : guessMapping(fileHeader, fileRows))
+    setRemembered(reuse)
     setReviewed(null)
   }
 
@@ -178,7 +189,15 @@ function Import() {
     setPending(true)
     try {
       const { count } = await importTransactions({
-        data: { spaceId: space.id, walletId, rows: included },
+        data: {
+          spaceId: space.id,
+          walletId,
+          rows: included,
+          layout:
+            header && mapping
+              ? { header: layoutHeader(header), mapping }
+              : undefined,
+        },
       })
       const rules = remember ? rulesToRemember(included) : []
       if (rules.length) await saveRules({ data: { spaceId: space.id, rules } })
@@ -262,6 +281,12 @@ function Import() {
           <h2 id="import-columns" className="font-semibold text-lg">
             2. Columns
           </h2>
+          {remembered && (
+            <p className="text-muted-foreground text-sm" role="status">
+              Same layout as your last import from this bank, so its columns and
+              wallet are already set.
+            </p>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             <ColumnSelect
               id="map-date"

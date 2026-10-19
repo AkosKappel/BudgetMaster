@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 // Turning a bank's CSV columns into transactions. Pure functions, shared by the import
 // page and its tests.
 
@@ -51,3 +53,31 @@ export function parseSignedAmount(
   if (minor === null) return null
   return negative ? -minor : minor
 }
+
+// Which column holds what, by index. Saved per bank layout (see `headerKey`).
+export const importMappingSchema = z.object({
+  date: z.int().min(0),
+  dateFormat: z.enum(DATE_FORMATS),
+  // One signed column, or separate columns for money out and money in.
+  amount: z.int().min(0),
+  outColumn: z.int().min(0),
+  inColumn: z.int().min(0),
+  split: z.boolean(),
+  // -1 when the file has no payee column.
+  payee: z.int().min(-1),
+})
+export type ImportMapping = z.infer<typeof importMappingSchema>
+
+// Identifies a bank's export layout by its header row, ignoring case and spacing.
+export const headerKey = (header: string[]) =>
+  header.map((h) => h.trim().toLowerCase()).join('\u001f')
+
+// A saved mapping only fits a file whose columns it can all point to.
+export const fitsHeader = (mapping: ImportMapping, header: string[]) =>
+  [
+    mapping.date,
+    mapping.amount,
+    mapping.outColumn,
+    mapping.inColumn,
+    mapping.payee,
+  ].every((column) => column < header.length)
