@@ -9,6 +9,7 @@ import type { TransactionFilters } from '@/lib/transaction-filters'
 import { getSession } from '@/server/auth'
 import { getBudgetReport } from '@/server/budgets'
 import { listCategories } from '@/server/categories'
+import { listDevices } from '@/server/devices'
 import {
   getOverview,
   listTransactions,
@@ -33,6 +34,11 @@ export const sessionQuery = queryOptions({
   queryKey: ['session'],
   queryFn: () => getSession(),
   staleTime: 5 * 60_000,
+})
+
+export const devicesQuery = queryOptions({
+  queryKey: ['devices'],
+  queryFn: () => listDevices(),
 })
 
 export const spacesQuery = queryOptions({
