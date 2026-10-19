@@ -71,39 +71,45 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-    ports:
-      - "127.0.0.1:${APP_PORT:-8085}:3000"
+    # No host port: nginx in front of it is the only way in.
     depends_on:
       migrate:
         condition: service_completed_successfully
     networks:
       - app-network
 
-  # Maintenance mode (H-07): answers as `app` with a 503 page while the app is stopped for a
-  # migration or a restore. Only started on purpose, see README.md.
-  maintenance:
-    image: nginx:1.29-alpine
-    container_name: budgetmaster-prod-maintenance
-    profiles: ["maintenance"]
-    restart: "no"
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
+  # In front of the app: access log for the traffic dashboard and CrowdSec, maintenance
+  # page (flag file maintenance/on), and the page while the app restarts.
+  nginx:
+    image: nginx:1.30-alpine
+    container_name: budgetmaster-prod-nginx
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
-          memory: 32M
-    volumes:
-      - ./maintenance/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./maintenance/index.html:/usr/share/nginx/html/index.html:ro
+          memory: 64M
     ports:
-      - "127.0.0.1:${APP_PORT:-8085}:3000"
+      - "127.0.0.1:${APP_PORT:-8085}:80"
+    volumes:
+      # Folders, not single files, so an updated config is seen after a reload.
+      - ./nginx:/etc/nginx/conf.d:ro
+      - ./maintenance:/usr/share/nginx/maintenance:ro
+      - ${ACCESS_LOG_DIR:?set ACCESS_LOG_DIR in .env}:/var/log/nginx/shared
+    # What the master process needs to bind :80, switch workers to the nginx user and
+    # create log files in the host folder (owned by the host user, hence DAC_OVERRIDE).
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID, NET_BIND_SERVICE, DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
     networks:
-      app-network:
-        aliases:
-          - app
+      - app-network
+    depends_on:
+      app:
+        condition: service_healthy
 
   # Nightly compressed dump of the database into BACKUP_DIR on the host, kept for 14 days.
   # Copy that folder off the machine for protection against disk loss (H-02).

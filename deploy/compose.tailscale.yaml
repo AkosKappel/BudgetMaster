@@ -28,7 +28,7 @@ services:
     networks:
       - app-network
     depends_on:
-      - app
+      - nginx
 
 volumes:
   tailscale-state:
