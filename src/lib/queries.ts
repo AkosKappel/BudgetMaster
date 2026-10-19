@@ -204,6 +204,12 @@ export function useActiveSpace() {
   return active
 }
 
+// Viewers can look but not change anything; the server refuses their writes anyway, so
+// the add and delete actions are simply not offered.
+export function useCanWrite() {
+  return useActiveSpace().role !== 'viewer'
+}
+
 // Loads the target space's data before switching, so the screen changes in one step
 // instead of flashing a loading state.
 export function useSwitchSpace() {

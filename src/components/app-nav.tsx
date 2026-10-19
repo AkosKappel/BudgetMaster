@@ -19,6 +19,7 @@ import { accountLabel } from '@/components/demo-banner'
 import { Logo, LogoMark } from '@/components/logo'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { Button } from '@/components/ui/button'
+import { useCanWrite } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { useQuickAdd } from '@/stores/quick-add'
 
@@ -63,6 +64,7 @@ function TabLink({ to, label, icon: Icon }: NavItem) {
 
 export function TabBar() {
   const openNew = useQuickAdd((s) => s.openNew)
+  const canWrite = useCanWrite()
   const [first, second, ...rest] = NAV_ITEMS
 
   return (
@@ -77,15 +79,17 @@ export function TabBar() {
           </li>
         ))}
         <li className="flex items-center justify-center">
-          <motion.button
-            type="button"
-            onClick={() => openNew()}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Add transaction"
-            className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] shadow-primary/40 outline-none ring-4 ring-background focus-visible:ring-ring"
-          >
-            <Plus className="size-6" strokeWidth={2.25} />
-          </motion.button>
+          {canWrite && (
+            <motion.button
+              type="button"
+              onClick={() => openNew()}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Add transaction"
+              className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] shadow-primary/40 outline-none ring-4 ring-background focus-visible:ring-ring"
+            >
+              <Plus className="size-6" strokeWidth={2.25} />
+            </motion.button>
+          )}
         </li>
         {rest.map((item) => (
           <li key={item.to}>
@@ -105,6 +109,7 @@ export function Sidebar({
   collapsed: boolean
   onToggle: () => void
 }) {
+  const canWrite = useCanWrite()
   const openNew = useQuickAdd((s) => s.openNew)
   const { user } = useRouteContext({ from: '/_app' })
   const signOut = useSignOut()
@@ -128,7 +133,7 @@ export function Sidebar({
         className={cn('-my-4', collapsed ? 'size-10' : 'w-full')}
         compact={collapsed}
       />
-      {collapsed ? (
+      {!canWrite ? null : collapsed ? (
         <Button
           size="icon-lg"
           onClick={() => openNew()}

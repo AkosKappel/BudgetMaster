@@ -18,7 +18,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
-import { budgetReportQuery, overviewQuery, useActiveSpace } from '@/lib/queries'
+import {
+  budgetReportQuery,
+  overviewQuery,
+  useActiveSpace,
+  useCanWrite,
+} from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { useQuickAdd } from '@/stores/quick-add'
 
@@ -47,6 +52,7 @@ function Home() {
   const month = Route.useSearch().month ?? 0
   const { data } = useSuspenseQuery(overviewQuery(space.id))
   const { openEdit, openNew } = useQuickAdd()
+  const canWrite = useCanWrite()
 
   return (
     <div className="flex flex-col gap-10">
@@ -115,9 +121,11 @@ function Home() {
           <EmptyState
             icon={ReceiptText}
             action={
-              <Button size="sm" onClick={() => openNew()}>
-                <Plus /> Add transaction
-              </Button>
+              canWrite && (
+                <Button size="sm" onClick={() => openNew()}>
+                  <Plus /> Add transaction
+                </Button>
+              )
             }
           >
             No transactions yet. Add your first one to see where your money

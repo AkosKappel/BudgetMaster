@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { formatDayHeading } from '@/lib/format-date'
 import { formatSignedMoney } from '@/lib/money'
 import { useDeleteWithUndo } from '@/lib/mutations'
-import { transactionsQuery, useActiveSpace } from '@/lib/queries'
+import { transactionsQuery, useActiveSpace, useCanWrite } from '@/lib/queries'
 import { currentDay } from '@/lib/today'
 import {
   activeFilterCount,
@@ -71,6 +71,7 @@ function Activity() {
   const today = currentDay()
   const sentinel = useRef<HTMLDivElement>(null)
   const { openEdit, openNew } = useQuickAdd()
+  const canWrite = useCanWrite()
   const deleteWithUndo = useDeleteWithUndo(space.id)
 
   // Load the next page shortly before the end of the list comes into view.
@@ -110,9 +111,11 @@ function Activity() {
         <EmptyState
           icon={ReceiptText}
           action={
-            <Button size="sm" onClick={() => openNew()}>
-              <Plus /> Add transaction
-            </Button>
+            canWrite && (
+              <Button size="sm" onClick={() => openNew()}>
+                <Plus /> Add transaction
+              </Button>
+            )
           }
         >
           Every income, expense and transfer shows up here, grouped by day.
@@ -164,7 +167,7 @@ function Activity() {
                         today={today}
                         showAuthor={space.memberCount > 1}
                         onSelect={openEdit}
-                        onDelete={deleteWithUndo}
+                        onDelete={canWrite ? deleteWithUndo : undefined}
                       />
                     ))}
                   </AnimatePresence>

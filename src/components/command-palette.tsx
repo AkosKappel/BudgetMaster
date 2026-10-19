@@ -48,6 +48,7 @@ import {
   formOptionsQuery,
   searchQuery,
   useActiveSpace,
+  useCanWrite,
   useSpaces,
   useSwitchSpace,
 } from '@/lib/queries'
@@ -100,7 +101,8 @@ export function CommandPalette() {
   const setShortcutsOpen = useShortcutsHelp((s) => s.setOpen)
   useHotkey(HELP_HOTKEY, () => setShortcutsOpen(true), { enabled: !open })
   // Single keys are ignored while typing in a field.
-  useHotkey(QUICK_ADD_HOTKEY, () => openNew(), { enabled: !open })
+  const canWrite = useCanWrite()
+  useHotkey(QUICK_ADD_HOTKEY, () => openNew(), { enabled: !open && canWrite })
 
   // Closes the palette first, so the next sheet or page gets focus.
   const run = (action: () => void) => () => {
@@ -227,21 +229,23 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
-        <CommandGroup heading="Add">
-          <CommandItem onSelect={run(() => openNew('expense'))}>
-            <Minus />
-            Add expense
-            <HotkeyHint hotkey={QUICK_ADD_HOTKEY} />
-          </CommandItem>
-          <CommandItem onSelect={run(() => openNew('income'))}>
-            <Plus />
-            Add income
-          </CommandItem>
-          <CommandItem onSelect={run(() => openNew('transfer'))}>
-            <ArrowLeftRight />
-            Add transfer
-          </CommandItem>
-        </CommandGroup>
+        {canWrite && (
+          <CommandGroup heading="Add">
+            <CommandItem onSelect={run(() => openNew('expense'))}>
+              <Minus />
+              Add expense
+              <HotkeyHint hotkey={QUICK_ADD_HOTKEY} />
+            </CommandItem>
+            <CommandItem onSelect={run(() => openNew('income'))}>
+              <Plus />
+              Add income
+            </CommandItem>
+            <CommandItem onSelect={run(() => openNew('transfer'))}>
+              <ArrowLeftRight />
+              Add transfer
+            </CommandItem>
+          </CommandGroup>
+        )}
 
         <CommandGroup heading="Go to">
           {(
