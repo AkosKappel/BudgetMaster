@@ -393,6 +393,16 @@ export interface ActivityDetails {
   before?: { payee: string | null; amount: number; date: string }
   // For a deletion: everything needed to restore it from the log.
   snapshot?: DeletedTransaction
+  // For a change: the whole transaction before it, to undo the change from the log.
+  previous?: TransactionSnapshot
+}
+
+export type TransactionSnapshot = DeletedTransaction & {
+  type: 'income' | 'expense' | 'transfer'
+  date: string
+  walletId: string
+  amount: number
+  payee: string | null
 }
 
 export interface DeletedTransaction {

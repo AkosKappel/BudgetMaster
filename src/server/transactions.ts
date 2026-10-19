@@ -22,6 +22,7 @@ import {
   importBatch,
   recurringRule,
   spaceMember,
+  type TransactionSnapshot,
   tag,
   transaction,
   transactionSplit,
@@ -297,6 +298,149 @@ export const createTransaction = createServerFn({ method: 'POST' })
     return { id: row.id }
   })
 
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+// The whole transaction as the activity log keeps it (I-13): its own fields, tags and
+// splits, enough to put it back after a deletion or a change.
+async function snapshotOf(
+  tx: Tx,
+  spaceId: string,
+  id: string,
+): Promise<TransactionSnapshot | null> {
+  const [[row], tags, splits] = await Promise.all([
+    tx
+      .select()
+      .from(transaction)
+      .where(and(eq(transaction.id, id), eq(transaction.spaceId, spaceId)))
+      .for('update'),
+    tx
+      .select({ tagId: transactionTag.tagId })
+      .from(transactionTag)
+      .where(eq(transactionTag.transactionId, id)),
+    tx
+      .select({
+        categoryId: transactionSplit.categoryId,
+        amount: transactionSplit.amount,
+        note: transactionSplit.note,
+      })
+      .from(transactionSplit)
+      .where(eq(transactionSplit.transactionId, id)),
+  ])
+  if (!row) return null
+  return {
+    type: row.type,
+    date: row.date,
+    walletId: row.walletId,
+    amount: row.amount,
+    payee: row.payee,
+    categoryId: row.categoryId,
+    toWalletId: row.toWalletId,
+    toAmount: row.toAmount,
+    note: row.note,
+    createdBy: row.createdBy,
+    paidBy: row.paidBy,
+    recurringRuleId: row.recurringRuleId,
+    importId: row.importId,
+    tagIds: tags.map((t) => t.tagId),
+    splits,
+  }
+}
+
+// Checks that a snapshot can be written back: its wallets and categories must still exist.
+// Links to a recurring rule, an import or tags that are gone since are dropped.
+async function revive(spaceId: string, snapshot: TransactionSnapshot) {
+  const walletIds = [snapshot.walletId, snapshot.toWalletId].filter(
+    (id): id is string => id !== null,
+  )
+  const categoryIds = [
+    snapshot.categoryId,
+    ...snapshot.splits.map((p) => p.categoryId),
+  ].filter((id): id is string => id !== null)
+  const [wallets, categories, rules, imports, tags] = await Promise.all([
+    db
+      .select({ id: wallet.id })
+      .from(wallet)
+      .where(and(eq(wallet.spaceId, spaceId), inArray(wallet.id, walletIds))),
+    categoryIds.length
+      ? db
+          .select({ id: category.id })
+          .from(category)
+          .where(
+            and(
+              eq(category.spaceId, spaceId),
+              inArray(category.id, categoryIds),
+            ),
+          )
+      : Promise.resolve([]),
+    snapshot.recurringRuleId
+      ? db
+          .select({ id: recurringRule.id })
+          .from(recurringRule)
+          .where(eq(recurringRule.id, snapshot.recurringRuleId))
+      : Promise.resolve([]),
+    snapshot.importId
+      ? db
+          .select({ id: importBatch.id })
+          .from(importBatch)
+          .where(eq(importBatch.id, snapshot.importId))
+      : Promise.resolve([]),
+    snapshot.tagIds.length
+      ? db
+          .select({ id: tag.id })
+          .from(tag)
+          .where(
+            and(eq(tag.spaceId, spaceId), inArray(tag.id, snapshot.tagIds)),
+          )
+      : Promise.resolve([]),
+  ])
+  if (
+    wallets.length !== new Set(walletIds).size ||
+    categories.length !== new Set(categoryIds).size
+  )
+    throw new Error('Its wallet or category no longer exists.')
+  return {
+    fields: {
+      type: snapshot.type,
+      date: snapshot.date,
+      walletId: snapshot.walletId,
+      amount: snapshot.amount,
+      categoryId: snapshot.categoryId,
+      toWalletId: snapshot.toWalletId,
+      toAmount: snapshot.toAmount,
+      payee: snapshot.payee,
+      note: snapshot.note,
+      createdBy: snapshot.createdBy,
+      paidBy: snapshot.paidBy ?? null,
+      recurringRuleId: rules[0]?.id ?? null,
+      importId: imports[0]?.id ?? null,
+    },
+    tagIds: tags.map((t) => t.id),
+    splits: snapshot.splits,
+  }
+}
+
+// Replaces the tags and splits of a transaction.
+async function writeLinks(
+  tx: Tx,
+  spaceId: string,
+  id: string,
+  tagIds: string[],
+  splits: { categoryId: string; amount: number; note: string | null }[],
+) {
+  await tx
+    .delete(transactionSplit)
+    .where(eq(transactionSplit.transactionId, id))
+  if (splits.length)
+    await tx
+      .insert(transactionSplit)
+      .values(splits.map((p) => ({ ...p, spaceId, transactionId: id })))
+  await tx.delete(transactionTag).where(eq(transactionTag.transactionId, id))
+  if (tagIds.length)
+    await tx
+      .insert(transactionTag)
+      .values(tagIds.map((tagId) => ({ spaceId, transactionId: id, tagId })))
+}
+
 export const updateTransaction = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(transactionInput)
@@ -304,32 +448,18 @@ export const updateTransaction = createServerFn({ method: 'POST' })
     const { row, tagIds, splits } = await prepare(context.user.id, data)
     const { id, spaceId, ...changes } = row
     await db.transaction(async (tx) => {
-      const [before] = await tx
-        .select({
-          payee: transaction.payee,
-          amount: transaction.amount,
-          date: transaction.date,
-        })
-        .from(transaction)
-        .where(and(eq(transaction.id, id), eq(transaction.spaceId, spaceId)))
-        .for('update')
-      if (!before) throw new Error('Transaction not found.')
+      const previous = await snapshotOf(tx, spaceId, id)
+      if (!previous) throw new Error('Transaction not found.')
       await tx.update(transaction).set(changes).where(eq(transaction.id, id))
-      await logActivity(tx, context.user.id, 'updated', row, before)
-      await tx
-        .delete(transactionSplit)
-        .where(eq(transactionSplit.transactionId, id))
-      if (splits.length) await tx.insert(transactionSplit).values(splits)
-      await tx
-        .delete(transactionTag)
-        .where(eq(transactionTag.transactionId, id))
-      if (tagIds.length) {
-        await tx
-          .insert(transactionTag)
-          .values(
-            tagIds.map((tagId) => ({ spaceId, transactionId: id, tagId })),
-          )
-      }
+      await logActivity(tx, context.user.id, 'updated', row, {
+        before: {
+          payee: previous.payee,
+          amount: previous.amount,
+          date: previous.date,
+        },
+        previous,
+      })
+      await writeLinks(tx, spaceId, id, tagIds, splits)
     })
     return { id }
   })
@@ -343,46 +473,44 @@ export const deleteTransaction = createServerFn({ method: 'POST' })
       throw new Error('Viewers cannot change this space.')
     await db.transaction(async (tx) => {
       // Tags and splits go with the row (cascade), so the log keeps them for a restore.
-      const [tags, splits] = await Promise.all([
-        tx
-          .select({ tagId: transactionTag.tagId })
-          .from(transactionTag)
-          .where(eq(transactionTag.transactionId, data.id)),
-        tx
-          .select({
-            categoryId: transactionSplit.categoryId,
-            amount: transactionSplit.amount,
-            note: transactionSplit.note,
-          })
-          .from(transactionSplit)
-          .where(eq(transactionSplit.transactionId, data.id)),
-      ])
-      const [deleted] = await tx
-        .delete(transaction)
-        .where(
-          and(eq(transaction.id, data.id), eq(transaction.spaceId, space.id)),
-        )
-        .returning()
-      if (deleted)
-        await logActivity(tx, context.user.id, 'deleted', deleted, undefined, {
-          categoryId: deleted.categoryId,
-          toWalletId: deleted.toWalletId,
-          toAmount: deleted.toAmount,
-          note: deleted.note,
-          createdBy: deleted.createdBy,
-          paidBy: deleted.paidBy,
-          recurringRuleId: deleted.recurringRuleId,
-          importId: deleted.importId,
-          tagIds: tags.map((t) => t.tagId),
-          splits,
-        })
+      const snapshot = await snapshotOf(tx, space.id, data.id)
+      if (!snapshot) return
+      await tx.delete(transaction).where(eq(transaction.id, data.id))
+      await logActivity(
+        tx,
+        context.user.id,
+        'deleted',
+        { id: data.id, spaceId: space.id, ...snapshot },
+        { snapshot },
+      )
     })
     return { id: data.id }
   })
 
-// Puts a deleted transaction back from its snapshot in the activity log (I-13), with its
-// tags and splits. Links to a recurring rule, an import or tags that are gone since are
-// dropped; a missing wallet or category stops the restore.
+// A recent entry of the activity log in the space, if it has the given action.
+async function recentEvent(
+  spaceId: string,
+  eventId: string,
+  action: 'updated' | 'deleted',
+) {
+  const [event] = await db
+    .select()
+    .from(activityEvent)
+    .where(
+      and(
+        eq(activityEvent.id, eventId),
+        eq(activityEvent.spaceId, spaceId),
+        eq(activityEvent.action, action),
+        gte(
+          activityEvent.createdAt,
+          new Date(Date.now() - RESTORE_DAYS * 86_400_000),
+        ),
+      ),
+    )
+  return event
+}
+
+// Puts a deleted transaction back from its snapshot in the activity log (I-13).
 export const restoreTransaction = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(spaceInput.extend({ eventId: z.uuid() }))
@@ -390,93 +518,20 @@ export const restoreTransaction = createServerFn({ method: 'POST' })
     const space = await requireMembership(context.user.id, data.spaceId)
     if (space.role === 'viewer')
       throw new Error('Viewers cannot change this space.')
-    const [event] = await db
-      .select()
-      .from(activityEvent)
-      .where(
-        and(
-          eq(activityEvent.id, data.eventId),
-          eq(activityEvent.spaceId, space.id),
-          eq(activityEvent.action, 'deleted'),
-          gte(
-            activityEvent.createdAt,
-            new Date(Date.now() - RESTORE_DAYS * 86_400_000),
-          ),
-        ),
-      )
+    const event = await recentEvent(space.id, data.eventId, 'deleted')
     const snapshot = event?.details.snapshot
     if (!event || !snapshot) throw new Error('This deletion cannot be undone.')
+    // Older entries keep the core fields next to the snapshot.
     const { details } = event
-
-    const walletIds = [details.walletId, snapshot.toWalletId].filter(
-      (id): id is string => id !== null,
-    )
-    const categoryIds = [
-      snapshot.categoryId,
-      ...snapshot.splits.map((p) => p.categoryId),
-    ].filter((id): id is string => id !== null)
-    const [wallets, categories, rules, imports, tags] = await Promise.all([
-      db
-        .select({ id: wallet.id })
-        .from(wallet)
-        .where(
-          and(eq(wallet.spaceId, space.id), inArray(wallet.id, walletIds)),
-        ),
-      categoryIds.length
-        ? db
-            .select({ id: category.id })
-            .from(category)
-            .where(
-              and(
-                eq(category.spaceId, space.id),
-                inArray(category.id, categoryIds),
-              ),
-            )
-        : Promise.resolve([]),
-      snapshot.recurringRuleId
-        ? db
-            .select({ id: recurringRule.id })
-            .from(recurringRule)
-            .where(eq(recurringRule.id, snapshot.recurringRuleId))
-        : Promise.resolve([]),
-      snapshot.importId
-        ? db
-            .select({ id: importBatch.id })
-            .from(importBatch)
-            .where(eq(importBatch.id, snapshot.importId))
-        : Promise.resolve([]),
-      snapshot.tagIds.length
-        ? db
-            .select({ id: tag.id })
-            .from(tag)
-            .where(
-              and(eq(tag.spaceId, space.id), inArray(tag.id, snapshot.tagIds)),
-            )
-        : Promise.resolve([]),
-    ])
-    if (
-      wallets.length !== new Set(walletIds).size ||
-      categories.length !== new Set(categoryIds).size
-    )
-      throw new Error('Its wallet or category no longer exists.')
-
-    const row = {
-      id: event.transactionId,
-      spaceId: space.id,
+    const { fields, tagIds, splits } = await revive(space.id, {
+      ...snapshot,
       type: details.type,
       date: details.date,
       walletId: details.walletId,
       amount: details.amount,
-      categoryId: snapshot.categoryId,
-      toWalletId: snapshot.toWalletId,
-      toAmount: snapshot.toAmount,
       payee: details.payee,
-      note: snapshot.note,
-      createdBy: snapshot.createdBy,
-      paidBy: snapshot.paidBy ?? null,
-      recurringRuleId: rules[0]?.id ?? null,
-      importId: imports[0]?.id ?? null,
-    }
+    })
+    const row = { id: event.transactionId, spaceId: space.id, ...fields }
     await db.transaction(async (tx) => {
       const inserted = await tx
         .insert(transaction)
@@ -484,23 +539,56 @@ export const restoreTransaction = createServerFn({ method: 'POST' })
         .onConflictDoNothing({ target: transaction.id })
         .returning({ id: transaction.id })
       if (!inserted.length) throw new Error('It has been restored already.')
-      if (snapshot.splits.length)
-        await tx.insert(transactionSplit).values(
-          snapshot.splits.map((p) => ({
-            ...p,
-            spaceId: space.id,
-            transactionId: row.id,
-          })),
-        )
-      if (tags.length)
-        await tx.insert(transactionTag).values(
-          tags.map((t) => ({
-            spaceId: space.id,
-            transactionId: row.id,
-            tagId: t.id,
-          })),
-        )
+      await writeLinks(tx, space.id, row.id, tagIds, splits)
       await logActivity(tx, context.user.id, 'created', row)
     })
     return { id: row.id }
+  })
+
+// Undoes the latest change to a transaction from the activity log (I-13): writes back the
+// whole transaction as it was before. Only the newest entry of that transaction, so a
+// later edit is never overwritten without a trace; the undo is itself logged.
+export const undoChange = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ eventId: z.uuid() }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    if (space.role === 'viewer')
+      throw new Error('Viewers cannot change this space.')
+    const event = await recentEvent(space.id, data.eventId, 'updated')
+    const previous = event?.details.previous
+    if (!event || !previous) throw new Error('This change cannot be undone.')
+    const { fields, tagIds, splits } = await revive(space.id, previous)
+    const id = event.transactionId
+    await db.transaction(async (tx) => {
+      const [newest] = await tx
+        .select({ id: activityEvent.id })
+        .from(activityEvent)
+        .where(eq(activityEvent.transactionId, id))
+        .orderBy(desc(activityEvent.createdAt), desc(activityEvent.id))
+        .limit(1)
+      if (newest?.id !== event.id)
+        throw new Error(
+          'It has changed again since. Undo the newer change first.',
+        )
+      const current = await snapshotOf(tx, space.id, id)
+      if (!current) throw new Error('Transaction not found.')
+      await tx.update(transaction).set(fields).where(eq(transaction.id, id))
+      await writeLinks(tx, space.id, id, tagIds, splits)
+      await logActivity(
+        tx,
+        context.user.id,
+        'updated',
+        { id, spaceId: space.id, ...fields },
+        {
+          before: {
+            payee: current.payee,
+            amount: current.amount,
+            date: current.date,
+          },
+          previous: current,
+        },
+      )
+    })
+    return { id }
   })

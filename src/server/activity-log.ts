@@ -1,7 +1,7 @@
 import { and, eq, lt } from 'drizzle-orm'
 
 import type { db } from '@/db'
-import { activityEvent, type DeletedTransaction } from '@/db/schema'
+import { type ActivityDetails, activityEvent } from '@/db/schema'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles (a module-level helper next to server functions kept the database driver in the
@@ -31,8 +31,7 @@ export async function logActivity(
     amount: number
     date: string
   },
-  before?: { payee: string | null; amount: number; date: string },
-  snapshot?: DeletedTransaction,
+  extra: Pick<ActivityDetails, 'before' | 'snapshot' | 'previous'> = {},
 ) {
   await tx
     .delete(activityEvent)
@@ -56,8 +55,7 @@ export async function logActivity(
       payee: row.payee,
       amount: row.amount,
       date: row.date,
-      before,
-      snapshot,
+      ...extra,
     },
   })
 }

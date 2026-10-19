@@ -43,7 +43,7 @@ import {
   updateMemberRole,
   updateSpaceSettings,
 } from '@/server/space-admin'
-import { restoreTransaction } from '@/server/transactions'
+import { restoreTransaction, undoChange } from '@/server/transactions'
 
 export const Route = createFileRoute('/_app/spaces/$spaceId')({
   loader: ({ context, params }) =>
@@ -611,6 +611,14 @@ function RecentChanges({
     },
     onError: (e) => toast.error(e.message),
   })
+  const undo = useMutation({
+    mutationFn: undoChange,
+    onSuccess: () => {
+      toast.success('Change undone')
+      return queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
+    },
+    onError: (e) => toast.error(e.message),
+  })
   if (!events) return null
 
   return (
@@ -656,6 +664,18 @@ function RecentChanges({
                   }
                 >
                   Restore
+                </Button>
+              )}
+              {canWrite && e.undoable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={undo.isPending}
+                  onClick={() =>
+                    undo.mutate({ data: { spaceId, eventId: e.id } })
+                  }
+                >
+                  Undo
                 </Button>
               )}
             </li>

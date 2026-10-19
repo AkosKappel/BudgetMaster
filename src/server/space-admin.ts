@@ -407,6 +407,13 @@ export const listActivity = createServerFn({ method: 'GET' })
           and ${activityEvent.details} ? 'snapshot'
           and ${activityEvent.createdAt} > now() - make_interval(days => ${RESTORE_DAYS})
           and not exists (select 1 from ${transaction} where ${transaction.id} = ${activityEvent.transactionId})`,
+        // The newest change of a transaction that still exists, with the state before it.
+        undoable: sql<boolean>`${activityEvent.action} = 'updated'
+          and ${activityEvent.details} ? 'previous'
+          and ${activityEvent.createdAt} > now() - make_interval(days => ${RESTORE_DAYS})
+          and exists (select 1 from ${transaction} where ${transaction.id} = ${activityEvent.transactionId})
+          and not exists (select 1 from activity_event later where later.transaction_id = ${activityEvent.transactionId}
+            and (later.created_at, later.id) > (${activityEvent.createdAt}, ${activityEvent.id}))`,
       })
       .from(activityEvent)
       .leftJoin(user, eq(user.id, activityEvent.userId))
