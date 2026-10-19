@@ -7,7 +7,7 @@ Author: **Ákos Kappel**
 
 A mobile-first personal finance app: record income and expenses in seconds, see where the money went, and know how much is left this month. Alone or shared with a partner. A rebuild from scratch of the original Next.js and MongoDB version.
 
-Status: MVP feature-complete, not deployed yet. **Try the demo** on the sign-in page gives you a private copy of 14 months of sample data.
+**Live:** https://budgetmaster.tailb52c43.ts.net. **Try the demo** there for a private copy of 14 months of sample data, no sign-up needed.
 
 | Home | Activity | Budgets | Reports | Dark mode |
 | --- | --- | --- | --- | --- |
