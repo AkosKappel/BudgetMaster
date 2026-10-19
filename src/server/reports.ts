@@ -11,6 +11,8 @@ import {
   sum,
 } from 'drizzle-orm'
 
+import { z } from 'zod'
+
 import { db } from '@/db'
 import { category, recurringRule, transaction, wallet } from '@/db/schema'
 import {
@@ -22,6 +24,7 @@ import {
 import { priceChanges } from '@/lib/price-changes'
 import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
+import { yearReview } from '@/lib/year-review'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
@@ -363,3 +366,57 @@ export const getPriceChanges = createServerFn({ method: 'GET' })
   })
 
 export type PriceChanges = Awaited<ReturnType<typeof getPriceChanges>>
+
+// One calendar year in a few numbers (I-14), space-currency wallets only, plus the years
+// that have transactions so the page can offer them.
+export const getYearReview = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ year: z.int().min(2000).max(2100) }))
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const today = currentDay()
+    const [rows, [range]] = await Promise.all([
+      db
+        .select({
+          date: transaction.date,
+          type: sql<'income' | 'expense'>`${transaction.type}`,
+          amount: transaction.amount,
+          payee: transaction.payee,
+          category: category.name,
+        })
+        .from(transaction)
+        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .leftJoin(category, eq(category.id, transaction.categoryId))
+        .where(
+          and(
+            eq(transaction.spaceId, space.id),
+            eq(wallet.currency, space.baseCurrency),
+            inArray(transaction.type, ['income', 'expense']),
+            between(
+              transaction.date,
+              `${data.year}-01-01`,
+              `${data.year}-12-31`,
+            ),
+            lte(transaction.date, today),
+          ),
+        ),
+      db
+        .select({
+          first: sql<string | null>`min(${transaction.date})`,
+        })
+        .from(transaction)
+        .where(eq(transaction.spaceId, space.id)),
+    ])
+    const thisYear = Number(today.slice(0, 4))
+    const firstYear = range?.first ? Number(range.first.slice(0, 4)) : thisYear
+    return {
+      ...yearReview(rows, data.year, today),
+      years: Array.from(
+        { length: thisYear - firstYear + 1 },
+        (_, i) => thisYear - i,
+      ),
+      currency: space.baseCurrency,
+    }
+  })
+
+export type YearReviewData = Awaited<ReturnType<typeof getYearReview>>

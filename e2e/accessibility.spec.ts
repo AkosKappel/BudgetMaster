@@ -25,6 +25,7 @@ test('app pages have no axe violations', async ({ page }) => {
     ['/reports', 'Reports'],
     ['/monthly-report', /Monthly report/],
     ['/goals', 'Goals'],
+    ['/year-in-review', /in money/],
     ['/tags', 'Tags'],
     ['/import', 'Import'],
     ['/rules', 'Rules'],

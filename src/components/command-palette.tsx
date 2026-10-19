@@ -21,6 +21,7 @@ import {
   Search,
   Settings2,
   Shapes,
+  Sparkles,
   Tag,
   User,
   Users,
@@ -304,6 +305,12 @@ export function CommandPalette() {
           >
             <FileText />
             Monthly report
+          </CommandItem>
+          <CommandItem
+            onSelect={run(() => navigate({ to: '/year-in-review' }))}
+          >
+            <Sparkles />
+            Year in review
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/goals' }))}>
             <Goal />

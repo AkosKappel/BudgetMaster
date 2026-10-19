@@ -110,3 +110,15 @@ test('prices you pay compare regular payees with a year ago', async ({
     prices.getByRole('listitem').filter({ hasText: 'Netflix' }),
   ).toContainText('→')
 })
+
+test('year in review sums up the year and switches years', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/year-in-review')
+  await expect(page.getByText('Days without spending')).toBeVisible()
+  const lastYear = String(new Date().getFullYear() - 1)
+  await page.getByLabel('Year').selectOption(lastYear)
+  await expect(page).toHaveURL(new RegExp(`year=${lastYear}`))
+  await expect(
+    page.getByRole('heading', { level: 1, name: `${lastYear} in money` }),
+  ).toBeVisible()
+})

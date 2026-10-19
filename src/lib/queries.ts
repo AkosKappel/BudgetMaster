@@ -26,6 +26,7 @@ import {
   getNetWorth,
   getPriceChanges,
   getSpendingCalendar,
+  getYearReview,
 } from '@/server/reports'
 import { listRules } from '@/server/rules'
 import { getInvite, getSpaceDetails, listActivity } from '@/server/space-admin'
@@ -140,6 +141,12 @@ export const priceChangesQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'price-changes'],
     queryFn: () => getPriceChanges({ data: { spaceId } }),
+  })
+
+export const yearReviewQuery = (spaceId: string, year: number) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'year-review', year],
+    queryFn: () => getYearReview({ data: { spaceId, year } }),
   })
 
 export const spendingCalendarQuery = (spaceId: string) =>

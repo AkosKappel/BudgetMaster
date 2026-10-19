@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronLeft, FileText } from 'lucide-react'
+import { ChevronLeft, FileText, Sparkles } from 'lucide-react'
 
 import { CashFlowChart } from '@/components/cash-flow-chart'
 import { CategoryTrends } from '@/components/category-trends'
@@ -58,12 +58,18 @@ function Reports() {
         <ChevronLeft className="size-4" />
         More
       </Link>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-semibold text-2xl tracking-tight">Reports</h1>
         <Button variant="outline" asChild>
           <Link to="/monthly-report">
             <FileText />
             Monthly report
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/year-in-review">
+            <Sparkles />
+            Year in review
           </Link>
         </Button>
       </div>
