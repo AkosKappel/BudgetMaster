@@ -17,11 +17,14 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import { Label } from '@/components/ui/label'
 import { COLORS, iconFor } from '@/lib/icons'
 import { categoriesQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import {
+  deleteCategory,
   type ManagedCategory,
+  mergeCategory,
   saveCategory,
   setCategoryArchived,
 } from '@/server/categories'
@@ -77,6 +80,28 @@ function Categories() {
     onSuccess: async (_result, { archived }) => {
       await refresh()
       toast.success(archived ? 'Category archived' : 'Category restored')
+      setEditor(null)
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const remove = useMutation({
+    mutationFn: (id: string) =>
+      deleteCategory({ data: { id, spaceId: space.id } }),
+    onSuccess: async () => {
+      await refresh()
+      toast.success('Category deleted')
+      setEditor(null)
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const merge = useMutation({
+    mutationFn: (variables: { id: string; intoId: string }) =>
+      mergeCategory({ data: { ...variables, spaceId: space.id } }),
+    onSuccess: async ({ into }) => {
+      await refresh()
+      toast.success(`Merged into ${into}`)
       setEditor(null)
     },
     onError: (error) => toast.error(error.message),
@@ -220,6 +245,18 @@ function Categories() {
                   ' with its subcategories'}
               </Button>
             )}
+            {editing && !active.some((c) => c.parentId === editing.id) && (
+              <MergeOrDelete
+                key={editing.id}
+                category={editing}
+                others={active.filter(
+                  (c) => c.type === editing.type && c.id !== editing.id,
+                )}
+                pending={merge.isPending || remove.isPending}
+                onMerge={(intoId) => merge.mutate({ id: editing.id, intoId })}
+                onDelete={() => remove.mutate(editing.id)}
+              />
+            )}
           </div>
         </DrawerContent>
       </Drawer>
@@ -275,5 +312,63 @@ function CategoryRow({
       )}
       {children && <div className="pr-4">{children}</div>}
     </li>
+  )
+}
+
+// A duplicate or a category nobody needs: merge its history into another one, or delete it
+// when nothing uses it (the server says so otherwise).
+function MergeOrDelete({
+  category,
+  others,
+  pending,
+  onMerge,
+  onDelete,
+}: {
+  category: ManagedCategory
+  others: ManagedCategory[]
+  pending: boolean
+  onMerge: (intoId: string) => void
+  onDelete: () => void
+}) {
+  const [intoId, setIntoId] = useState('')
+  return (
+    <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+      <Label htmlFor="merge-into">Merge into another category</Label>
+      <p id="merge-into-hint" className="text-muted-foreground text-sm">
+        Moves its transactions, recurring payments, rules and budget there, then
+        deletes "{category.name}".
+      </p>
+      <div className="flex gap-2">
+        <select
+          id="merge-into"
+          aria-describedby="merge-into-hint"
+          className="h-9 min-w-0 flex-1 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+          value={intoId}
+          onChange={(e) => setIntoId(e.target.value)}
+        >
+          <option value="">Choose a category</option>
+          {others.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          variant="outline"
+          disabled={!intoId || pending}
+          onClick={() => onMerge(intoId)}
+        >
+          Merge
+        </Button>
+      </div>
+      <Button
+        variant="ghost"
+        className="text-destructive hover:text-destructive"
+        disabled={pending}
+        onClick={onDelete}
+      >
+        Delete if unused
+      </Button>
+    </div>
   )
 }

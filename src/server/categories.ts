@@ -1,9 +1,15 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, ne, or, sql } from 'drizzle-orm'
+import { and, asc, count, eq, ne, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { category } from '@/db/schema'
+import {
+  budget,
+  categorizationRule,
+  category,
+  recurringRule,
+  transaction,
+} from '@/db/schema'
 import { ICONS } from '@/lib/icons'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -152,4 +158,92 @@ export const setCategoryArchived = createServerFn({ method: 'POST' })
       .update(category)
       .set({ archivedAt: data.archived ? new Date() : null })
       .where(and(eq(category.spaceId, space.id), affected))
+  })
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+async function findCategory(spaceId: string, id: string) {
+  const [found] = await db
+    .select({ id: category.id, type: category.type, name: category.name })
+    .from(category)
+    .where(and(eq(category.spaceId, spaceId), eq(category.id, id)))
+  if (!found) throw new Error('Category not found.')
+  const [{ children }] = await db
+    .select({ children: count() })
+    .from(category)
+    .where(eq(category.parentId, id))
+  return { ...found, children }
+}
+
+// Deleting is for categories nothing uses (a typo, a duplicate made by mistake). Their
+// budget and rules go with them; anything with history is archived or merged instead.
+export const deleteCategory = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ id: z.uuid() }))
+  .handler(async ({ context, data }) => {
+    const space = await requireWriter(context.user.id, data.spaceId)
+    const target = await findCategory(space.id, data.id)
+    if (target.children > 0)
+      throw new Error('Delete or move its subcategories first.')
+    const [[{ used }], [{ rules }]] = await Promise.all([
+      db
+        .select({ used: count() })
+        .from(transaction)
+        .where(eq(transaction.categoryId, target.id)),
+      db
+        .select({ rules: count() })
+        .from(recurringRule)
+        .where(eq(recurringRule.categoryId, target.id)),
+    ])
+    if (used + rules > 0)
+      throw new Error(
+        `"${target.name}" is used by ${plural(used, 'transaction')}${rules ? ` and ${plural(rules, 'recurring payment')}` : ''}. Merge it into another category or archive it.`,
+      )
+    await db.delete(category).where(eq(category.id, target.id))
+  })
+
+// Moves everything from one category to another of the same type, then deletes it: its
+// transactions, recurring payments and payee rules, and its budget unless the other one has
+// its own.
+export const mergeCategory = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ id: z.uuid(), intoId: z.uuid() }))
+  .handler(async ({ context, data }) => {
+    const space = await requireWriter(context.user.id, data.spaceId)
+    if (data.id === data.intoId) throw new Error('Choose a different category.')
+    const [source, target] = await Promise.all([
+      findCategory(space.id, data.id),
+      findCategory(space.id, data.intoId),
+    ])
+    if (source.type !== target.type)
+      throw new Error(`Choose another ${source.type} category.`)
+    if (source.children > 0)
+      throw new Error('Merge or move its subcategories first.')
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(transaction)
+        .set({ categoryId: target.id })
+        .where(eq(transaction.categoryId, source.id))
+      await tx
+        .update(recurringRule)
+        .set({ categoryId: target.id })
+        .where(eq(recurringRule.categoryId, source.id))
+      await tx
+        .update(categorizationRule)
+        .set({ categoryId: target.id })
+        .where(eq(categorizationRule.categoryId, source.id))
+      const [targetBudget] = await tx
+        .select({ id: budget.id })
+        .from(budget)
+        .where(eq(budget.categoryId, target.id))
+      if (!targetBudget)
+        await tx
+          .update(budget)
+          .set({ categoryId: target.id })
+          .where(eq(budget.categoryId, source.id))
+      // The source's own budget, if any is left, goes with it (cascade).
+      await tx.delete(category).where(eq(category.id, source.id))
+    })
+    return { into: target.name }
   })
