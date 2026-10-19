@@ -15,11 +15,12 @@ Status: MVP feature-complete, not deployed yet. **Try the demo** on the sign-in 
 
 ## Features
 
-- **Capture:** quick add in a few seconds with payee memory, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks and review.
-- **Understand:** activity grouped by day with search and filters kept in the URL, reports with income and spending per month, net worth and a spending calendar.
-- **Plan:** a monthly budget and limits per category, a budget month that can start on payday, a spending pace chart and warnings on Home.
+- **Capture:** quick add in a few seconds with payee memory, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks, review and remembered column layouts per bank.
+- **Understand:** activity grouped by day with search and filters kept in the URL, reports with income and spending per month, net worth, a spending calendar, a 90-day balance forecast and a printable monthly report.
+- **Plan:** a monthly budget and limits per category, a budget month that can start on payday, a spending pace chart and warnings on Home, savings goals, and subscriptions spotted in what you enter by hand.
 - **Organise:** wallets in their own currencies, categories with subcategories, tags.
 - **Share:** spaces for a household with invite links and owner, editor and viewer roles.
+- **Sign-in security:** email confirmation, password reset, two-step sign-in with an authenticator app and backup codes, and a list of signed-in devices to sign out.
 - **Own your data:** export everything as JSON or CSV and delete your account; no third-party tracking.
 - **Feels like an app:** installable PWA with an offline page, light and dark mode, command palette (Ctrl+K), keyboard shortcuts, swipe to delete with undo, tabs that stay in sync.
 
@@ -40,7 +41,7 @@ Status: MVP feature-complete, not deployed yet. **Try the demo** on the sign-in 
 - **Server functions** in `src/server/`: every one takes the space id, checks membership and role (`requireMembership`) and validates its input with Zod. Modules that only export helpers for them (`membership.ts`, `movement.ts`, `wallet-balances.ts`, `recurring-due.ts`) are never imported by client code, so the database driver stays out of the browser bundle.
 - **Money** is stored as integers in minor units; totals and budgets are summed in SQL. "Today" follows the user's time zone (`src/lib/today.ts`).
 - **Security:** a nonce-based Content Security Policy, CSRF checks for server functions, security headers and request logging in `src/start.ts`; rate-limited sign-in through Better Auth.
-- **Deployment:** a Docker image built in CI and pulled on the server, run from its own folder (`deploy/`), never from this checkout.
+- **Deployment:** a Docker image built in CI and pulled on the server, run from its own folder (`deploy/`), never from this checkout; a maintenance page for restores and a post-deploy smoke test (`scripts/smoke.ts`).
 
 ## Getting started
 
