@@ -73,6 +73,32 @@ services:
     networks:
       - app-network
 
+  # Maintenance mode (H-07): answers as `app` with a 503 page while the app is stopped for a
+  # migration or a restore. Only started on purpose, see README.md.
+  maintenance:
+    image: nginx:1.29-alpine
+    container_name: budgetmaster-prod-maintenance
+    profiles: ["maintenance"]
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+    volumes:
+      - ./maintenance/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./maintenance/index.html:/usr/share/nginx/html/index.html:ro
+    ports:
+      - "127.0.0.1:${APP_PORT:-8085}:3000"
+    networks:
+      app-network:
+        aliases:
+          - app
+
   # Nightly compressed dump of the database into BACKUP_DIR on the host, kept for 14 days.
   # Copy that folder off the machine for protection against disk loss (H-02).
   backup:

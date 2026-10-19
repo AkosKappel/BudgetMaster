@@ -17,9 +17,10 @@ checkout can change branches, rebuild and reset its database without touching it
    [Registry access](#registry-access) if it is ever made private.
 2. Create the folder and copy the files from this directory:
    ```bash
-   mkdir -p ~/deploy/budgetmaster/tailscale
+   mkdir -p ~/deploy/budgetmaster/tailscale ~/deploy/budgetmaster/maintenance
    cp deploy/compose.yaml deploy/compose.tailscale.yaml ~/deploy/budgetmaster/
    cp deploy/tailscale/serve.json ~/deploy/budgetmaster/tailscale/
+   cp deploy/maintenance/* ~/deploy/budgetmaster/maintenance/
    cp deploy/.env.example ~/deploy/budgetmaster/.env
    ```
 3. Fill in `.env` (new secrets, `IMAGE_TAG` from the latest green CI run on `main`, the
@@ -37,6 +38,23 @@ checkout can change branches, rebuild and reset its database without touching it
    `docker compose pull && docker compose up -d`.
 3. Roll back by setting the previous tag and running the same command. Migrations only move
    forward, so roll back to a version with the same schema.
+
+## Maintenance mode
+
+For work that needs the app stopped (a restore, a long migration), put up the maintenance
+page instead of a connection error. The `maintenance` service answers as `app` on the same
+network and port, so Tailscale needs no change; every path, `/api/health` included, returns
+503 with a "Back in a few minutes" page.
+
+```bash
+docker compose stop app
+docker compose --profile maintenance up -d maintenance
+# ... restore or migrate ...
+docker compose --profile maintenance rm -sf maintenance
+docker compose up -d app
+```
+
+Monitors report the app as down while it is on, which is correct.
 
 ## Backups
 
