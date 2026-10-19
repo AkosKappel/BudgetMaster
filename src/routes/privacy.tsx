@@ -20,7 +20,7 @@ export const Route = createFileRoute('/privacy')({
 
 function Privacy() {
   return (
-    <PublicPage title="Privacy" updated="2026-10-18">
+    <PublicPage title="Privacy" updated="2026-10-19">
       <p>
         BudgetMaster is a personal project by Ákos Kappel. Your financial data
         is yours: it is used only to run the app for you and the people you
@@ -41,6 +41,11 @@ function Privacy() {
         <li>
           With two-step sign-in on: the authenticator key and your backup codes,
           both encrypted.
+        </li>
+        <li>
+          Receipt photos you attach, made smaller in your browser before the
+          upload. They are stored with the transaction, only members of its
+          space can open them, and they are deleted with it.
         </li>
         <li>
           A log of who added, changed or deleted which transaction, shown to the
