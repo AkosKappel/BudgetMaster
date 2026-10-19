@@ -21,6 +21,11 @@ import {
   projectBalance,
   ruleDates,
 } from '@/lib/forecast'
+import {
+  findCategoryRise,
+  findDuplicates,
+  findPriceRises,
+} from '@/lib/insights'
 import { priceChanges } from '@/lib/price-changes'
 import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
@@ -454,3 +459,89 @@ export const getYearReview = createServerFn({ method: 'GET' })
   })
 
 export type YearReviewData = Awaited<ReturnType<typeof getYearReview>>
+
+// Things worth a look (AI-04 without a model): possible double charges, recurring payments
+// that got more expensive, and the category most up on the same days of last month.
+export const getInsights = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const space = await requireMembership(context.user.id, data.spaceId)
+    const today = currentDay()
+    const period = budgetPeriod(today, space.budgetMonthStartDay)
+    const previous = budgetPeriod(
+      addMonths(period.start, -1),
+      space.budgetMonthStartDay,
+    )
+    const elapsed = Math.round(
+      (Date.parse(today) - Date.parse(period.start)) / 86_400_000,
+    )
+    const previousTo = addDays(previous.start, elapsed)
+
+    const [expenses, lines, categories] = await Promise.all([
+      db
+        .select({
+          id: transaction.id,
+          date: transaction.date,
+          payee: transaction.payee,
+          amount: transaction.amount,
+          walletId: transaction.walletId,
+          recurringRuleId: transaction.recurringRuleId,
+        })
+        .from(transaction)
+        .innerJoin(wallet, eq(wallet.id, transaction.walletId))
+        .where(
+          and(
+            eq(transaction.spaceId, space.id),
+            eq(transaction.type, 'expense'),
+            eq(wallet.currency, space.baseCurrency),
+            between(transaction.date, addMonths(today, -13), today),
+          ),
+        ),
+      db
+        .select({
+          categoryId: categoryLines.categoryId,
+          date: categoryLines.date,
+          amount: categoryLines.amount,
+        })
+        .from(categoryLines)
+        .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
+        .where(
+          and(
+            eq(categoryLines.spaceId, space.id),
+            eq(categoryLines.type, 'expense'),
+            eq(wallet.currency, space.baseCurrency),
+            between(categoryLines.date, previous.start, today),
+          ),
+        ),
+      db
+        .select({
+          id: category.id,
+          name: category.name,
+          parentId: category.parentId,
+        })
+        .from(category)
+        .where(eq(category.spaceId, space.id)),
+    ])
+
+    const byId = new Map(categories.map((c) => [c.id, c]))
+    const topName = (id: string) => {
+      const c = byId.get(id)
+      return (c?.parentId ? byId.get(c.parentId)?.name : c?.name) ?? ''
+    }
+    const named = lines.map((l) => ({ ...l, category: topName(l.categoryId) }))
+    const rise = findCategoryRise(
+      named.filter((l) => l.date >= period.start),
+      named.filter((l) => l.date >= previous.start && l.date <= previousTo),
+    )
+    return {
+      currency: space.baseCurrency,
+      insights: [
+        ...findDuplicates(expenses, today),
+        ...findPriceRises(expenses, today),
+        ...(rise ? [rise] : []),
+      ],
+    }
+  })
+
+export type Insights = Awaited<ReturnType<typeof getInsights>>

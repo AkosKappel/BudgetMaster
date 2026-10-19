@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { BudgetMeter, budgetStatus } from '@/components/budget-meter'
 import { EmptyState } from '@/components/empty-state'
 import { Guilloche } from '@/components/guilloche'
+import { Insights } from '@/components/insights'
 import { TransactionRow } from '@/components/transaction-row'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -61,6 +62,8 @@ function Home() {
       <PaceSection spaceId={space.id} month={month} />
 
       {month === 0 && <BudgetWarnings spaceId={space.id} />}
+
+      {month === 0 && <Insights spaceId={space.id} />}
 
       {month === 0 && data.upcoming.length > 0 && (
         <section aria-labelledby="upcoming" className="flex flex-col gap-3">

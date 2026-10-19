@@ -23,6 +23,7 @@ import {
   getCashFlow,
   getCategoryTrends,
   getForecast,
+  getInsights,
   getNetWorth,
   getPriceChanges,
   getSpendingCalendar,
@@ -135,6 +136,12 @@ export const importsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'imports'],
     queryFn: () => listImports({ data: { spaceId } }),
+  })
+
+export const insightsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'insights'],
+    queryFn: () => getInsights({ data: { spaceId } }),
   })
 
 export const priceChangesQuery = (spaceId: string) =>
