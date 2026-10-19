@@ -21,7 +21,7 @@ checkout can change branches, rebuild and reset its database without touching it
    cp deploy/compose.yaml deploy/compose.tailscale.yaml ~/deploy/budgetmaster/
    cp deploy/tailscale/serve.json ~/deploy/budgetmaster/tailscale/
    cp deploy/maintenance/* ~/deploy/budgetmaster/maintenance/
-   cp deploy/restore-test.sh ~/deploy/budgetmaster/
+   cp deploy/restore-test.sh deploy/deploy.sh scripts/smoke.ts ~/deploy/budgetmaster/
    cp deploy/.env.example ~/deploy/budgetmaster/.env
    ```
 3. Fill in `.env` (new secrets, `IMAGE_TAG` from the latest green CI run on `main`, the
@@ -34,17 +34,26 @@ checkout can change branches, rebuild and reset its database without touching it
 
 ## Deploy a new version
 
-1. Wait for CI on `main` to pass; note the image tag `sha-xxxxxxx`.
-2. In `~/deploy/budgetmaster`, set `IMAGE_TAG` in `.env`, then
-   `docker compose pull && docker compose up -d`.
-3. Smoke test from the repository: `node scripts/smoke.ts https://budgetmaster.tailb52c43.ts.net`
-   (health, sign-in page with its CSP, a demo sign-in and sign-out). It starts one demo,
-   which counts against the 5 per hour limit.
-   After the first deploy, check `docker compose logs app` for Better Auth's warning that it
-   "could not determine a client IP": without the visitor's address from the Tailscale proxy,
-   rate limits fall back to one bucket shared by everyone.
-4. Roll back by setting the previous tag and running the same command. Migrations only move
-   forward, so roll back to a version with the same schema.
+After CI on `main` is green, in `~/deploy/budgetmaster`:
+
+```bash
+./deploy.sh
+```
+
+It finds the commit of the latest green CI run (`gh`), checks that the image exists, dumps
+the database next to the nightly backups, sets `IMAGE_TAG`, pulls, starts (migrations run
+first), waits for the health check and runs the smoke test (`smoke.ts`: health, sign-in
+page with its CSP, a demo sign-in, which counts against the 5 per hour limit). Each deploy
+is appended to `deploys.log`. `./deploy.sh sha-1234567` deploys a given tag, which is also
+how to go back; migrations only move forward, so go back only to a version with the same
+schema, or restore the dump the script made.
+
+After the first deploy, check `docker compose logs app` for Better Auth's warning that it
+"could not determine a client IP": without the visitor's address from the Tailscale proxy,
+rate limits fall back to one bucket shared by everyone.
+
+When a file in this `deploy/` folder changed, copy it to the deploy folder before running
+the script.
 
 ## Maintenance mode
 
