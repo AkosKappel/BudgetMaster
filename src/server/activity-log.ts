@@ -1,3 +1,5 @@
+import { and, eq, lt } from 'drizzle-orm'
+
 import type { db } from '@/db'
 import { activityEvent } from '@/db/schema'
 
@@ -7,8 +9,13 @@ import { activityEvent } from '@/db/schema'
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
-// The activity log of the space (I-13), written in the same database transaction.
-export function logActivity(
+// How long the log keeps an entry: enough to settle "who changed this?", without keeping
+// a second copy of every amount forever.
+const KEEP_DAYS = 180
+
+// The activity log of the space (I-13), written in the same database transaction. Old
+// entries of the space are trimmed on the way.
+export async function logActivity(
   tx: Tx,
   userId: string,
   action: 'created' | 'updated' | 'deleted',
@@ -23,7 +30,18 @@ export function logActivity(
   },
   before?: { payee: string | null; amount: number; date: string },
 ) {
-  return tx.insert(activityEvent).values({
+  await tx
+    .delete(activityEvent)
+    .where(
+      and(
+        eq(activityEvent.spaceId, row.spaceId),
+        lt(
+          activityEvent.createdAt,
+          new Date(Date.now() - KEEP_DAYS * 86_400_000),
+        ),
+      ),
+    )
+  await tx.insert(activityEvent).values({
     spaceId: row.spaceId,
     userId,
     action,
