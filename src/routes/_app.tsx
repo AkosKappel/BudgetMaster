@@ -5,6 +5,7 @@ import { Suspense, useState } from 'react'
 import { SIDEBAR_HOTKEY, Sidebar, TabBar } from '@/components/app-nav'
 import {
   CrossTabSync,
+  LiveUpdates,
   OfflineNotice,
   PullToRefresh,
 } from '@/components/app-sync'
@@ -79,6 +80,7 @@ function AppShell() {
       <QuickAddDrawer />
       <CommandPalette />
       <CrossTabSync />
+      <LiveUpdates />
       <PullToRefresh />
       <ShortcutsHelp />
     </div>

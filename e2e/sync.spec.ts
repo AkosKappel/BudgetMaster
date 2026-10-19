@@ -26,3 +26,31 @@ test('a change in one tab shows up in another, and offline is announced', async 
   await context.setOffline(false)
   await expect(page.getByText(/You are offline/)).toHaveCount(0)
 })
+
+test('a change on one device shows up live on another', async ({
+  page,
+  browser,
+}) => {
+  await startDemo(page)
+  // A second browser with the same session: no BroadcastChannel between them, only the
+  // server's live events.
+  const laptop = await browser.newContext({
+    storageState: await page.context().storageState(),
+  })
+  const other = await laptop.newPage()
+  await other.goto('/categories')
+  await expect(other.getByRole('heading', { name: 'Categories' })).toBeVisible()
+
+  await page.goto('/categories')
+  await page.getByRole('button', { name: 'New category' }).click()
+  await page.getByRole('dialog').getByLabel('Name').fill('Live from phone')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Create category' })
+    .click()
+  await expect(page.getByText('Category created')).toBeVisible()
+  await expect(
+    other.getByRole('button', { name: 'Live from phone' }),
+  ).toBeVisible()
+  await laptop.close()
+})

@@ -28,13 +28,37 @@ export function CrossTabSync() {
     const refetch = () => queryClient.invalidateQueries()
     getChannel().addEventListener('message', refetch)
     const unsubscribe = queryClient.getMutationCache().subscribe((event) => {
-      if (event.type === 'updated' && event.action.type === 'success')
+      if (event.type === 'updated' && event.action.type === 'success') {
+        lastLocalChange = Date.now()
         notifyOtherTabs()
+      }
     })
     return () => {
       unsubscribe()
       getChannel().removeEventListener('message', refetch)
     }
+  }, [queryClient])
+
+  return null
+}
+
+// When this tab last saved something: the server's live event for that change arrives a
+// moment later and needs no second refetch.
+let lastLocalChange = 0
+const OWN_ECHO_MS = 3000
+
+// Live updates from other devices and members (R-01): the server sends the id of a space
+// that changed, and its queries refetch. EventSource reconnects by itself.
+export function LiveUpdates() {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const source = new EventSource('/api/live')
+    source.onmessage = (event) => {
+      if (Date.now() - lastLocalChange < OWN_ECHO_MS) return
+      queryClient.invalidateQueries({ queryKey: ['space', event.data] })
+    }
+    return () => source.close()
   }, [queryClient])
 
   return null

@@ -4,6 +4,7 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { DEMO_LIFETIME_HOURS } from '@/db/demo-accounts'
 import { env } from '@/env'
 import { auth } from '@/lib/auth'
+import { announceChange } from '@/server/live'
 
 export const getSession = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -40,12 +41,24 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
 )
 
 export const authMiddleware = createMiddleware({ type: 'function' }).server(
-  async ({ next }) => {
+  async ({ next, data, method }) => {
     const session = await auth.api.getSession({ headers: getRequestHeaders() })
     if (!session) throw new Error('Not signed in')
-    return next({ context: { user: session.user } })
+    const result = await next({ context: { user: session.user } })
+    // Every write to a space goes through here, so open tabs and devices hear about it
+    // (R-01). The function checked the membership; a failed call never gets this far.
+    // `data` is the function's input, typed as nothing at the middleware level.
+    const input: unknown = data
+    if (method === 'POST' && hasSpaceId(input)) announceChange(input.spaceId)
+    return result
   },
 )
+
+const hasSpaceId = (data: unknown): data is { spaceId: string } =>
+  typeof data === 'object' &&
+  data !== null &&
+  'spaceId' in data &&
+  typeof data.spaceId === 'string'
 
 // Which ways to sign in the server is set up for; each provider needs its OAuth client in `.env`.
 export const getSignInOptions = createServerFn({ method: 'GET' }).handler(

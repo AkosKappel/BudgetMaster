@@ -40,6 +40,7 @@ import { Route as AppWalletsRouteImport } from './routes/_app/wallets'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as AppYearInReviewRouteImport } from './routes/_app/year-in-review'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiLiveRouteImport } from './routes/api/live'
 import { Route as AppInviteTokenRouteImport } from './routes/_app/invite/$token'
 import { Route as AppSpacesIndexRouteImport } from './routes/_app/spaces/index'
 import { Route as AppSpacesSpaceIdRouteImport } from './routes/_app/spaces/$spaceId'
@@ -200,6 +201,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLiveRoute = ApiLiveRouteImport.update({
+  id: '/api/live',
+  path: '/api/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppWelcomeRoute
   '/year-in-review': typeof AppYearInReviewRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/live': typeof ApiLiveRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AppWelcomeRoute
   '/year-in-review': typeof AppYearInReviewRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/live': typeof ApiLiveRoute
   '/': typeof AppIndexRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/_app/welcome': typeof AppWelcomeRoute
   '/_app/year-in-review': typeof AppYearInReviewRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/live': typeof ApiLiveRoute
   '/_app/': typeof AppIndexRoute
   '/_app/invite/$token': typeof AppInviteTokenRoute
   '/_app/spaces/$spaceId': typeof AppSpacesSpaceIdRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/year-in-review'
     | '/api/health'
+    | '/api/live'
     | '/invite/$token'
     | '/spaces/$spaceId'
     | '/api/auth/$'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/year-in-review'
     | '/api/health'
+    | '/api/live'
     | '/'
     | '/invite/$token'
     | '/spaces/$spaceId'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/_app/welcome'
     | '/_app/year-in-review'
     | '/api/health'
+    | '/api/live'
     | '/_app/'
     | '/_app/invite/$token'
     | '/_app/spaces/$spaceId'
@@ -471,6 +483,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TwoFactorRoute: typeof TwoFactorRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiLiveRoute: typeof ApiLiveRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiReceiptsTransactionIdRoute: typeof ApiReceiptsTransactionIdRoute
 }
@@ -694,6 +707,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/live': {
+      id: '/api/live'
+      path: '/api/live'
+      fullPath: '/api/live'
+      preLoaderRoute: typeof ApiLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/invite/$token': {
       id: '/_app/invite/$token'
       path: '/invite/$token'
@@ -794,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TwoFactorRoute: TwoFactorRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiLiveRoute: ApiLiveRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiReceiptsTransactionIdRoute: ApiReceiptsTransactionIdRoute,
 }
