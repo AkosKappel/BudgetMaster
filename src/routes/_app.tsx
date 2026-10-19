@@ -18,6 +18,8 @@ export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
     const session = await context.queryClient.ensureQueryData(sessionQuery)
     if (!session) {
+      // The bare address is the front door: show what the app is first.
+      if (location.pathname === '/') throw redirect({ to: '/start' })
       throw redirect({ to: '/sign-in', search: { redirect: location.href } })
     }
     const { activeId } = await context.queryClient.ensureQueryData(spacesQuery)

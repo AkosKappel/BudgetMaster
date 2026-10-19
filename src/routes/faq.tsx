@@ -21,7 +21,7 @@ const QUESTIONS: [string, React.ReactNode][] = [
   ['Is it free?', 'Yes. There are no paid plans and no ads.'],
   [
     'Does it connect to my bank?',
-    'No. You record transactions yourself; quick add, payee memory and recurring payments keep that to a few seconds. Importing bank statements is planned.',
+    'No. You record transactions yourself; quick add, payee memory and recurring payments keep that to a few seconds. A CSV export from your bank can be imported, with a review of every row.',
   ],
   [
     'Can I use several currencies?',

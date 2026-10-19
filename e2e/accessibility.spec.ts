@@ -111,6 +111,7 @@ test('the welcome page has no axe violations', async ({ page }) => {
 
 test('public pages have no axe violations', async ({ page }) => {
   for (const [path, heading] of [
+    ['/start', /Know what you can still spend/],
     ['/about', 'About BudgetMaster'],
     ['/faq', 'Frequently asked questions'],
     ['/privacy', 'Privacy'],
@@ -142,4 +143,16 @@ test('? opens the keyboard shortcuts help', async ({ page, isMobile }) => {
   await expectNoAxeViolations(page)
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
+})
+
+test('signed-out visitors at the bare address get the landing page', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page).toHaveURL(/\/start$/)
+  await page.getByRole('button', { name: 'Try the demo' }).first().click()
+  await expect(page.getByText(/Demo data, deleted in/)).toBeVisible()
+  // Signed in (as a demo), the bare address is the app again.
+  await page.goto('/')
+  await expect(page).not.toHaveURL(/start/)
 })

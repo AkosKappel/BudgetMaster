@@ -2,6 +2,7 @@ import { createIsomorphicFn } from '@tanstack/react-start'
 
 // The public pages: allowed in robots.txt, listed in the sitemap, given canonical URLs.
 export const PUBLIC_PATHS = [
+  '/start',
   '/about',
   '/faq',
   '/privacy',

@@ -4,6 +4,7 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 
 const LINKS = [
+  { to: '/start', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },
   { to: '/privacy', label: 'Privacy' },
@@ -46,7 +47,7 @@ export function PublicPage({
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-10 px-4 py-8">
       <header className="flex items-center justify-between gap-4">
-        <Link to="/sign-in" aria-label="BudgetMaster, sign in">
+        <Link to="/start" aria-label="BudgetMaster, home">
           <Logo />
         </Link>
         <Button asChild variant="outline" size="sm">
