@@ -20,10 +20,39 @@ export const currencyDigits = (currency: string) =>
   new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions()
     .maximumFractionDigits ?? 2
 
-// Reads what people type: "12,5", "12.50", "1 234,56", "1,234.56". The last separator is the
-// decimal mark when at most `digits` digits follow it, otherwise it groups thousands.
-// Returns minor units, or null when the input is not an amount.
+// Reads what people type: "12,5", "12.50", "1 234,56", "1,234.56", and sums like "12+4,50"
+// or "3*2.40" (a receipt added up in the field). Multiplication and division bind first,
+// and their right side is a plain factor. Returns minor units, or null when the input is not
+// an amount, divides by zero or comes out below zero.
 export function parseAmount(input: string, digits = 2): number | null {
+  const expression = input
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/−/g, '-')
+  if (!/[+\-*/]/.test(expression)) return parseNumber(expression, digits)
+  // Numbers at even indexes, operators at odd ones.
+  const tokens = expression.split(/([+\-*/])/)
+  let total = 0
+  let sign = 1
+  for (let i = 0; i < tokens.length; i += 2) {
+    let term = parseNumber(tokens[i], digits)
+    if (term === null) return null
+    while (tokens[i + 1] === '*' || tokens[i + 1] === '/') {
+      const factor = parseNumber(tokens[i + 2] ?? '', 6)
+      if (factor === null || (tokens[i + 1] === '/' && factor === 0))
+        return null
+      term =
+        tokens[i + 1] === '*' ? (term * factor) / 1e6 : (term * 1e6) / factor
+      i += 2
+    }
+    total += sign * term
+    sign = tokens[i + 1] === '-' ? -1 : 1
+  }
+  const minor = Math.round(total)
+  return Number.isSafeInteger(minor) && minor >= 0 ? minor : null
+}
+
+function parseNumber(input: string, digits: number): number | null {
   const cleaned = input.replace(/[\s\u00a0']/g, '')
   if (!/^[\d.,]+$/.test(cleaned) || !/\d/.test(cleaned)) return null
   const lastSeparator = Math.max(

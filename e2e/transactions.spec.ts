@@ -11,7 +11,9 @@ test('quick add saves an expense that shows up in activity', async ({
     .first()
     .click()
   const sheet = page.getByRole('dialog')
-  await sheet.getByLabel('Amount').fill('12.34')
+  // A receipt added up in the field.
+  await sheet.getByLabel('Amount').fill('10+2.34')
+  await expect(sheet.getByText('= €12.34')).toBeVisible()
   await sheet.getByLabel('Paid to').fill('E2E Bakery')
   await sheet.getByText('Groceries', { exact: true }).click()
   await sheet.getByRole('button', { name: /save/i }).click()

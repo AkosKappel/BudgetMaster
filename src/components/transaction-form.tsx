@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { iconFor } from '@/lib/icons'
-import { currencyDigits, parseAmount } from '@/lib/money'
+import { currencyDigits, formatMoney, parseAmount } from '@/lib/money'
 import { useDeleteWithUndo, useSaveTransaction } from '@/lib/mutations'
 import { formOptionsQuery, payeesQuery, useActiveSpace } from '@/lib/queries'
 import { addDays, localTodayIso } from '@/lib/recurrence'
@@ -294,6 +294,10 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                     className="min-w-0 flex-1 bg-transparent font-semibold text-4xl tracking-tight outline-none placeholder:text-muted-foreground/50"
                   />
                 </div>
+                <AmountSum
+                  value={field.state.value}
+                  currency={walletById(walletId)?.currency ?? 'EUR'}
+                />
                 <FieldError errors={field.state.meta.errors} />
               </div>
             )}
@@ -691,5 +695,16 @@ function PayeeSuggestions({
         </li>
       ))}
     </ul>
+  )
+}
+
+// "= €16.50" under the amount while it is a sum like "12+4.50".
+function AmountSum({ value, currency }: { value: string; currency: string }) {
+  if (!/\d\s*[+\-−*×/÷]\s*\d/.test(value)) return null
+  const minor = parseAmount(value, currencyDigits(currency))
+  return (
+    <p className="text-muted-foreground text-sm" aria-live="polite">
+      {minor === null ? 'Not a valid sum' : `= ${formatMoney(minor, currency)}`}
+    </p>
   )
 }

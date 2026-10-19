@@ -35,3 +35,18 @@ test('parseAmount reads decimal commas, points and thousands groups', () => {
   assert.equal(parseAmount('12a'), null)
   assert.equal(parseAmount('.'), null)
 })
+
+test('parseAmount adds up sums typed into the field', () => {
+  assert.equal(parseAmount('12+4.50'), 1650)
+  assert.equal(parseAmount('12,5 + 3'), 1550)
+  assert.equal(parseAmount('3*2.40'), 720)
+  assert.equal(parseAmount('3×2,40 + 1'), 820)
+  assert.equal(parseAmount('20−5.25'), 1475)
+  assert.equal(parseAmount('100/3'), 3333)
+  assert.equal(parseAmount('1,234.56+0.44'), 123500)
+  assert.equal(parseAmount('10/0'), null)
+  assert.equal(parseAmount('5-10'), null)
+  assert.equal(parseAmount('12+'), null)
+  assert.equal(parseAmount('+12'), null)
+  assert.equal(parseAmount('12++3'), null)
+})
