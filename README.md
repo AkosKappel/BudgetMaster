@@ -15,11 +15,11 @@ A mobile-first personal finance app: record income and expenses in seconds, see 
 
 ## Features
 
-- **Capture:** quick add in a few seconds, or typed as one line like `coffee 3.20 cash yesterday`, with payee memory, sums like `12+4.50` in amount fields and receipts split across categories, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks, review, remembered column layouts per bank and undo of a whole import.
-- **Understand:** activity grouped by day with search and filters kept in the URL, reports with income and spending per month, net worth, a spending calendar, a 90-day balance forecast, a printable monthly report, a year in review and how prices at regular payees changed in a year.
+- **Capture:** quick add in a few seconds, or typed as one line like `coffee 3.20 cash yesterday`, with payee memory, sums like `12+4.50` in amount fields, receipts split across categories, receipt photos, recurring payments that record themselves on their due date, and CSV import of bank statements with duplicate checks, review, remembered column layouts per bank and undo of a whole import.
+- **Understand:** activity grouped by day with search and filters kept in the URL, reports with income and spending per month, net worth, a spending calendar, a 90-day balance forecast, a printable monthly report, a year in review, how prices at regular payees changed in a year, and "worth a look" hints on Home (possible double charges, pricier subscriptions, a category on the rise).
 - **Plan:** a monthly budget and limits per category, a budget month that can start on payday, a spending pace chart, warnings and payments due this week on Home, unspent budget carried into the next month, savings goals, and subscriptions spotted in what you enter by hand.
 - **Organise:** wallets in their own currencies, categories with subcategories (merge or delete duplicates), tags; the command palette finds all of them.
-- **Share:** spaces for a household with emailed invites, owner, editor and viewer roles, and a log of who changed what.
+- **Share:** spaces for a household with emailed invites, owner, editor and viewer roles, "paid by" with balances and settling up, live updates on every member's device, and a log of who changed what with restore for deleted transactions.
 - **Sign-in security:** email confirmation, password reset, optional Google and GitHub sign-in, passkeys, two-step sign-in with an authenticator app and backup codes, and a list of signed-in devices to sign out.
 - **Own your data:** export everything as JSON or CSV and delete your account; no third-party tracking.
 - **Feels like an app:** installable PWA with an offline page and pull to refresh, light and dark mode from every page, a Settings page (theme, first day of the week, security, data), command palette (Ctrl+K), keyboard shortcuts, swipe to delete with undo, tabs that stay in sync.
