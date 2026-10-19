@@ -10,6 +10,7 @@ import {
   FileText,
   FileUp,
   Gauge,
+  Goal,
   House,
   Keyboard,
   LogOut,
@@ -238,6 +239,10 @@ export function CommandPalette() {
           >
             <FileText />
             Monthly report
+          </CommandItem>
+          <CommandItem onSelect={run(() => navigate({ to: '/goals' }))}>
+            <Goal />
+            Savings goals
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/recurring' }))}>
             <Repeat />

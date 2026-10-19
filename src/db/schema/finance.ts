@@ -334,6 +334,29 @@ export const budget = pgTable(
   ],
 )
 
+// Money put aside for something (I-02): the wallet's balance is the progress, in the
+// wallet's currency. Deleting the wallet deletes the goal.
+export const savingsGoal = pgTable(
+  'savings_goal',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    name: text().notNull(),
+    walletId: uuid().notNull(),
+    targetAmount: money().notNull(),
+    targetDate: date(),
+    ...timestamps,
+  },
+  (t) => [
+    unique().on(t.spaceId, t.name),
+    check('savings_goal_target_positive', sql`${t.targetAmount} > 0`),
+    foreignKey({
+      columns: [t.walletId, t.spaceId],
+      foreignColumns: [wallet.id, wallet.spaceId],
+    }).onDelete('cascade'),
+  ],
+)
+
 // "Payee contains `match`" means this category (M-15). Matching is case-insensitive and
 // the longest match wins (src/lib/rules.ts). The composite key keeps the rule and its
 // category in the same space and of the same type.
@@ -367,6 +390,15 @@ export const spaceRelations = relations(space, ({ many }) => ({
   categories: many(category),
   tags: many(tag),
   budgets: many(budget),
+  savingsGoals: many(savingsGoal),
+}))
+
+export const savingsGoalRelations = relations(savingsGoal, ({ one }) => ({
+  space: one(space, { fields: [savingsGoal.spaceId], references: [space.id] }),
+  wallet: one(wallet, {
+    fields: [savingsGoal.walletId],
+    references: [wallet.id],
+  }),
 }))
 
 export const spaceMemberRelations = relations(spaceMember, ({ one }) => ({

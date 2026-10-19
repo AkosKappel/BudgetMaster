@@ -10,7 +10,7 @@ import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 // Everything the user can see, as JSON: every space they belong to with its wallets,
-// categories, tags, budgets, recurring rules and transactions. Amounts in minor units.
+// categories, tags, budgets, goals, recurring rules and transactions. Amounts in minor units.
 export const exportAllData = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
@@ -23,7 +23,13 @@ export const exportAllData = createServerFn({ method: 'GET' })
     const [spaces, rules, transactions] = await Promise.all([
       db.query.space.findMany({
         where: (s, { inArray }) => inArray(s.id, spaceIds),
-        with: { wallets: true, categories: true, tags: true, budgets: true },
+        with: {
+          wallets: true,
+          categories: true,
+          tags: true,
+          budgets: true,
+          savingsGoals: true,
+        },
       }),
       db
         .select()

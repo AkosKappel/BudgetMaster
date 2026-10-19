@@ -36,6 +36,13 @@
       "when": 1792394865517,
       "tag": "0004_two_factor",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792395953520,
+      "tag": "0005_savings_goal",
+      "breakpoints": true
     }
   ]
 }

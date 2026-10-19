@@ -10,6 +10,7 @@ import { getSession } from '@/server/auth'
 import { getBudgetReport } from '@/server/budgets'
 import { listCategories } from '@/server/categories'
 import { listDevices } from '@/server/devices'
+import { listGoals } from '@/server/goals'
 import {
   getOverview,
   listTransactions,
@@ -113,6 +114,12 @@ export const forecastQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'forecast'],
     queryFn: () => getForecast({ data: { spaceId } }),
+  })
+
+export const goalsQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'goals'],
+    queryFn: () => listGoals({ data: { spaceId } }),
   })
 
 export const spendingCalendarQuery = (spaceId: string) =>

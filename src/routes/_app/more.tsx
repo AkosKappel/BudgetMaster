@@ -3,6 +3,7 @@ import {
   ChartColumn,
   ChevronRight,
   FileUp,
+  Goal,
   LogOut,
   Repeat,
   Shapes,
@@ -72,6 +73,21 @@ function More() {
               <span className="font-medium">Wallets</span>
               <span className="text-muted-foreground text-sm">
                 Accounts, cards, cash and their balances
+              </span>
+            </span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/goals"
+            className="flex items-center gap-3 px-4 py-3 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Goal className="size-5 text-muted-foreground" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Goals</span>
+              <span className="text-muted-foreground text-sm">
+                Save towards a trip, a laptop or a safety cushion
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />

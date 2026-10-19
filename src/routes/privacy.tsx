@@ -29,7 +29,7 @@ function Privacy() {
         <li>Your name, email address and a hash of your password.</li>
         <li>
           What you enter: wallets, transactions, categories, tags, budgets,
-          recurring payments and the spaces you belong to.
+          savings goals, recurring payments and the spaces you belong to.
         </li>
         <li>
           Sessions: when you signed in, the IP address and the browser, so you
