@@ -20,6 +20,7 @@ import { Logo, LogoMark } from '@/components/logo'
 import { SpaceSwitcher } from '@/components/space-switcher'
 import { ThemeMenu } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
+import { snappySpring } from '@/lib/motion'
 import { useCanWrite } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { useQuickAdd } from '@/stores/quick-add'
@@ -37,8 +38,6 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/more', label: 'More', icon: Ellipsis },
 ]
 
-const spring = { type: 'spring', stiffness: 500, damping: 38 } as const
-
 function TabLink({ to, label, icon: Icon }: NavItem) {
   return (
     <Link
@@ -51,7 +50,7 @@ function TabLink({ to, label, icon: Icon }: NavItem) {
           {isActive && (
             <motion.span
               layoutId="tab-indicator"
-              transition={spring}
+              transition={snappySpring}
               className="absolute top-0 h-0.5 w-8 rounded-full bg-note"
             />
           )}
@@ -168,7 +167,7 @@ export function Sidebar({
                     {isActive && (
                       <motion.span
                         layoutId="rail-indicator"
-                        transition={spring}
+                        transition={snappySpring}
                         className="absolute inset-0 -z-10 rounded-md bg-accent"
                       />
                     )}

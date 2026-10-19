@@ -4,6 +4,7 @@ import { useRef } from 'react'
 
 import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
+import { listItemTransition, snappySpring } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import type { LedgerTransaction } from '@/server/ledger'
 
@@ -18,7 +19,6 @@ interface Props {
 }
 
 const ACTION_WIDTH = 96
-const spring = { type: 'spring', stiffness: 500, damping: 40 } as const
 
 export function TransactionRow({
   transaction: t,
@@ -54,7 +54,7 @@ export function TransactionRow({
 
   const settle = (_: unknown, info: PanInfo) => {
     const open = info.offset.x < -ACTION_WIDTH / 2 || info.velocity.x < -500
-    animate(x, open ? -ACTION_WIDTH : 0, spring)
+    animate(x, open ? -ACTION_WIDTH : 0, snappySpring)
   }
 
   const content = (
@@ -128,7 +128,7 @@ export function TransactionRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={listItemTransition}
       className={cn('relative overflow-hidden', planned && 'opacity-70')}
     >
       {onDelete && (
@@ -166,7 +166,7 @@ export function TransactionRow({
                 return
               }
               if (x.get() !== 0) {
-                animate(x, 0, spring)
+                animate(x, 0, snappySpring)
                 return
               }
               onSelect(t)
