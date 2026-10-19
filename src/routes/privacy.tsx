@@ -43,6 +43,10 @@ function Privacy() {
           both encrypted.
         </li>
         <li>
+          A log of who added, changed or deleted which transaction, shown to the
+          members of a shared space.
+        </li>
+        <li>
           Passkeys you add: their public key and a name. The private key never
           leaves your device.
         </li>

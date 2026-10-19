@@ -28,7 +28,7 @@ import {
   getSpendingCalendar,
 } from '@/server/reports'
 import { listRules } from '@/server/rules'
-import { getInvite, getSpaceDetails } from '@/server/space-admin'
+import { getInvite, getSpaceDetails, listActivity } from '@/server/space-admin'
 import { getSpaces, setActiveSpace } from '@/server/spaces'
 import { listTags } from '@/server/tags'
 import { getFormOptions, suggestPayees } from '@/server/transactions'
@@ -173,6 +173,12 @@ export const spaceDetailsQuery = (spaceId: string) =>
   queryOptions({
     queryKey: ['space', spaceId, 'details'],
     queryFn: () => getSpaceDetails({ data: { spaceId } }),
+  })
+
+export const activityQuery = (spaceId: string) =>
+  queryOptions({
+    queryKey: ['space', spaceId, 'activity-log'],
+    queryFn: () => listActivity({ data: { spaceId } }),
   })
 
 export const inviteQuery = (token: string) =>

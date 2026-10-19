@@ -341,6 +341,32 @@ export const budget = pgTable(
   ],
 )
 
+// Who added, changed or deleted which transaction (I-13), shown to the members of a shared
+// space. A snapshot, not a link: the transaction may be gone.
+export interface ActivityDetails {
+  type: 'income' | 'expense' | 'transfer'
+  walletId: string
+  payee: string | null
+  amount: number
+  date: string
+  // For a change: the values before it.
+  before?: { payee: string | null; amount: number; date: string }
+}
+
+export const activityEvent = pgTable(
+  'activity_event',
+  {
+    id: id(),
+    spaceId: spaceId(),
+    userId: text().references(() => user.id, { onDelete: 'set null' }),
+    action: text({ enum: ['created', 'updated', 'deleted'] }).notNull(),
+    transactionId: uuid().notNull(),
+    details: jsonb().$type<ActivityDetails>().notNull(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index().on(t.spaceId, t.createdAt.desc())],
+)
+
 // One confirmed statement import (M-16): its transactions point here, so it can be undone
 // as a whole.
 export const importBatch = pgTable(

@@ -19,5 +19,8 @@ test('an invite to a shared space is emailed and shown as a link', async ({
   await page.getByRole('button', { name: 'Create invite link' }).click()
   await expect(page.getByText(/Emailed to flatmate@example.com/)).toBeVisible()
   await expect(page.getByLabel('Invite link')).toHaveValue(/\/invite\//)
+  await expect(
+    page.getByRole('region', { name: 'Recent changes' }),
+  ).toContainText('Nothing yet')
   await expectNoAxeViolations(page)
 })

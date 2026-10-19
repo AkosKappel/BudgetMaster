@@ -22,6 +22,7 @@ import {
   transactionTag,
   wallet,
 } from '@/db/schema'
+import { logActivity } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { checkMovement } from '@/server/movement'
@@ -200,6 +201,8 @@ export const createTransaction = createServerFn({ method: 'POST' })
         .values({ ...row, createdBy: context.user.id })
         .onConflictDoNothing({ target: transaction.id })
         .returning({ id: transaction.id })
+      if (inserted.length)
+        await logActivity(tx, context.user.id, 'created', row)
       if (inserted.length && tagIds.length) {
         await tx.insert(transactionTag).values(
           tagIds.map((tagId) => ({
@@ -220,12 +223,18 @@ export const updateTransaction = createServerFn({ method: 'POST' })
     const { row, tagIds } = await prepare(context.user.id, data)
     const { id, spaceId, ...changes } = row
     await db.transaction(async (tx) => {
-      const updated = await tx
-        .update(transaction)
-        .set(changes)
+      const [before] = await tx
+        .select({
+          payee: transaction.payee,
+          amount: transaction.amount,
+          date: transaction.date,
+        })
+        .from(transaction)
         .where(and(eq(transaction.id, id), eq(transaction.spaceId, spaceId)))
-        .returning({ id: transaction.id })
-      if (!updated.length) throw new Error('Transaction not found.')
+        .for('update')
+      if (!before) throw new Error('Transaction not found.')
+      await tx.update(transaction).set(changes).where(eq(transaction.id, id))
+      await logActivity(tx, context.user.id, 'updated', row, before)
       await tx
         .delete(transactionTag)
         .where(eq(transactionTag.transactionId, id))
@@ -247,10 +256,14 @@ export const deleteTransaction = createServerFn({ method: 'POST' })
     const space = await requireMembership(context.user.id, data.spaceId)
     if (space.role === 'viewer')
       throw new Error('Viewers cannot change this space.')
-    await db
-      .delete(transaction)
-      .where(
-        and(eq(transaction.id, data.id), eq(transaction.spaceId, space.id)),
-      )
+    await db.transaction(async (tx) => {
+      const [deleted] = await tx
+        .delete(transaction)
+        .where(
+          and(eq(transaction.id, data.id), eq(transaction.spaceId, space.id)),
+        )
+        .returning()
+      if (deleted) await logActivity(tx, context.user.id, 'deleted', deleted)
+    })
     return { id: data.id }
   })

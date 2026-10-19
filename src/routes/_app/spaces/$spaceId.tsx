@@ -1,5 +1,6 @@
 import {
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
@@ -21,9 +22,12 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { describeActivity } from '@/lib/activity'
 import { toCurrency } from '@/lib/currencies'
 import { formatShortDate } from '@/lib/format-date'
+import { APP_LOCALE } from '@/lib/money'
 import {
+  activityQuery,
   spaceDetailsQuery,
   spacesQuery,
   useActiveSpace,
@@ -148,6 +152,7 @@ function SpaceSettingsPage() {
         <>
           <Members space={space} onChange={refresh} />
           {isOwner && <Invites space={space} onChange={refresh} />}
+          <RecentChanges spaceId={space.id} />
           <DangerZone space={space} />
         </>
       )}
@@ -573,6 +578,50 @@ function DangerZone({ space }: { space: Details }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </section>
+  )
+}
+
+// Who added, changed or deleted what: trust when several people keep one ledger. Loaded in
+// the browser, so times are in the viewer's own zone.
+function RecentChanges({ spaceId }: { spaceId: string }) {
+  const { data: events } = useQuery(activityQuery(spaceId))
+  if (!events) return null
+
+  return (
+    <section aria-labelledby="recent-changes" className="flex flex-col gap-3">
+      <h2 id="recent-changes" className="font-semibold text-lg">
+        Recent changes
+      </h2>
+      {events.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          Nothing yet. Changes to transactions show up here for every member.
+        </p>
+      ) : (
+        <ul className="divide-y rounded-lg border bg-card text-sm">
+          {events.map((e) => (
+            <li key={e.id} className="flex flex-col gap-0.5 px-4 py-2.5">
+              <span>
+                <span className="font-medium">
+                  {e.isMe ? 'You' : (e.userName ?? 'A former member')}
+                </span>{' '}
+                {describeActivity(e)}
+              </span>
+              <time
+                dateTime={e.createdAt}
+                className="text-muted-foreground text-xs"
+              >
+                {new Date(e.createdAt).toLocaleString(APP_LOCALE, {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </time>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }

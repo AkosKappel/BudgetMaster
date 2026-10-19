@@ -1,11 +1,18 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { createServerFn } from '@tanstack/react-start'
 import { setCookie } from '@tanstack/react-start/server'
-import { and, asc, count, eq, isNull, ne, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, isNull, ne, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { space, spaceInvite, spaceMember, user } from '@/db/schema'
+import {
+  activityEvent,
+  space,
+  spaceInvite,
+  spaceMember,
+  user,
+  wallet,
+} from '@/db/schema'
 import { createSpace as insertSpace } from '@/db/spaces'
 import { env } from '@/env'
 import { CURRENCIES } from '@/lib/currencies'
@@ -376,4 +383,36 @@ export const deleteSpace = createServerFn({ method: 'POST' })
     if (owner.personal)
       throw new Error('Your personal space cannot be deleted.')
     await db.delete(space).where(eq(space.id, data.spaceId))
+  })
+
+// The last changes to transactions in the space, newest first, for every member to see.
+export const listActivity = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .validator(spaceInput)
+  .handler(async ({ context, data }) => {
+    const member = await requireMembership(context.user.id, data.spaceId)
+    const events = await db
+      .select({
+        id: activityEvent.id,
+        action: activityEvent.action,
+        details: activityEvent.details,
+        createdAt: activityEvent.createdAt,
+        userId: activityEvent.userId,
+        userName: user.name,
+        currency: sql<string>`coalesce(${wallet.currency}, ${member.baseCurrency})`,
+      })
+      .from(activityEvent)
+      .leftJoin(user, eq(user.id, activityEvent.userId))
+      .leftJoin(
+        wallet,
+        sql`${wallet.id} = (${activityEvent.details}->>'walletId')::uuid`,
+      )
+      .where(eq(activityEvent.spaceId, member.id))
+      .orderBy(desc(activityEvent.createdAt))
+      .limit(30)
+    return events.map((e) => ({
+      ...e,
+      createdAt: e.createdAt.toISOString(),
+      isMe: e.userId === context.user.id,
+    }))
   })
