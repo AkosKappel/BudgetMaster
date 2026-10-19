@@ -71,6 +71,13 @@
       "when": 1792398716553,
       "tag": "0009_activity_log",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792401463304,
+      "tag": "0010_rate_limit",
+      "breakpoints": true
     }
   ]
 }

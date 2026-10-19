@@ -40,6 +40,9 @@ checkout can change branches, rebuild and reset its database without touching it
 3. Smoke test from the repository: `node scripts/smoke.ts https://budgetmaster.tailb52c43.ts.net`
    (health, sign-in page with its CSP, a demo sign-in and sign-out). It starts one demo,
    which counts against the 5 per hour limit.
+   After the first deploy, check `docker compose logs app` for Better Auth's warning that it
+   "could not determine a client IP": without the visitor's address from the Tailscale proxy,
+   rate limits fall back to one bucket shared by everyone.
 4. Roll back by setting the previous tag and running the same command. Migrations only move
    forward, so roll back to a version with the same schema.
 

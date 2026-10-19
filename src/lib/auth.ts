@@ -70,9 +70,16 @@ export const auth = betterAuth({
       },
     },
   },
+  // The Tailscale proxy in front of the app adds the visitor's address to X-Forwarded-For.
+  // Naming a trusted proxy makes Better Auth read the chain from the right, so an address
+  // a client sends itself is ignored instead of sharing one bucket with everyone.
+  advanced: {
+    ipAddress: { trustedProxies: ['127.0.0.1/32', '::1/128'] },
+  },
   // Only enforced in production. Each demo seeds hundreds of rows, so starting one is
   // limited per IP address.
   rateLimit: {
+    storage: 'database',
     customRules: {
       '/sign-in/anonymous': { window: 3600, max: 5 },
       // Each one sends an email.
