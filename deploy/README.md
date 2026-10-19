@@ -21,6 +21,7 @@ checkout can change branches, rebuild and reset its database without touching it
    cp deploy/compose.yaml deploy/compose.tailscale.yaml ~/deploy/budgetmaster/
    cp deploy/tailscale/serve.json ~/deploy/budgetmaster/tailscale/
    cp deploy/maintenance/* ~/deploy/budgetmaster/maintenance/
+   cp deploy/restore-test.sh ~/deploy/budgetmaster/
    cp deploy/.env.example ~/deploy/budgetmaster/.env
    ```
 3. Fill in `.env` (new secrets, `IMAGE_TAG` from the latest green CI run on `main`, the
@@ -71,7 +72,10 @@ Restore a dump (stops nothing, replaces the data):
 docker compose exec -T db pg_restore -U budgetmaster -d budgetmaster --clean --if-exists < ~/backups/budgetmaster/budgetmaster-2026-10-18.dump
 ```
 
-Test a restore now and then into a scratch database before you need it.
+Test a restore now and then, before you need it: `./restore-test.sh` restores the newest
+dump into a throwaway Postgres container (no network, no port, removed afterwards) and checks
+that users, spaces, transactions and the migration history are there. Production is not
+touched. A month is a sensible rhythm; it takes seconds for a small database.
 
 ## Registry access
 
