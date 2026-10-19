@@ -45,6 +45,7 @@ import { formatShortDate } from '@/lib/format-date'
 import { iconFor } from '@/lib/icons'
 import { formatSignedMoney } from '@/lib/money'
 import {
+  formOptionsQuery,
   searchQuery,
   useActiveSpace,
   useSpaces,
@@ -79,6 +80,16 @@ export function CommandPalette() {
   const openEdit = useQuickAdd((s) => s.openEdit)
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 200 })
+  // Prefetched by the app layout; only listed once something is typed.
+  const { data: options } = useQuery({
+    ...formOptionsQuery(space.id),
+    enabled: open,
+  })
+  const filterActivity = (search: {
+    category?: string
+    wallet?: string
+    tag?: string
+  }) => run(() => navigate({ to: '/activity', search }))
   const { data: results = [], isFetching } = useQuery({
     ...searchQuery(space.id, debouncedQuery),
     enabled: open && debouncedQuery.length >= 2,
@@ -163,6 +174,56 @@ export function CommandPalette() {
                 </CommandItem>
               )
             })}
+          </CommandGroup>
+        )}
+
+        {query.trim() && options && (
+          <CommandGroup heading="Show in activity">
+            {options.categories.map((c) => {
+              const Icon = iconFor(c.icon)
+              return (
+                <CommandItem
+                  key={c.id}
+                  value={`category ${c.name} ${c.id}`}
+                  onSelect={filterActivity({ category: c.id })}
+                >
+                  <Icon style={{ color: c.color }} />
+                  {c.name}
+                  <span className="ml-auto text-muted-foreground text-xs">
+                    {c.type === 'income' ? 'Income category' : 'Category'}
+                  </span>
+                </CommandItem>
+              )
+            })}
+            {options.wallets.map((w) => {
+              const Icon = iconFor(w.icon)
+              return (
+                <CommandItem
+                  key={w.id}
+                  value={`wallet ${w.name} ${w.id}`}
+                  onSelect={filterActivity({ wallet: w.id })}
+                >
+                  <Icon style={{ color: w.color }} />
+                  {w.name}
+                  <span className="ml-auto text-muted-foreground text-xs">
+                    Wallet
+                  </span>
+                </CommandItem>
+              )
+            })}
+            {options.tags.map((t) => (
+              <CommandItem
+                key={t.id}
+                value={`tag ${t.name} ${t.id}`}
+                onSelect={filterActivity({ tag: t.id })}
+              >
+                <Tag style={{ color: t.color }} />
+                {t.name}
+                <span className="ml-auto text-muted-foreground text-xs">
+                  Tag
+                </span>
+              </CommandItem>
+            ))}
           </CommandGroup>
         )}
 

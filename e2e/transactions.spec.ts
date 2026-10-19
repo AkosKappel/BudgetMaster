@@ -34,3 +34,15 @@ test('activity filters come from the URL', async ({ page }) => {
   await expect(amounts.first()).toBeVisible()
   await expect(page.locator('main section li', { hasText: '−' })).toHaveCount(0)
 })
+
+test('the command palette opens activity filtered by a category', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.keyboard.press('ControlOrMeta+k')
+  const palette = page.getByRole('dialog', { name: 'Search and commands' })
+  await palette.getByRole('combobox').fill('Groceries')
+  await palette.getByRole('option', { name: /^Groceries\s+Category/ }).click()
+  await expect(page).toHaveURL(/\/activity\?category=/)
+  await expect(page.getByRole('button', { name: /Filters/ })).toContainText('1')
+})
