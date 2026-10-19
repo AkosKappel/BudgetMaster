@@ -36,7 +36,10 @@ checkout can change branches, rebuild and reset its database without touching it
 1. Wait for CI on `main` to pass; note the image tag `sha-xxxxxxx`.
 2. In `~/deploy/budgetmaster`, set `IMAGE_TAG` in `.env`, then
    `docker compose pull && docker compose up -d`.
-3. Roll back by setting the previous tag and running the same command. Migrations only move
+3. Smoke test from the repository: `node scripts/smoke.ts https://budgetmaster.tailb52c43.ts.net`
+   (health, sign-in page with its CSP, a demo sign-in and sign-out). It starts one demo,
+   which counts against the 5 per hour limit.
+4. Roll back by setting the previous tag and running the same command. Migrations only move
    forward, so roll back to a version with the same schema.
 
 ## Maintenance mode
