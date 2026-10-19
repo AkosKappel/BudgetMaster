@@ -1,32 +1,34 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/public-page'
+import { withCanonical } from '@/lib/site'
 
 export const Route = createFileRoute('/about')({
-  head: () => ({
-    meta: [
-      { title: 'About | BudgetMaster' },
-      {
-        name: 'description',
-        content:
-          'BudgetMaster is a mobile-first app for tracking income, expenses and budgets, alone or shared with a partner.',
-      },
-    ],
-    scripts: [
-      {
-        type: 'application/ld+json',
-        children: JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: 'BudgetMaster',
-          applicationCategory: 'FinanceApplication',
-          operatingSystem: 'Web',
-          offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-          author: { '@type': 'Person', name: 'Ákos Kappel' },
-        }),
-      },
-    ],
-  }),
+  head: () =>
+    withCanonical('/about', {
+      meta: [
+        { title: 'About | BudgetMaster' },
+        {
+          name: 'description',
+          content:
+            'BudgetMaster is a mobile-first app for tracking income, expenses and budgets, alone or shared with a partner.',
+        },
+      ],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'BudgetMaster',
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+            author: { '@type': 'Person', name: 'Ákos Kappel' },
+          }),
+        },
+      ],
+    }),
   component: About,
 })
 

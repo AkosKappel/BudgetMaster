@@ -10,6 +10,7 @@ import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
 
 import { Toaster } from '@/components/ui/sonner'
+import { siteOrigin } from '@/lib/site'
 import { getTheme } from '@/lib/theme'
 import { TIME_ZONE_COOKIE } from '@/lib/today'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
@@ -47,6 +48,24 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content:
           'Track income, expenses and budgets on your phone, alone or with a partner. Try the demo without signing up.',
       },
+      // Link previews in chats and social posts. Pages keep their own title.
+      { property: 'og:type', content: 'website' },
+      { property: 'og:site_name', content: 'BudgetMaster' },
+      { property: 'og:title', content: 'BudgetMaster' },
+      {
+        property: 'og:description',
+        content:
+          'Income, spending and budgets on your phone, alone or shared with a partner. Try the demo, no sign-up needed.',
+      },
+      { property: 'og:image', content: `${siteOrigin()}/og-image.png` },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      {
+        property: 'og:image:alt',
+        content:
+          'BudgetMaster logo and the line "Try the demo, no sign-up needed"',
+      },
+      { name: 'twitter:card', content: 'summary_large_image' },
     ],
     // Zod 4 compiles schemas with `new Function` unless told not to, and even its caught
     // probe is reported as a CSP violation. The setting is read when a schema is created,

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { sessionQuery } from '@/lib/queries'
+import { withCanonical } from '@/lib/site'
 
 export const Route = createFileRoute('/sign-up')({
   validateSearch: redirectSearch,
@@ -21,7 +22,10 @@ export const Route = createFileRoute('/sign-up')({
     if (session && !session.user.demoExpiresAt)
       throw redirect({ to: search.redirect ?? '/' })
   },
-  head: () => ({ meta: [{ title: 'Create account | BudgetMaster' }] }),
+  head: () =>
+    withCanonical('/sign-up', {
+      meta: [{ title: 'Create account | BudgetMaster' }],
+    }),
   component: SignUp,
 })
 

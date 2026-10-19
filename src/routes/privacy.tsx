@@ -1,17 +1,20 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/public-page'
+import { withCanonical } from '@/lib/site'
 
 export const Route = createFileRoute('/privacy')({
-  head: () => ({
-    meta: [
-      { title: 'Privacy | BudgetMaster' },
-      {
-        name: 'description',
-        content: 'What BudgetMaster stores, why, and how to take it with you.',
-      },
-    ],
-  }),
+  head: () =>
+    withCanonical('/privacy', {
+      meta: [
+        { title: 'Privacy | BudgetMaster' },
+        {
+          name: 'description',
+          content:
+            'What BudgetMaster stores, why, and how to take it with you.',
+        },
+      ],
+    }),
   component: Privacy,
 })
 
