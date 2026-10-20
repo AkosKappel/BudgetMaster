@@ -11,6 +11,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -461,6 +462,19 @@ export const receipt = pgTable(
       foreignColumns: [transaction.id, transaction.spaceId],
     }).onDelete('cascade'),
   ],
+)
+
+// ECB reference rates: units of `currency` for one euro on `date` (I-05). Totals in a
+// space's base currency convert other wallets through them (`convert_minor`, migration
+// 0020). Not per space: the same rates serve everyone.
+export const exchangeRate = pgTable(
+  'exchange_rate',
+  {
+    date: date({ mode: 'string' }).notNull(),
+    currency: char({ length: 3 }).notNull(),
+    rate: numeric({ precision: 18, scale: 8 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.date, t.currency] })],
 )
 
 // A member paying another back in a shared space (I-09). Not a transaction: the money moves

@@ -141,6 +141,13 @@
       "when": 1792511659114,
       "tag": "0019_desc_index_nulls_first",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792512725347,
+      "tag": "0020_exchange_rates",
+      "breakpoints": true
     }
   ]
 }
