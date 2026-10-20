@@ -16,6 +16,7 @@ import { authClient } from '@/lib/auth-client'
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/demo'
 import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { withCanonical } from '@/lib/site'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/sign-in')({
   validateSearch: redirectSearch,
@@ -28,7 +29,9 @@ export const Route = createFileRoute('/sign-in')({
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(signInOptionsQuery),
   head: () =>
-    withCanonical('/sign-in', { meta: [{ title: 'Sign in | BudgetMaster' }] }),
+    withCanonical('/sign-in', {
+      meta: [{ title: `${m.acct_sign_in_title()} | BudgetMaster` }],
+    }),
   component: SignIn,
 })
 
@@ -40,7 +43,7 @@ function SignIn() {
     run(() => authClient.signIn.email({ email, password }))
 
   return (
-    <AuthPage title="Sign in">
+    <AuthPage title={m.acct_sign_in_title()}>
       <SocialSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
@@ -51,7 +54,7 @@ function SignIn() {
         }}
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{m.acct_auth_email()}</Label>
           <Input
             id="email"
             name="email"
@@ -62,12 +65,12 @@ function SignIn() {
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{m.acct_auth_password()}</Label>
             <Link
               to="/forgot-password"
               className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
             >
-              Forgot password?
+              {m.acct_sign_in_forgot()}
             </Link>
           </div>
           <PasswordInput
@@ -79,7 +82,7 @@ function SignIn() {
         </div>
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending}>
-          Sign in
+          {m.acct_sign_in_title()}
         </Button>
         <Button
           type="button"
@@ -89,27 +92,26 @@ function SignIn() {
           onClick={() => run(() => authClient.signIn.passkey())}
         >
           <KeyRound />
-          Sign in with a passkey
+          {m.acct_sign_in_passkey()}
         </Button>
         <p className="text-muted-foreground text-sm">
-          New here?{' '}
+          {m.acct_sign_in_new_here()}{' '}
           <Link
             to="/sign-up"
             search={{ redirect: search.redirect }}
             className="text-foreground underline"
           >
-            Create an account
+            {m.acct_sign_in_create_account()}
           </Link>
         </p>
       </form>
 
       <section aria-labelledby="demo" className="flex flex-col gap-3">
         <h2 id="demo" className="font-medium">
-          Try it with demo data
+          {m.acct_sign_in_demo_title()}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Get a private copy of 14 months of sample data, no sign-up needed. It
-          is deleted after 48 hours unless you create an account.
+          {m.acct_sign_in_demo_text()}
         </p>
         <Button
           variant="outline"
@@ -118,7 +120,7 @@ function SignIn() {
           onClick={() => run(() => authClient.signIn.anonymous())}
         >
           <FlaskConical />
-          Try the demo
+          {m.acct_sign_in_demo_try()}
         </Button>
         {/* Shared logins from `pnpm db:seed`, for development only: in production every
             visitor gets a private demo instead. */}

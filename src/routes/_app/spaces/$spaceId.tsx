@@ -39,6 +39,7 @@ import {
   useActiveSpace,
   useSwitchSpace,
 } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import {
   createInvite,
   deleteSpace,
@@ -54,22 +55,29 @@ export const Route = createFileRoute('/_app/spaces/$spaceId')({
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(spaceDetailsQuery(params.spaceId)),
   head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? 'Space'} | BudgetMaster` }],
+    meta: [
+      {
+        title: `${loaderData?.name ?? m.acct_space_fallback_title()} | BudgetMaster`,
+      },
+    ],
   }),
   component: SpaceSettingsPage,
 })
 
 type Role = 'owner' | 'editor' | 'viewer'
-const ROLE_LABEL: Record<Role, string> = {
-  owner: 'Owner',
-  editor: 'Editor',
-  viewer: 'Viewer',
-}
-const ROLE_HINT: Record<Role, string> = {
-  owner: 'Can change settings, invite and remove people',
-  editor: 'Can add and change transactions',
-  viewer: 'Can only look',
-}
+const ROLES: Role[] = ['owner', 'editor', 'viewer']
+const roleLabel = (role: Role) =>
+  ({
+    owner: m.acct_role_owner(),
+    editor: m.acct_role_editor(),
+    viewer: m.acct_role_viewer(),
+  })[role]
+const roleHint = (role: Role) =>
+  ({
+    owner: m.acct_role_owner_hint(),
+    editor: m.acct_role_editor_hint(),
+    viewer: m.acct_role_viewer_hint(),
+  })[role]
 
 const selectClass =
   'h-9 rounded-md border border-input bg-card px-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm'
@@ -93,7 +101,7 @@ function SpaceSettingsPage() {
     mutationFn: updateSpaceSettings,
     onSuccess: async () => {
       await refresh()
-      toast.success('Settings saved')
+      toast.success(m.acct_space_settings_saved())
     },
   })
 
@@ -105,7 +113,7 @@ function SpaceSettingsPage() {
           className="-ml-1 flex items-center gap-1 self-start text-muted-foreground text-sm hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
-          Spaces
+          {m.acct_spaces_title()}
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-semibold text-2xl tracking-tight">
@@ -117,24 +125,28 @@ function SpaceSettingsPage() {
               disabled={pendingId !== null}
               onClick={() => switchTo(space.id)}
             >
-              Switch to this space
+              {m.acct_space_switch()}
             </Button>
           )}
         </div>
         <p className="text-muted-foreground">
           {space.personal
-            ? 'Your personal space. Only you can see it.'
-            : `You are ${ROLE_LABEL[space.role].toLowerCase()} here.`}
+            ? m.acct_space_personal_hint()
+            : {
+                owner: m.acct_space_you_are_owner(),
+                editor: m.acct_space_you_are_editor(),
+                viewer: m.acct_space_you_are_viewer(),
+              }[space.role]}
         </p>
       </div>
 
       <section aria-labelledby="settings" className="flex flex-col gap-4">
         <h2 id="settings" className="font-semibold text-lg">
-          Settings
+          {m.acct_space_settings()}
         </h2>
         {!isOwner && (
           <p className="text-muted-foreground text-sm">
-            Only owners can change these.
+            {m.acct_space_owners_only()}
           </p>
         )}
         <SpaceSettingsForm
@@ -143,7 +155,7 @@ function SpaceSettingsPage() {
             baseCurrency: toCurrency(space.baseCurrency),
             budgetMonthStartDay: space.budgetMonthStartDay,
           }}
-          submitLabel="Save settings"
+          submitLabel={m.acct_space_save()}
           disabled={!isOwner}
           pending={save.isPending}
           error={save.error?.message}
@@ -187,7 +199,7 @@ function Members({
     mutationFn: removeMember,
     onSuccess: async () => {
       await onChange()
-      toast.success('Removed from the space')
+      toast.success(m.acct_members_removed())
     },
     onError: (error) => toast.error(error.message),
   })
@@ -195,66 +207,66 @@ function Members({
   return (
     <section aria-labelledby="members" className="flex flex-col gap-3">
       <h2 id="members" className="font-semibold text-lg">
-        Members
+        {m.acct_members_title()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">
-        {space.members.map((m) => {
-          const isMe = m.userId === space.currentUserId
+        {space.members.map((member) => {
+          const isMe = member.userId === space.currentUserId
           return (
             <li
-              key={m.userId}
+              key={member.userId}
               className="flex flex-wrap items-center gap-3 px-4 py-3"
             >
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate font-medium">
-                  {m.name}
+                  {member.name}
                   {isMe && (
                     <span className="font-normal text-muted-foreground">
                       {' '}
-                      (you)
+                      {m.acct_members_you()}
                     </span>
                   )}
                 </span>
                 <span className="truncate text-muted-foreground text-sm">
-                  {m.email}
+                  {member.email}
                 </span>
               </span>
               {isOwner ? (
                 <select
-                  aria-label={`Role of ${m.name}`}
-                  value={m.role}
+                  aria-label={m.acct_members_role_of({ name: member.name })}
+                  value={member.role}
                   disabled={changeRole.isPending}
                   onChange={(e) =>
                     changeRole.mutate({
                       data: {
                         spaceId: space.id,
-                        userId: m.userId,
+                        userId: member.userId,
                         role: e.target.value as Role,
                       },
                     })
                   }
                   className={selectClass}
                 >
-                  {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
+                  {ROLES.map((role) => (
                     <option key={role} value={role}>
-                      {ROLE_LABEL[role]}
+                      {roleLabel(role)}
                     </option>
                   ))}
                 </select>
               ) : (
                 <span className="text-muted-foreground text-sm">
-                  {ROLE_LABEL[m.role]}
+                  {roleLabel(member.role)}
                 </span>
               )}
               {isOwner && !isMe && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label={`Remove ${m.name}`}
+                  aria-label={m.acct_members_remove({ name: member.name })}
                   disabled={remove.isPending}
                   onClick={() =>
                     remove.mutate({
-                      data: { spaceId: space.id, userId: m.userId },
+                      data: { spaceId: space.id, userId: member.userId },
                     })
                   }
                 >
@@ -266,10 +278,10 @@ function Members({
         })}
       </ul>
       <dl className="grid gap-1 text-muted-foreground text-sm">
-        {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
+        {ROLES.map((role) => (
           <div key={role} className="flex gap-1.5">
-            <dt className="font-medium text-foreground">{ROLE_LABEL[role]}:</dt>
-            <dd>{ROLE_HINT[role]}</dd>
+            <dt className="font-medium text-foreground">{roleLabel(role)}:</dt>
+            <dd>{roleHint(role)}</dd>
           </div>
         ))}
       </dl>
@@ -316,7 +328,7 @@ function Invites({
   return (
     <section aria-labelledby="invite" className="flex flex-col gap-4">
       <h2 id="invite" className="font-semibold text-lg">
-        Invite people
+        {m.acct_invite_title()}
       </h2>
       <form
         ref={formRef}
@@ -336,7 +348,7 @@ function Invites({
       >
         <div className="grid grid-cols-[1fr_auto] gap-3">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="invite-email">Email</Label>
+            <Label htmlFor="invite-email">{m.acct_invite_email()}</Label>
             <Input
               id="invite-email"
               name="email"
@@ -347,15 +359,15 @@ function Invites({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="invite-role">Role</Label>
+            <Label htmlFor="invite-role">{m.acct_invite_role()}</Label>
             <select
               id="invite-role"
               name="role"
               defaultValue="editor"
               className={selectClass}
             >
-              <option value="editor">Editor</option>
-              <option value="viewer">Viewer</option>
+              <option value="editor">{m.acct_role_editor()}</option>
+              <option value="viewer">{m.acct_role_viewer()}</option>
             </select>
           </div>
         </div>
@@ -367,12 +379,11 @@ function Invites({
               defaultChecked
               className="size-4"
             />
-            Email the invite to them
+            {m.acct_invite_send_email()}
           </label>
         )}
         <p id="invite-hint" className="text-muted-foreground text-sm">
-          You also get the link to send another way. It works once, only for
-          this email, for 7 days.
+          {m.acct_invite_hint()}
         </p>
         <FormError message={create.error?.message ?? null} />
         <Button
@@ -381,7 +392,7 @@ function Invites({
           className="self-start"
         >
           <Link2 />
-          Create invite link
+          {m.acct_invite_create()}
         </Button>
       </form>
 
@@ -391,28 +402,30 @@ function Invites({
           role="status"
         >
           <p className="text-sm">
-            {link.emailed ? 'Emailed to ' : 'Send this link to '}
+            {link.emailed
+              ? m.acct_invite_emailed_to()
+              : m.acct_invite_send_to()}
             <span className="font-medium">{link.email}</span>.{' '}
             {link.emailed
-              ? 'You can also share the link yourself; it is shown only now.'
-              : 'It is shown only now.'}
+              ? m.acct_invite_emailed_note()
+              : m.acct_invite_shown_once()}
           </p>
           <Input
             readOnly
             value={link.url}
             onFocus={(e) => e.currentTarget.select()}
-            aria-label="Invite link"
+            aria-label={m.acct_invite_link()}
           />
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={async () => {
                 await navigator.clipboard.writeText(link.url)
-                toast.success('Link copied')
+                toast.success(m.acct_invite_copied())
               }}
             >
               <Copy />
-              Copy link
+              {m.acct_invite_copy()}
             </Button>
             {canShare && (
               <Button
@@ -420,14 +433,14 @@ function Invites({
                 onClick={() =>
                   navigator
                     .share({
-                      title: `Join ${space.name} on BudgetMaster`,
+                      title: m.acct_invite_share_title({ space: space.name }),
                       url: link.url,
                     })
                     .catch(() => {})
                 }
               >
                 <Share2 />
-                Share
+                {m.acct_invite_share()}
               </Button>
             )}
           </div>
@@ -436,7 +449,7 @@ function Invites({
 
       {space.invites.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="font-medium text-sm">Pending</h3>
+          <h3 className="font-medium text-sm">{m.acct_invite_pending()}</h3>
           <ul className="divide-y rounded-lg border bg-card">
             {space.invites.map((invite) => {
               const expired = new Date(invite.expiresAt).getTime() < now
@@ -454,16 +467,22 @@ function Invites({
                           : 'text-muted-foreground text-sm'
                       }
                     >
-                      {ROLE_LABEL[invite.role]},{' '}
+                      {roleLabel(invite.role)},{' '}
                       {expired
-                        ? 'expired'
-                        : `expires ${formatShortDate(new Date(invite.expiresAt).toISOString().slice(0, 10))}`}
+                        ? m.acct_invite_expired()
+                        : m.acct_invite_expires({
+                            date: formatShortDate(
+                              new Date(invite.expiresAt)
+                                .toISOString()
+                                .slice(0, 10),
+                            ),
+                          })}
                     </span>
                   </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={`Revoke invite for ${invite.email}`}
+                    aria-label={m.acct_invite_revoke({ email: invite.email })}
                     disabled={revoke.isPending}
                     onClick={() =>
                       revoke.mutate({
@@ -478,7 +497,7 @@ function Invites({
             })}
           </ul>
           <p className="text-muted-foreground text-sm">
-            To send a new link, invite the same email again.
+            {m.acct_invite_resend_hint()}
           </p>
         </div>
       )}
@@ -505,13 +524,13 @@ function DangerZone({ space }: { space: Details }) {
     onSuccess: ({ deleted }) =>
       done(
         deleted
-          ? `You left and ${space.name} was deleted`
-          : `You left ${space.name}`,
+          ? m.acct_danger_left_deleted({ space: space.name })
+          : m.acct_danger_left({ space: space.name }),
       ),
   })
   const remove = useMutation({
     mutationFn: deleteSpace,
-    onSuccess: () => done(`${space.name} deleted`),
+    onSuccess: () => done(m.acct_danger_deleted({ space: space.name })),
   })
   const error =
     (confirm === 'leave' ? leave.error : remove.error)?.message ?? null
@@ -520,11 +539,11 @@ function DangerZone({ space }: { space: Details }) {
   return (
     <section aria-labelledby="danger" className="flex flex-col gap-3">
       <h2 id="danger" className="font-semibold text-lg">
-        Leave or delete
+        {m.acct_danger_title()}
       </h2>
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={() => setConfirm('leave')}>
-          Leave space
+          {m.acct_danger_leave()}
         </Button>
         {isOwner && (
           <Button
@@ -535,7 +554,7 @@ function DangerZone({ space }: { space: Details }) {
               setConfirm('delete')
             }}
           >
-            Delete space
+            {m.acct_danger_delete()}
           </Button>
         )}
       </div>
@@ -548,18 +567,20 @@ function DangerZone({ space }: { space: Details }) {
           <DialogHeader>
             <DialogTitle>
               {confirm === 'delete'
-                ? `Delete ${space.name}?`
-                : `Leave ${space.name}?`}
+                ? m.acct_danger_delete_title({ space: space.name })
+                : m.acct_danger_leave_title({ space: space.name })}
             </DialogTitle>
             <DialogDescription>
               {confirm === 'delete'
-                ? 'All its wallets, transactions, budgets and members are removed for everyone. This cannot be undone.'
-                : 'You lose access to its wallets and transactions. Someone has to invite you again to come back.'}
+                ? m.acct_danger_delete_body()
+                : m.acct_danger_leave_body()}
             </DialogDescription>
           </DialogHeader>
           {confirm === 'delete' && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="confirm-name">Type {space.name} to confirm</Label>
+              <Label htmlFor="confirm-name">
+                {m.acct_danger_type_name({ space: space.name })}
+              </Label>
               <Input
                 id="confirm-name"
                 value={typed}
@@ -571,7 +592,7 @@ function DangerZone({ space }: { space: Details }) {
           <FormError message={error} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirm(null)}>
-              Cancel
+              {m.acct_cancel()}
             </Button>
             <Button
               variant="destructive"
@@ -586,7 +607,9 @@ function DangerZone({ space }: { space: Details }) {
                     })
               }
             >
-              {confirm === 'delete' ? 'Delete space' : 'Leave space'}
+              {confirm === 'delete'
+                ? m.acct_danger_delete()
+                : m.acct_danger_leave()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -612,7 +635,7 @@ function RecentChanges({
   const restore = useMutation({
     mutationFn: restoreTransaction,
     onSuccess: () => {
-      toast.success('Transaction restored')
+      toast.success(m.acct_changes_restored())
       return queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
     },
     onError: (e) => toast.error(e.message),
@@ -620,7 +643,7 @@ function RecentChanges({
   const undo = useMutation({
     mutationFn: undoChange,
     onSuccess: () => {
-      toast.success('Change undone')
+      toast.success(m.acct_changes_undone())
       return queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
     },
     onError: (e) => toast.error(e.message),
@@ -630,12 +653,11 @@ function RecentChanges({
   return (
     <section aria-labelledby="recent-changes" className="flex flex-col gap-3">
       <h2 id="recent-changes" className="font-semibold text-lg">
-        Recent changes
+        {m.acct_changes_title()}
       </h2>
       {events.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          Nothing yet. Changes to transactions show up here
-          {shared ? ' for every member' : ''}.
+          {shared ? m.acct_changes_empty_shared() : m.acct_changes_empty()}
         </p>
       ) : (
         <ul className="divide-y rounded-lg border bg-card text-sm">
@@ -644,8 +666,11 @@ function RecentChanges({
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span>
                   <span className="font-medium">
-                    {e.isMe ? 'You' : (e.userName ?? 'A former member')}
-                  </span>{' '}
+                    {e.isMe
+                      ? m.acct_changes_you()
+                      : (e.userName ?? m.acct_former_member())}
+                  </span>
+                  {m.acct_activity_separator()}
                   {describeActivity(e)}
                 </span>
                 <time
@@ -669,7 +694,7 @@ function RecentChanges({
                     restore.mutate({ data: { spaceId, eventId: e.id } })
                   }
                 >
-                  Restore
+                  {m.acct_changes_restore()}
                 </Button>
               )}
               {canWrite && e.undoable && (
@@ -681,7 +706,7 @@ function RecentChanges({
                     undo.mutate({ data: { spaceId, eventId: e.id } })
                   }
                 >
-                  Undo
+                  {m.acct_changes_undo()}
                 </Button>
               )}
             </li>

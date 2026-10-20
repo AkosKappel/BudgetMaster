@@ -12,12 +12,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useIsClient } from '@/hooks/use-is-client'
 import { authClient } from '@/lib/auth-client'
+import { m } from '@/paraglide/messages.js'
 
 // Second step of signing in when the account has two-step sign-in on. The password step
 // left a short-lived cookie that these calls complete.
 export const Route = createFileRoute('/two-factor')({
   validateSearch: redirectSearch,
-  head: () => ({ meta: [{ title: 'Two-step sign-in | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.acct_two_factor_title()} | BudgetMaster` }],
+  }),
   component: TwoFactor,
 })
 
@@ -28,7 +31,7 @@ function TwoFactor() {
   const hydrated = useIsClient()
 
   return (
-    <AuthPage title="Two-step sign-in">
+    <AuthPage title={m.acct_two_factor_title()}>
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {
@@ -45,11 +48,15 @@ function TwoFactor() {
       >
         <p className="text-muted-foreground">
           {backup
-            ? 'Enter one of the backup codes you saved. Each code works once.'
-            : 'Enter the 6-digit code from your authenticator app.'}
+            ? m.acct_two_factor_backup_intro()
+            : m.acct_two_factor_totp_intro()}
         </p>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="code">{backup ? 'Backup code' : 'Code'}</Label>
+          <Label htmlFor="code">
+            {backup
+              ? m.acct_two_factor_backup_code()
+              : m.acct_two_factor_code()}
+          </Label>
           <Input
             key={backup ? 'backup' : 'totp'}
             id="code"
@@ -65,25 +72,27 @@ function TwoFactor() {
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="trust" className="size-4" />
-          Trust this browser for 30 days
+          {m.acct_two_factor_trust()}
         </label>
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending || !hydrated}>
-          Verify
+          {m.acct_two_factor_verify()}
         </Button>
         <button
           type="button"
           className="w-fit text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
           onClick={() => setBackup(!backup)}
         >
-          {backup ? 'Use the authenticator app' : 'Use a backup code instead'}
+          {backup
+            ? m.acct_two_factor_use_app()
+            : m.acct_two_factor_use_backup()}
         </button>
         <Link
           to="/sign-in"
           search={{ redirect: search.redirect }}
           className="w-fit text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
         >
-          Back to sign in
+          {m.acct_auth_back_to_sign_in()}
         </Link>
       </form>
     </AuthPage>

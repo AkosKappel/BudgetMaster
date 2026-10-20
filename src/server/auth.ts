@@ -4,6 +4,7 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { DEMO_LIFETIME_HOURS } from '@/db/demo-accounts'
 import { env } from '@/env'
 import { auth } from '@/lib/auth'
+import { m } from '@/paraglide/messages.js'
 import { announceChange } from '@/server/live'
 
 export const getSession = createServerFn({ method: 'GET' }).handler(
@@ -45,7 +46,7 @@ export const getSession = createServerFn({ method: 'GET' }).handler(
 export const authMiddleware = createMiddleware({ type: 'function' }).server(
   async ({ next, data, method }) => {
     const session = await auth.api.getSession({ headers: getRequestHeaders() })
-    if (!session) throw new Error('Not signed in')
+    if (!session) throw new Error(m.acct_not_signed_in())
     const result = await next({ context: { user: session.user } })
     // Every write to a space goes through here, so open tabs and devices hear about it
     // (R-01). The function checked the membership; a failed call never gets this far.

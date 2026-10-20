@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { useActiveSpace } from '@/lib/queries'
 import { localTodayIso } from '@/lib/recurrence'
+import { m } from '@/paraglide/messages.js'
 import { exportAllData, exportTransactionsCsv } from '@/server/account'
 
 function download(name: string, type: string, content: string) {
@@ -61,7 +62,7 @@ export function AccountData() {
         )
       }
     } catch {
-      toast.error('Could not prepare the download. Try again.')
+      toast.error(m.acct_data_download_error())
     } finally {
       setBusy(null)
     }
@@ -70,11 +71,10 @@ export function AccountData() {
   return (
     <section aria-labelledby="your-data" className="flex flex-col gap-3">
       <h2 id="your-data" className="font-semibold text-lg">
-        Your data
+        {m.acct_data_title()}
       </h2>
       <p className="max-w-prose text-muted-foreground text-sm">
-        Your data is yours: take it with you at any time. Nothing is shared with
-        third parties.
+        {m.acct_data_intro()}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -83,7 +83,9 @@ export function AccountData() {
           onClick={() => run('json')}
         >
           <Download />
-          {busy === 'json' ? 'Preparing' : 'Download everything (JSON)'}
+          {busy === 'json'
+            ? m.acct_data_preparing()
+            : m.acct_data_download_json()}
         </Button>
         <Button
           variant="outline"
@@ -91,7 +93,9 @@ export function AccountData() {
           onClick={() => run('csv')}
         >
           <FileSpreadsheet />
-          {busy === 'csv' ? 'Preparing' : `${space.name} transactions (CSV)`}
+          {busy === 'csv'
+            ? m.acct_data_preparing()
+            : m.acct_data_download_csv({ space: space.name })}
         </Button>
       </div>
       {!user.demoExpiresAt && (
@@ -102,7 +106,7 @@ export function AccountData() {
             onClick={() => setDeleting(true)}
           >
             <Trash2 />
-            Delete account
+            {m.acct_data_delete_account()}
           </Button>
           <DeleteAccountDialog open={deleting} onOpenChange={setDeleting} />
         </>
@@ -130,11 +134,11 @@ function DeleteAccountDialog({
     const { error } = await authClient.deleteUser({ password })
     setPending(false)
     if (error) {
-      setError(error.message ?? 'Could not delete the account. Try again.')
+      setError(error.message ?? m.acct_data_delete_error())
       return
     }
     queryClient.clear()
-    toast.success('Account deleted')
+    toast.success(m.acct_data_deleted())
     await navigate({ to: '/sign-in' })
   }
 
@@ -149,12 +153,8 @@ function DeleteAccountDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete your account?</DialogTitle>
-          <DialogDescription>
-            Your personal space and every space only you belong to are deleted
-            with all their transactions. You leave shared spaces. This cannot be
-            undone, so download your data first if you want to keep it.
-          </DialogDescription>
+          <DialogTitle>{m.acct_data_delete_title()}</DialogTitle>
+          <DialogDescription>{m.acct_data_delete_body()}</DialogDescription>
         </DialogHeader>
         <form
           id="delete-account"
@@ -164,7 +164,7 @@ function DeleteAccountDialog({
             confirm()
           }}
         >
-          <Label htmlFor="delete-password">Your password</Label>
+          <Label htmlFor="delete-password">{m.acct_data_your_password()}</Label>
           <PasswordInput
             id="delete-password"
             value={password}
@@ -176,7 +176,7 @@ function DeleteAccountDialog({
         <FormError message={error} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {m.acct_cancel()}
           </Button>
           <Button
             type="submit"
@@ -184,7 +184,7 @@ function DeleteAccountDialog({
             variant="destructive"
             disabled={pending || !password}
           >
-            Delete account
+            {m.acct_data_delete_account()}
           </Button>
         </DialogFooter>
       </DialogContent>

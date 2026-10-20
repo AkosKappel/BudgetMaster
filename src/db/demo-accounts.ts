@@ -30,6 +30,8 @@ export function createDemoSpace(userId: string) {
       ownerId: userId,
       personal: true,
       budgetMonthStartDay: 25,
+      // The demo data looks its categories up by their English names.
+      locale: 'en',
     })
     await seedPersonalDemo(created.id, userId, currentDay())
   })

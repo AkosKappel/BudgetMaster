@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useIsClient } from '@/hooks/use-is-client'
 import { authClient } from '@/lib/auth-client'
+import { m } from '@/paraglide/messages.js'
 
 // The emailed link arrives here with `?token=` (or `?error=INVALID_TOKEN` when it expired).
 export const Route = createFileRoute('/reset-password')({
@@ -16,7 +17,9 @@ export const Route = createFileRoute('/reset-password')({
     token: z.string().optional().catch(undefined),
     error: z.string().optional().catch(undefined),
   }),
-  head: () => ({ meta: [{ title: 'Choose a new password | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.acct_reset_title()} | BudgetMaster` }],
+  }),
   component: ResetPassword,
 })
 
@@ -29,19 +32,17 @@ function ResetPassword() {
 
   if (!token || linkError) {
     return (
-      <AuthPage title="Link expired">
-        <p className="text-muted-foreground">
-          This reset link is no longer valid. Links work once and for one hour.
-        </p>
+      <AuthPage title={m.acct_reset_expired_title()}>
+        <p className="text-muted-foreground">{m.acct_reset_expired_text()}</p>
         <Button asChild size="lg">
-          <Link to="/forgot-password">Send a new link</Link>
+          <Link to="/forgot-password">{m.acct_reset_new_link()}</Link>
         </Button>
       </AuthPage>
     )
   }
 
   return (
-    <AuthPage title="Choose a new password">
+    <AuthPage title={m.acct_reset_title()}>
       <form
         className="flex flex-col gap-4"
         onSubmit={async (event) => {
@@ -57,17 +58,15 @@ function ResetPassword() {
           })
           setPending(false)
           if (error) {
-            setError(
-              error.message ?? 'Could not change the password. Try again.',
-            )
+            setError(error.message ?? m.acct_reset_error())
             return
           }
-          toast.success('Password changed. Sign in with the new one.')
+          toast.success(m.acct_reset_done())
           await navigate({ to: '/sign-in' })
         }}
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">New password</Label>
+          <Label htmlFor="password">{m.acct_reset_new_password()}</Label>
           <PasswordInput
             id="password"
             name="password"
@@ -75,13 +74,11 @@ function ResetPassword() {
             minLength={8}
             required
           />
-          <p className="text-muted-foreground text-sm">
-            At least 8 characters. You are signed out on your other devices.
-          </p>
+          <p className="text-muted-foreground text-sm">{m.acct_reset_hint()}</p>
         </div>
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending || !hydrated}>
-          Change password
+          {m.acct_reset_submit()}
         </Button>
       </form>
     </AuthPage>

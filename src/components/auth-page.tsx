@@ -9,6 +9,7 @@ import { PublicFooter } from '@/components/public-page'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 import { signInOptionsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 
 // `?redirect=` on the auth pages: same-site paths only, never `//other.site` or
 // `/\other.site` (browsers read the backslash as a slash).
@@ -59,7 +60,7 @@ export function useAuthSubmit(redirectTo = '/') {
     try {
       const { data, error } = await action()
       if (error) {
-        setError(error.message ?? 'Something went wrong. Try again.')
+        setError(error.message ?? m.acct_auth_error_generic())
         return
       }
       // The password was right, but the account also asks for an authenticator code.
@@ -70,9 +71,7 @@ export function useAuthSubmit(redirectTo = '/') {
       queryClient.clear()
       await navigate({ to: redirectTo })
     } catch {
-      setError(
-        'Could not reach the server. Check your connection and try again.',
-      )
+      setError(m.acct_auth_error_offline())
     } finally {
       setPending(false)
     }
@@ -135,13 +134,16 @@ export function SocialSignIn({
               errorCallbackURL: '/sign-in',
             })
             if (result.error) {
-              setError(result.error.message ?? `Could not reach ${label}.`)
+              setError(
+                result.error.message ??
+                  m.acct_auth_provider_unreachable({ provider: label }),
+              )
               setPending(false)
             }
           }}
         >
           <Logo />
-          Continue with {label}
+          {m.acct_auth_continue_with({ provider: label })}
         </Button>
       ))}
       <FormError message={error} />

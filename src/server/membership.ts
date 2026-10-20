@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm'
 
 import { db } from '@/db'
 import { space, spaceMember } from '@/db/schema'
+import { m } from '@/paraglide/messages.js'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles (a plain export would pull the database driver into the browser).
@@ -21,6 +22,6 @@ export async function requireMembership(userId: string, spaceId: string) {
     .where(
       and(eq(spaceMember.userId, userId), eq(spaceMember.spaceId, spaceId)),
     )
-  if (!row) throw new Error('Space not found')
+  if (!row) throw new Error(m.acct_space_not_found())
   return row
 }

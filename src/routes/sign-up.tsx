@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { withCanonical } from '@/lib/site'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/sign-up')({
   validateSearch: redirectSearch,
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/sign-up')({
     context.queryClient.ensureQueryData(signInOptionsQuery),
   head: () =>
     withCanonical('/sign-up', {
-      meta: [{ title: 'Create account | BudgetMaster' }],
+      meta: [{ title: `${m.acct_sign_up_title()} | BudgetMaster` }],
     }),
   component: SignUp,
 })
@@ -38,7 +39,7 @@ function SignUp() {
   const { run, error, pending } = useAuthSubmit(search.redirect ?? '/welcome')
 
   return (
-    <AuthPage title="Create account">
+    <AuthPage title={m.acct_sign_up_title()}>
       <SocialSignIn redirect={search.redirect} />
       <form
         className="flex flex-col gap-4"
@@ -55,11 +56,11 @@ function SignUp() {
         }}
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{m.acct_auth_name()}</Label>
           <Input id="name" name="name" autoComplete="name" required />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{m.acct_auth_email()}</Label>
           <Input
             id="email"
             name="email"
@@ -69,7 +70,7 @@ function SignUp() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{m.acct_auth_password()}</Label>
           <PasswordInput
             id="password"
             name="password"
@@ -79,21 +80,21 @@ function SignUp() {
             aria-describedby="password-hint"
           />
           <p id="password-hint" className="text-muted-foreground text-sm">
-            At least 8 characters.
+            {m.acct_auth_password_hint()}
           </p>
         </div>
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending}>
-          Create account
+          {m.acct_sign_up_title()}
         </Button>
         <p className="text-muted-foreground text-sm">
-          Already have an account?{' '}
+          {m.acct_sign_up_have_account()}{' '}
           <Link
             to="/sign-in"
             search={{ redirect: search.redirect }}
             className="text-foreground underline"
           >
-            Sign in
+            {m.acct_sign_in_title()}
           </Link>
         </p>
       </form>

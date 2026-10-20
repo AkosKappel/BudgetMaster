@@ -14,6 +14,7 @@ import { authClient } from '@/lib/auth-client'
 import { describeDevice } from '@/lib/devices'
 import { formatLocale } from '@/lib/locale'
 import { devicesQuery, sessionQuery, signInOptionsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { signOutDevice } from '@/server/devices'
 
 // Email confirmation and password change. Demo accounts have neither.
@@ -29,14 +30,14 @@ export function AccountSecurity() {
       callbackURL: '/settings',
     })
     setSending(false)
-    if (error) toast.error(error.message ?? 'Could not send the email.')
-    else toast.success(`Confirmation email sent to ${user.email}`)
+    if (error) toast.error(error.message ?? m.acct_security_email_error())
+    else toast.success(m.acct_security_email_sent({ email: user.email }))
   }
 
   return (
     <section aria-labelledby="security" className="flex flex-col gap-3">
       <h2 id="security" className="font-semibold text-lg">
-        Sign-in and security
+        {m.acct_security_title()}
       </h2>
       {!user.emailVerified && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
@@ -45,8 +46,7 @@ export function AccountSecurity() {
             aria-hidden="true"
           />
           <p className="min-w-0 flex-1">
-            Confirm {user.email} so you can reset your password if you forget
-            it.
+            {m.acct_security_confirm_email({ email: user.email })}
           </p>
           <Button
             variant="outline"
@@ -54,33 +54,39 @@ export function AccountSecurity() {
             disabled={sending}
             onClick={resend}
           >
-            Send confirmation email
+            {m.acct_security_send_confirmation()}
           </Button>
         </div>
       )}
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">
-          Change password
+          {m.acct_reset_submit()}
         </summary>
         <ChangePasswordForm />
       </details>
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">
-          Two-step sign-in{' '}
+          {m.acct_two_factor_title()}{' '}
           <span className="font-normal text-muted-foreground">
-            ({user.twoFactorEnabled ? 'on' : 'off'})
+            (
+            {user.twoFactorEnabled
+              ? m.acct_security_on()
+              : m.acct_security_off()}
+            )
           </span>
         </summary>
         <TwoFactorSettings enabled={user.twoFactorEnabled} />
       </details>
       <ConnectedAccounts />
       <details className="rounded-lg border bg-card px-4 py-3">
-        <summary className="cursor-pointer font-medium">Passkeys</summary>
+        <summary className="cursor-pointer font-medium">
+          {m.acct_passkeys_title()}
+        </summary>
         <Passkeys />
       </details>
       <details className="rounded-lg border bg-card px-4 py-3">
         <summary className="cursor-pointer font-medium">
-          Signed-in devices
+          {m.acct_devices_title()}
         </summary>
         <SignedInDevices />
       </details>
@@ -108,15 +114,15 @@ function ChangePasswordForm() {
         })
         setPending(false)
         if (error) {
-          setError(error.message ?? 'Could not change the password.')
+          setError(error.message ?? m.acct_password_error())
           return
         }
         form.reset()
-        toast.success('Password changed. Other devices are signed out.')
+        toast.success(m.acct_password_changed())
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="current-password">Current password</Label>
+        <Label htmlFor="current-password">{m.acct_password_current()}</Label>
         <PasswordInput
           id="current-password"
           name="current"
@@ -125,7 +131,7 @@ function ChangePasswordForm() {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="new-password">New password</Label>
+        <Label htmlFor="new-password">{m.acct_reset_new_password()}</Label>
         <PasswordInput
           id="new-password"
           name="new"
@@ -136,7 +142,7 @@ function ChangePasswordForm() {
       </div>
       <FormError message={error} />
       <Button type="submit" className="w-fit" disabled={pending}>
-        Change password
+        {m.acct_reset_submit()}
       </Button>
     </form>
   )
@@ -157,13 +163,15 @@ function SignedInDevices() {
   const { data: devices, isPending } = useQuery(devicesQuery)
   const signOut = useMutation({
     mutationFn: (id: string) => signOutDevice({ data: { id } }),
-    onSuccess: () => toast.success('Device signed out'),
+    onSuccess: () => toast.success(m.acct_devices_signed_out()),
     onError: (error) => toast.error(error.message),
     onSettled: () => queryClient.invalidateQueries(devicesQuery),
   })
 
   if (isPending || !devices)
-    return <p className="mt-3 text-muted-foreground text-sm">Loading…</p>
+    return (
+      <p className="mt-3 text-muted-foreground text-sm">{m.acct_loading()}</p>
+    )
 
   return (
     <ul className="mt-3 flex flex-col divide-y">
@@ -179,13 +187,15 @@ function SignedInDevices() {
               {device.current && (
                 <span className="font-normal text-muted-foreground">
                   {' '}
-                  (this device)
+                  {m.acct_devices_this_device()}
                 </span>
               )}
             </p>
             <p className="text-muted-foreground text-sm">
-              Signed in {formatTime(device.signedInAt)}, last active{' '}
-              {formatTime(device.lastActiveAt)}
+              {m.acct_devices_times({
+                signedIn: formatTime(device.signedInAt),
+                lastActive: formatTime(device.lastActiveAt),
+              })}
             </p>
           </div>
           {!device.current && (
@@ -193,10 +203,13 @@ function SignedInDevices() {
               variant="outline"
               size="sm"
               disabled={signOut.isPending}
-              aria-label={`Sign out ${device.device}, signed in ${formatTime(device.signedInAt)}`}
+              aria-label={m.acct_devices_sign_out_label({
+                device: device.device,
+                signedIn: formatTime(device.signedInAt),
+              })}
               onClick={() => signOut.mutate(device.id)}
             >
-              Sign out
+              {m.acct_devices_sign_out()}
             </Button>
           )}
         </li>
@@ -247,7 +260,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
     error: { message?: string } | null
   }) => {
     if (result.error || !result.data)
-      throw new Error(result.error?.message ?? 'Something went wrong.')
+      throw new Error(result.error?.message ?? m.acct_error_generic())
     return result.data
   }
 
@@ -264,21 +277,17 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
           )
           setSetup({ step: 'codes', backupCodes: setup.backupCodes })
           await refreshUser()
-          toast.success('Two-step sign-in is on')
+          toast.success(m.acct_two_factor_on())
         })}
       >
-        <p className="text-sm">
-          Scan the code with an authenticator app (Google Authenticator,
-          Microsoft Authenticator, 1Password, Bitwarden), then enter the 6-digit
-          code it shows.
-        </p>
-        <QrCode value={setup.uri} label="QR code for your authenticator app" />
+        <p className="text-sm">{m.acct_two_factor_scan()}</p>
+        <QrCode value={setup.uri} label={m.acct_two_factor_qr_label()} />
         <p className="text-muted-foreground text-sm">
-          Can't scan? Enter this key:{' '}
+          {m.acct_two_factor_cant_scan()}{' '}
           <code className="break-all font-mono text-foreground">{secret}</code>
         </p>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="totp-code">Code from the app</Label>
+          <Label htmlFor="totp-code">{m.acct_two_factor_app_code()}</Label>
           <Input
             id="totp-code"
             name="code"
@@ -292,10 +301,10 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
         <FormError message={error} />
         <div className="flex gap-2">
           <Button type="submit" disabled={pending}>
-            Turn on
+            {m.acct_two_factor_turn_on()}
           </Button>
           <Button type="button" variant="ghost" onClick={() => setSetup(null)}>
-            Cancel
+            {m.acct_cancel()}
           </Button>
         </div>
       </form>
@@ -305,11 +314,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
   if (setup?.step === 'codes') {
     return (
       <div className="mt-4 flex max-w-sm flex-col gap-4">
-        <p className="text-sm">
-          Save these backup codes somewhere safe, like your password manager.
-          Each one signs you in once if you lose your phone. They are not shown
-          again.
-        </p>
+        <p className="text-sm">{m.acct_two_factor_save_codes()}</p>
         <ul className="grid grid-cols-2 gap-1 rounded-md border bg-background p-3 font-mono text-sm">
           {setup.backupCodes.map((code) => (
             <li key={code}>{code}</li>
@@ -320,12 +325,14 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
             variant="outline"
             onClick={async () => {
               await navigator.clipboard.writeText(setup.backupCodes.join('\n'))
-              toast.success('Backup codes copied')
+              toast.success(m.acct_two_factor_codes_copied())
             }}
           >
-            Copy codes
+            {m.acct_two_factor_copy_codes()}
           </Button>
-          <Button onClick={() => setSetup(null)}>I saved them</Button>
+          <Button onClick={() => setSetup(null)}>
+            {m.acct_two_factor_saved()}
+          </Button>
         </div>
       </div>
     )
@@ -342,7 +349,8 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
               issuer: 'BudgetMaster',
             }),
           )
-          if (data.method !== 'totp') throw new Error('Unexpected answer.')
+          if (data.method !== 'totp')
+            throw new Error(m.acct_two_factor_unexpected())
           setSetup({
             step: 'scan',
             uri: data.totpURI,
@@ -351,11 +359,10 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
         })}
       >
         <p className="text-muted-foreground text-sm">
-          After your password, also ask for a code from an authenticator app on
-          your phone, so a leaked password alone cannot open your finances.
+          {m.acct_two_factor_off_intro()}
         </p>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="enable-2fa-password">Password</Label>
+          <Label htmlFor="enable-2fa-password">{m.acct_auth_password()}</Label>
           <PasswordInput
             id="enable-2fa-password"
             name="password"
@@ -365,7 +372,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
         </div>
         <FormError message={error} />
         <Button type="submit" className="w-fit" disabled={pending}>
-          Set up
+          {m.acct_two_factor_set_up()}
         </Button>
       </form>
     )
@@ -388,17 +395,15 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
           }
           unwrap(await authClient.twoFactor.disable({ password }))
           await refreshUser()
-          toast.success('Two-step sign-in is off')
+          toast.success(m.acct_two_factor_off())
         })(event)
       }}
     >
       <p className="text-muted-foreground text-sm">
-        Signing in asks for a code from your authenticator app. Confirm with
-        your password to get new backup codes (the old ones stop working) or to
-        turn it off.
+        {m.acct_two_factor_on_intro()}
       </p>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="manage-2fa-password">Password</Label>
+        <Label htmlFor="manage-2fa-password">{m.acct_auth_password()}</Label>
         <PasswordInput
           id="manage-2fa-password"
           name="password"
@@ -414,7 +419,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
           variant="outline"
           disabled={pending}
         >
-          New backup codes
+          {m.acct_two_factor_new_codes()}
         </Button>
         <Button
           type="submit"
@@ -422,7 +427,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
           variant="destructive"
           disabled={pending}
         >
-          Turn off
+          {m.acct_two_factor_turn_off()}
         </Button>
       </div>
     </form>
@@ -433,7 +438,7 @@ const passkeysQuery = {
   queryKey: ['passkeys'],
   queryFn: async () => {
     const { data, error } = await authClient.passkey.listUserPasskeys()
-    if (error) throw new Error(error.message ?? 'Could not load passkeys.')
+    if (error) throw new Error(error.message ?? m.acct_passkeys_load_error())
     return data
   },
 }
@@ -452,32 +457,29 @@ function Passkeys() {
         name: describeDevice(navigator.userAgent),
       })
       if (result?.error)
-        throw new Error(result.error.message ?? 'The passkey was not saved.')
+        throw new Error(result.error.message ?? m.acct_passkeys_not_saved())
     },
     onMutate: () => setError(null),
-    onSuccess: () => toast.success('Passkey added'),
+    onSuccess: () => toast.success(m.acct_passkeys_added()),
     onError: (e) => setError(e.message),
     onSettled: refresh,
   })
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await authClient.passkey.deletePasskey({ id })
-      if (error) throw new Error(error.message ?? 'Could not remove it.')
+      if (error)
+        throw new Error(error.message ?? m.acct_passkeys_remove_error())
     },
-    onSuccess: () => toast.success('Passkey removed'),
+    onSuccess: () => toast.success(m.acct_passkeys_removed()),
     onError: (e) => toast.error(e.message),
     onSettled: refresh,
   })
 
   return (
     <div className="mt-3 flex flex-col gap-3">
-      <p className="text-muted-foreground text-sm">
-        Sign in with Face ID, a fingerprint or a security key instead of typing
-        your password. The device keeps the private key; only a public key is
-        stored here.
-      </p>
+      <p className="text-muted-foreground text-sm">{m.acct_passkeys_intro()}</p>
       {isPending ? (
-        <p className="text-muted-foreground text-sm">Loading…</p>
+        <p className="text-muted-foreground text-sm">{m.acct_loading()}</p>
       ) : (
         passkeys &&
         passkeys.length > 0 && (
@@ -489,15 +491,21 @@ function Passkeys() {
                   aria-hidden="true"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{p.name ?? 'Passkey'}</p>
+                  <p className="truncate font-medium">
+                    {p.name ?? m.acct_passkeys_unnamed()}
+                  </p>
                   <p className="text-muted-foreground text-sm">
-                    Added {formatTime(new Date(p.createdAt).toISOString())}
+                    {m.acct_passkeys_added_on({
+                      date: formatTime(new Date(p.createdAt).toISOString()),
+                    })}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Remove passkey ${p.name ?? ''}`.trim()}
+                  aria-label={m
+                    .acct_passkeys_remove({ name: p.name ?? '' })
+                    .trim()}
                   disabled={remove.isPending}
                   onClick={() => remove.mutate(p.id)}
                 >
@@ -516,7 +524,7 @@ function Passkeys() {
         onClick={() => add.mutate()}
       >
         <KeyRound />
-        Add a passkey
+        {m.acct_passkeys_add()}
       </Button>
     </div>
   )
@@ -526,7 +534,7 @@ const accountsQuery = {
   queryKey: ['linked-accounts'],
   queryFn: async () => {
     const { data, error } = await authClient.listAccounts()
-    if (error) throw new Error(error.message ?? 'Could not load accounts.')
+    if (error) throw new Error(error.message ?? m.acct_connected_load_error())
     return data
   },
 }
@@ -544,9 +552,11 @@ function ConnectedAccounts() {
   const unlink = useMutation({
     mutationFn: async ({ accountId }: { accountId: string; label: string }) => {
       const { error } = await authClient.unlinkAccount({ accountId })
-      if (error) throw new Error(error.message ?? 'Could not disconnect.')
+      if (error)
+        throw new Error(error.message ?? m.acct_connected_disconnect_error())
     },
-    onSuccess: (_, { label }) => toast.success(`${label} disconnected`),
+    onSuccess: (_, { label }) =>
+      toast.success(m.acct_connected_disconnected({ provider: label })),
     onError: (e) => toast.error(e.message),
     onSettled: () => queryClient.invalidateQueries(accountsQuery),
   })
@@ -555,7 +565,7 @@ function ConnectedAccounts() {
   return (
     <details className="rounded-lg border bg-card px-4 py-3">
       <summary className="cursor-pointer font-medium">
-        Connected accounts
+        {m.acct_connected_title()}
       </summary>
       <ul className="mt-3 flex flex-col gap-3">
         {providers.map(({ id, label }) => {
@@ -564,8 +574,8 @@ function ConnectedAccounts() {
             <li key={id} className="flex flex-wrap items-center gap-3">
               <p className="min-w-0 flex-1 text-sm">
                 {linked
-                  ? `${label} is connected: you can sign in with it.`
-                  : `Connect ${label} to sign in without your password.`}
+                  ? m.acct_connected_linked({ provider: label })
+                  : m.acct_connected_unlinked({ provider: label })}
               </p>
               {linked ? (
                 <Button
@@ -576,7 +586,7 @@ function ConnectedAccounts() {
                     unlink.mutate({ accountId: linked.accountId, label })
                   }
                 >
-                  Disconnect {label}
+                  {m.acct_connected_disconnect({ provider: label })}
                 </Button>
               ) : (
                 <Button
@@ -589,7 +599,7 @@ function ConnectedAccounts() {
                     })
                   }
                 >
-                  Connect {label}
+                  {m.acct_connected_connect({ provider: label })}
                 </Button>
               )}
             </li>

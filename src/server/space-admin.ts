@@ -18,6 +18,7 @@ import { createSpace as insertSpace } from '@/db/spaces'
 import { env } from '@/env'
 import { CURRENCIES } from '@/lib/currencies'
 import { linkEmail } from '@/lib/email'
+import { m } from '@/paraglide/messages.js'
 import { RESTORE_DAYS } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -32,7 +33,7 @@ const hashToken = (token: string) =>
 async function requireOwner(userId: string, spaceId: string) {
   const membership = await requireMembership(userId, spaceId)
   if (membership.role !== 'owner') {
-    throw new Error('Only owners can change this space.')
+    throw new Error(m.acct_owners_only())
   }
   const [row] = await db
     .select({ personal: sql<boolean>`${space.personalOwnerId} is not null` })
@@ -61,7 +62,11 @@ const rememberSpace = (spaceId: string) =>
   })
 
 const settingsInput = z.object({
-  name: z.string().trim().min(1, 'Give the space a name.').max(60),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.acct_space_name_required() })
+    .max(60),
   baseCurrency: z.enum(CURRENCIES),
   budgetMonthStartDay: z.int().min(1).max(28),
 })
@@ -147,7 +152,10 @@ export const createInvite = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(
     spaceInput.extend({
-      email: z.email('Enter an email address.').trim().toLowerCase(),
+      email: z
+        .email({ error: () => m.acct_invite_email_invalid() })
+        .trim()
+        .toLowerCase(),
       role: z.enum(['editor', 'viewer']),
       // Also send the link by email; the owner always gets it to share another way.
       sendEmail: z.boolean().default(false),
@@ -156,17 +164,13 @@ export const createInvite = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }) => {
     const owner = await requireOwner(context.user.id, data.spaceId)
     if (owner.personal) {
-      throw new Error(
-        'Personal spaces cannot be shared. Create a shared space.',
-      )
+      throw new Error(m.acct_invite_personal())
     }
     if (data.sendEmail) {
       // The email goes out from our domain with a name the user chose, so only verified
       // accounts send it, and only a few an hour.
       if (context.user.isAnonymous || !context.user.emailVerified)
-        throw new Error(
-          'Verify your email address to send invites by email. You can still share the link.',
-        )
+        throw new Error(m.acct_invite_verify_email())
       const recent = await db.$count(
         spaceInvite,
         and(
@@ -175,9 +179,7 @@ export const createInvite = createServerFn({ method: 'POST' })
         ),
       )
       if (recent >= INVITE_EMAILS_PER_HOUR)
-        throw new Error(
-          'Too many invites in the last hour. Share the link instead, or try again later.',
-        )
+        throw new Error(m.acct_invite_rate_limited())
     }
     const [existing] = await db
       .select({ id: user.id })
@@ -189,7 +191,7 @@ export const createInvite = createServerFn({ method: 'POST' })
           sql`lower(${user.email}) = ${data.email}`,
         ),
       )
-    if (existing) throw new Error('This person is already a member.')
+    if (existing) throw new Error(m.acct_invite_already_member())
 
     const token = randomBytes(32).toString('base64url')
     await db.transaction(async (tx) => {
@@ -214,11 +216,26 @@ export const createInvite = createServerFn({ method: 'POST' })
     if (data.sendEmail) {
       await linkEmail({
         to: data.email,
-        subject: `${context.user.name} invited you to ${owner.name} on BudgetMaster`,
-        intro: `${context.user.name} invited you to the shared space "${owner.name}" on BudgetMaster, as ${data.role === 'editor' ? 'an editor' : 'a viewer'}. Sign in or create an account with this email address to join.`,
-        action: 'Join the space',
+        subject: m.acct_invite_email_subject({
+          name: context.user.name,
+          space: owner.name,
+        }),
+        intro:
+          data.role === 'editor'
+            ? m.acct_invite_email_intro_editor({
+                name: context.user.name,
+                space: owner.name,
+              })
+            : m.acct_invite_email_intro_viewer({
+                name: context.user.name,
+                space: owner.name,
+              }),
+        action: m.acct_invite_email_action(),
         url: `${new URL(env.BETTER_AUTH_URL).origin}/invite/${token}`,
-        outro: `The link works once and for ${INVITE_DAYS} days. If you do not know ${context.user.name}, ignore this email.`,
+        outro: m.acct_invite_email_outro({
+          days: INVITE_DAYS,
+          name: context.user.name,
+        }),
       })
     }
     return { token, emailed: data.sendEmail }
@@ -288,10 +305,10 @@ export const acceptInvite = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }) => {
     const invite = await findInvite(data.token)
     if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
-      throw new Error('This invite can no longer be used. Ask for a new link.')
+      throw new Error(m.acct_invite_unusable())
     }
     if (invite.email !== context.user.email.toLowerCase()) {
-      throw new Error(`This invite is for ${invite.email}.`)
+      throw new Error(m.acct_invite_wrong_email({ email: invite.email }))
     }
     await db.transaction(async (tx) => {
       // Marking it accepted first makes a double click harmless.
@@ -328,14 +345,12 @@ export const updateMemberRole = createServerFn({ method: 'POST' })
     await requireOwner(context.user.id, data.spaceId)
     const target = await requireMembership(data.userId, data.spaceId).catch(
       () => {
-        throw new Error('This person is not a member.')
+        throw new Error(m.acct_not_member())
       },
     )
     if (target.role === 'owner' && data.role !== 'owner') {
       if ((await ownerCount(data.spaceId)) <= 1) {
-        throw new Error(
-          'A space needs at least one owner. Make someone else owner first.',
-        )
+        throw new Error(m.acct_needs_owner())
       }
     }
     await db
@@ -363,12 +378,12 @@ export const removeMember = createServerFn({ method: 'POST' })
       .select({ personal: sql<boolean>`${space.personalOwnerId} is not null` })
       .from(space)
       .where(eq(space.id, data.spaceId))
-    if (row.personal) throw new Error('You cannot leave your personal space.')
+    if (row.personal) throw new Error(m.acct_cannot_leave_personal())
 
     const target = self
       ? membership
       : await requireMembership(data.userId, data.spaceId).catch(() => {
-          throw new Error('This person is not a member.')
+          throw new Error(m.acct_not_member())
         })
     const [{ others }] = await db
       .select({ others: count() })
@@ -381,7 +396,7 @@ export const removeMember = createServerFn({ method: 'POST' })
       )
     if (target.role === 'owner' && (await ownerCount(data.spaceId)) <= 1) {
       if (others > 0) {
-        throw new Error('Make someone else owner before leaving.')
+        throw new Error(m.acct_owner_before_leaving())
       }
       await db.delete(space).where(eq(space.id, data.spaceId))
       return { deleted: true }
@@ -402,8 +417,7 @@ export const deleteSpace = createServerFn({ method: 'POST' })
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const owner = await requireOwner(context.user.id, data.spaceId)
-    if (owner.personal)
-      throw new Error('Your personal space cannot be deleted.')
+    if (owner.personal) throw new Error(m.acct_cannot_delete_personal())
     await db.delete(space).where(eq(space.id, data.spaceId))
   })
 

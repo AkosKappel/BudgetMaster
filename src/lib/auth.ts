@@ -13,6 +13,7 @@ import * as schema from '@/db/schema'
 import { createSpace, soleMemberSpaces } from '@/db/spaces'
 import { env } from '@/env'
 import { linkEmail } from '@/lib/email'
+import { m } from '@/paraglide/messages.js'
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -25,12 +26,11 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       void linkEmail({
         to: user.email,
-        subject: 'Reset your BudgetMaster password',
-        intro: `Hi ${user.name}, someone asked to reset the password of your BudgetMaster account.`,
-        action: 'Choose a new password',
+        subject: m.acct_email_reset_subject(),
+        intro: m.acct_email_reset_intro({ name: user.name }),
+        action: m.acct_email_reset_action(),
         url,
-        outro:
-          'The link works for one hour. If it was not you, ignore this email; your password stays the same.',
+        outro: m.acct_email_reset_outro(),
       })
     },
     revokeSessionsOnPasswordReset: true,
@@ -41,12 +41,11 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       void linkEmail({
         to: user.email,
-        subject: 'Confirm your email for BudgetMaster',
-        intro: `Hi ${user.name}, confirm that this is your email address, so you can reset your password if you ever forget it.`,
-        action: 'Confirm email',
+        subject: m.acct_email_verify_subject(),
+        intro: m.acct_email_verify_intro({ name: user.name }),
+        action: m.acct_email_verify_action(),
         url,
-        outro:
-          'If you did not create a BudgetMaster account, ignore this email.',
+        outro: m.acct_email_verify_outro(),
       })
     },
   },
@@ -119,7 +118,7 @@ export const auth = betterAuth({
             return
           }
           await createSpace({
-            name: 'Personal',
+            name: m.acct_personal_space(),
             ownerId: user.id,
             personal: true,
           })
@@ -186,8 +185,7 @@ async function removeOwnSpaces(user: { id: string }) {
       )
     if (others.length && !others.some((m) => m.role === 'owner')) {
       throw new APIError('BAD_REQUEST', {
-        message:
-          'You are the only owner of a shared space. Make someone else owner or delete the space first.',
+        message: m.acct_delete_last_owner(),
       })
     }
   }

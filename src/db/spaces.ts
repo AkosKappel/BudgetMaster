@@ -7,8 +7,9 @@ import {
 } from 'drizzle-orm'
 
 import { db } from '@/db'
-import { DEFAULT_CATEGORIES } from '@/db/default-categories'
+import { defaultCategories } from '@/db/default-categories'
 import { category, space, spaceMember } from '@/db/schema'
+import type { Locale } from '@/paraglide/runtime.js'
 
 interface NewSpace {
   name: string
@@ -16,10 +17,17 @@ interface NewSpace {
   personal?: boolean
   baseCurrency?: string
   budgetMonthStartDay?: number
+  // Language of the default category names; the request's language when left out.
+  locale?: Locale
 }
 
 // Creates a space with its owner and the default categories, all or nothing.
-export async function createSpace({ ownerId, personal, ...values }: NewSpace) {
+export async function createSpace({
+  ownerId,
+  personal,
+  locale,
+  ...values
+}: NewSpace) {
   return db.transaction(async (tx) => {
     const [created] = await tx
       .insert(space)
@@ -29,7 +37,7 @@ export async function createSpace({ ownerId, personal, ...values }: NewSpace) {
       .insert(spaceMember)
       .values({ spaceId: created.id, userId: ownerId, role: 'owner' })
 
-    for (const { children, ...parent } of DEFAULT_CATEGORIES) {
+    for (const { children, ...parent } of defaultCategories(locale)) {
       const [inserted] = await tx
         .insert(category)
         .values({ ...parent, spaceId: created.id })

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney } from '@/lib/money'
 import { balancesQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { recordSettlement } from '@/server/balances'
 
 // Who owes whom in a shared space (I-09): expenses a member paid from their own money,
@@ -15,41 +16,41 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
   const settle = useMutation({
     mutationFn: recordSettlement,
     onSuccess: () => {
-      toast.success('Payment recorded')
+      toast.success(m.acct_balances_recorded())
       return queryClient.invalidateQueries(balancesQuery(spaceId))
     },
     onError: (e) => toast.error(e.message),
   })
   if (!data) return null
   const money = (minor: number) => formatMoney(minor, data.currency)
+  const me = data.currentUserId
   const you = (id: string, name: string) =>
-    id === data.currentUserId ? 'You' : name
+    id === me ? m.acct_changes_you() : name
 
   return (
     <section aria-labelledby="balances" className="flex flex-col gap-3">
       <h2 id="balances" className="font-semibold text-lg">
-        Balances
+        {m.acct_balances_title()}
       </h2>
       <p className="max-w-prose text-muted-foreground text-sm">
-        Expenses someone paid from their own money ("Paid by" in quick add) are
-        shared equally. Expenses from shared money do not count here.
+        {m.acct_balances_intro()}
       </p>
       <ul className="divide-y rounded-lg border bg-card text-sm">
-        {data.members.map((m) => (
-          <li key={m.id} className="flex items-center gap-3 px-4 py-2.5">
+        {data.members.map((member) => (
+          <li key={member.id} className="flex items-center gap-3 px-4 py-2.5">
             <span className="min-w-0 flex-1 truncate font-medium">
-              {you(m.id, m.name)}
+              {you(member.id, member.name)}
             </span>
             <span
               className={
-                m.balance > 0 ? 'text-income' : 'text-muted-foreground'
+                member.balance > 0 ? 'text-income' : 'text-muted-foreground'
               }
             >
-              {m.balance > 0
-                ? `gets back ${money(m.balance)}`
-                : m.balance < 0
-                  ? `owes ${money(-m.balance)}`
-                  : 'settled up'}
+              {member.balance > 0
+                ? m.acct_balances_gets_back({ amount: money(member.balance) })
+                : member.balance < 0
+                  ? m.acct_balances_owes({ amount: money(-member.balance) })
+                  : m.acct_balances_settled()}
             </span>
           </li>
         ))}
@@ -62,9 +63,14 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
               className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed px-4 py-2.5 text-sm"
             >
               <span className="min-w-0 flex-1">
-                {you(t.from, t.fromName)}{' '}
-                {t.from === data.currentUserId ? 'pay' : 'pays'}{' '}
-                {t.to === data.currentUserId ? 'you' : t.toName}{' '}
+                {t.from === me
+                  ? m.acct_balances_you_pay({ to: t.toName })
+                  : t.to === me
+                    ? m.acct_balances_pays_you({ from: t.fromName })
+                    : m.acct_balances_pays({
+                        from: t.fromName,
+                        to: t.toName,
+                      })}{' '}
                 <span className="font-medium">{money(t.amount)}</span>
               </span>
               {data.canWrite && (
@@ -83,7 +89,7 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
                     })
                   }
                 >
-                  Mark as paid
+                  {m.acct_balances_mark_paid()}
                 </Button>
               )}
             </li>
@@ -92,13 +98,28 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
       )}
       {data.recentSettlements.length > 0 && (
         <div className="flex flex-col gap-1 text-muted-foreground text-sm">
-          <h3 className="font-medium text-foreground">Paid back</h3>
+          <h3 className="font-medium text-foreground">
+            {m.acct_balances_paid_back()}
+          </h3>
           <ul>
             {data.recentSettlements.map((s) => (
               <li key={s.id}>
-                {formatShortDate(s.date)}: {you(s.fromUserId, s.fromName)} paid{' '}
-                {s.toUserId === data.currentUserId ? 'you' : s.toName}{' '}
-                {money(s.amount)}
+                {formatShortDate(s.date)}:{' '}
+                {s.fromUserId === me
+                  ? m.acct_balances_you_paid({
+                      to: s.toName,
+                      amount: money(s.amount),
+                    })
+                  : s.toUserId === me
+                    ? m.acct_balances_paid_you({
+                        from: s.fromName,
+                        amount: money(s.amount),
+                      })
+                    : m.acct_balances_paid({
+                        from: s.fromName,
+                        to: s.toName,
+                        amount: money(s.amount),
+                      })}
               </li>
             ))}
           </ul>

@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { settlement, spaceMember, transaction, user, wallet } from '@/db/schema'
 import { memberBalances, settleUp } from '@/lib/balances'
 import { currentDay } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -58,7 +59,7 @@ export const getBalances = createServerFn({ method: 'GET' })
       settlements,
     )
     const nameOf = (id: string) =>
-      members.find((m) => m.id === id)?.name ?? 'A former member'
+      members.find((m) => m.id === id)?.name ?? m.acct_former_member()
     return {
       currency: space.baseCurrency,
       canWrite: space.role !== 'viewer',
@@ -91,14 +92,13 @@ export const recordSettlement = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change this space.')
+    if (space.role === 'viewer') throw new Error(m.acct_viewers_cannot_change())
     if (data.fromUserId === data.toUserId)
-      throw new Error('Choose two different members.')
+      throw new Error(m.acct_settle_same_member())
     const members = await membersOf(space.id)
     const ids = new Set(members.map((m) => m.id))
     if (!ids.has(data.fromUserId) || !ids.has(data.toUserId))
-      throw new Error('Both people must be members of the space.')
+      throw new Error(m.acct_settle_not_members())
     await db.insert(settlement).values({
       spaceId: space.id,
       fromUserId: data.fromUserId,

@@ -5,6 +5,7 @@ import { db } from '@/db'
 import { recurringRule, spaceMember, transaction } from '@/db/schema'
 import { toCsv } from '@/lib/csv'
 import { currencyDigits } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -88,18 +89,18 @@ export const exportTransactionsCsv = createServerFn({ method: 'GET' })
 
     return toCsv([
       [
-        'Date',
-        'Type',
-        'Amount',
-        'Currency',
-        'Wallet',
-        'To wallet',
-        'To amount',
-        'Category',
-        'Subcategory',
-        'Payee',
-        'Note',
-        'Tags',
+        m.acct_csv_date(),
+        m.acct_csv_type(),
+        m.acct_csv_amount(),
+        m.acct_csv_currency(),
+        m.acct_csv_wallet(),
+        m.acct_csv_to_wallet(),
+        m.acct_csv_to_amount(),
+        m.acct_csv_category(),
+        m.acct_csv_subcategory(),
+        m.acct_csv_payee(),
+        m.acct_csv_note(),
+        m.acct_csv_tags(),
       ],
       ...rows.map((t) => {
         const parent = t.category?.parent?.name

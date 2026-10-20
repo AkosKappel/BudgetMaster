@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
 import { describeDevice } from '@/lib/devices'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 
 // The user's open sessions, newest activity first. Session tokens stay on the server: the
@@ -42,6 +43,6 @@ export const signOutDevice = createServerFn({ method: 'POST' })
     // finds nothing.
     const sessions = await auth.api.listSessions({ headers })
     const target = sessions.find((s) => s.id === data.id)
-    if (!target) throw new Error('That device is already signed out.')
+    if (!target) throw new Error(m.acct_device_signed_out())
     await auth.api.revokeSession({ headers, body: { token: target.token } })
   })

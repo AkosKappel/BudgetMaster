@@ -7,9 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useIsClient } from '@/hooks/use-is-client'
 import { authClient } from '@/lib/auth-client'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/forgot-password')({
-  head: () => ({ meta: [{ title: 'Forgot password | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.acct_forgot_title()} | BudgetMaster` }],
+  }),
   component: ForgotPassword,
 })
 
@@ -20,11 +23,10 @@ function ForgotPassword() {
   const hydrated = useIsClient()
 
   return (
-    <AuthPage title="Forgot password">
+    <AuthPage title={m.acct_forgot_title()}>
       {sent ? (
         <p role="status" className="text-muted-foreground">
-          If an account uses that address, an email with a link to choose a new
-          password is on its way. The link works for one hour.
+          {m.acct_forgot_sent()}
         </p>
       ) : (
         <form
@@ -41,16 +43,15 @@ function ForgotPassword() {
             setPending(false)
             // Better Auth answers the same whether or not the address has an account, so an
             // error here is a real one (too many requests, no connection).
-            if (error) setError(error.message ?? 'Try again later.')
+            if (error) setError(error.message ?? m.acct_forgot_error())
             else setSent(true)
           }}
         >
           <p className="text-muted-foreground text-sm">
-            Enter the email address of your account and we send you a link to
-            choose a new password.
+            {m.acct_forgot_intro()}
           </p>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{m.acct_auth_email()}</Label>
             <Input
               id="email"
               name="email"
@@ -61,13 +62,13 @@ function ForgotPassword() {
           </div>
           <FormError message={error} />
           <Button type="submit" size="lg" disabled={pending || !hydrated}>
-            Send link
+            {m.acct_forgot_send()}
           </Button>
         </form>
       )}
       <p className="text-muted-foreground text-sm">
         <Link to="/sign-in" className="text-foreground underline">
-          Back to sign in
+          {m.acct_auth_back_to_sign_in()}
         </Link>
       </p>
     </AuthPage>

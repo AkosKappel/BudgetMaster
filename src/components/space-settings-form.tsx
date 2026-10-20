@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CURRENCIES, type Currency } from '@/lib/currencies'
+import { m } from '@/paraglide/messages.js'
 
 export interface SpaceSettings {
   name: string
@@ -14,13 +15,14 @@ export interface SpaceSettings {
 }
 
 const schema = z.object({
-  name: z.string().trim().min(1, 'Give the space a name.').max(60),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.acct_space_name_required() })
+    .max(60),
   baseCurrency: z.enum(CURRENCIES),
   budgetMonthStartDay: z.number().int().min(1).max(28),
 })
-
-const ordinal = (day: number) =>
-  `${day}${day % 10 === 1 && day !== 11 ? 'st' : day % 10 === 2 && day !== 12 ? 'nd' : day % 10 === 3 && day !== 13 ? 'rd' : 'th'}`
 
 const selectClass =
   'h-9 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm'
@@ -62,13 +64,13 @@ export function SpaceSettingsForm({
       <form.Field name="name">
         {(field) => (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="space-name">Name</Label>
+            <Label htmlFor="space-name">{m.acct_space_form_name()}</Label>
             <Input
               id="space-name"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               disabled={disabled}
-              placeholder="Household, Trip to Italy, Shared flat"
+              placeholder={m.acct_space_form_name_placeholder()}
               aria-invalid={field.state.meta.errors.length > 0}
             />
             {field.state.meta.errors.length > 0 && (
@@ -83,7 +85,9 @@ export function SpaceSettingsForm({
         <form.Field name="baseCurrency">
           {(field) => (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="space-currency">Currency</Label>
+              <Label htmlFor="space-currency">
+                {m.acct_space_form_currency()}
+              </Label>
               <select
                 id="space-currency"
                 value={field.state.value}
@@ -103,7 +107,9 @@ export function SpaceSettingsForm({
         <form.Field name="budgetMonthStartDay">
           {(field) => (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="space-start-day">Month starts on</Label>
+              <Label htmlFor="space-start-day">
+                {m.acct_space_form_start_day()}
+              </Label>
               <select
                 id="space-start-day"
                 value={field.state.value}
@@ -114,7 +120,7 @@ export function SpaceSettingsForm({
               >
                 {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                   <option key={day} value={day}>
-                    {ordinal(day)}
+                    {m.acct_space_form_day({ day })}
                   </option>
                 ))}
               </select>
@@ -126,8 +132,7 @@ export function SpaceSettingsForm({
         id="space-start-day-hint"
         className="-mt-2 text-muted-foreground text-sm"
       >
-        Budgets and Home count months from this day. Pick your payday, for
-        example the 25th.
+        {m.acct_space_form_start_day_hint()}
       </p>
       <FormError message={error ?? null} />
       {!disabled && (
