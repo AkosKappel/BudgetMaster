@@ -4,7 +4,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronLeft, Plus } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronLeft, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -28,6 +28,7 @@ import { useActiveSpace, walletsQuery } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import {
   type ManagedWallet,
+  reorderWallets,
   saveWallet,
   setWalletArchived,
 } from '@/server/wallets'
@@ -76,6 +77,19 @@ function Wallets() {
     onError: (error) => toast.error(error.message),
   })
 
+  const reorder = useMutation({
+    mutationFn: (ids: string[]) =>
+      reorderWallets({ data: { spaceId: space.id, ids } }),
+    onSuccess: refresh,
+    onError: (error) => toast.error(error.message),
+  })
+
+  const move = (index: number, by: -1 | 1) => {
+    const ids = active.map((w) => w.id)
+    ;[ids[index], ids[index + by]] = [ids[index + by], ids[index]]
+    reorder.mutate(ids)
+  }
+
   const openEditor = (next: Editor | null) => {
     save.reset()
     setEditor(next)
@@ -106,7 +120,7 @@ function Wallets() {
 
       {active.length > 0 && (
         <ul className="divide-y rounded-lg border bg-card">
-          {active.map((w) => (
+          {active.map((w, index) => (
             <WalletRow
               key={w.id}
               wallet={w}
@@ -115,7 +129,32 @@ function Wallets() {
                   ? () => openEditor({ mode: 'edit', wallet: w })
                   : undefined
               }
-            />
+            >
+              {data.canWrite && active.length > 1 && (
+                <div className="flex flex-col">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    aria-label={`Move ${w.name} up`}
+                    disabled={index === 0 || reorder.isPending}
+                    onClick={() => move(index, -1)}
+                  >
+                    <ArrowUp />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    aria-label={`Move ${w.name} down`}
+                    disabled={index === active.length - 1 || reorder.isPending}
+                    onClick={() => move(index, 1)}
+                  >
+                    <ArrowDown />
+                  </Button>
+                </div>
+              )}
+            </WalletRow>
           ))}
         </ul>
       )}

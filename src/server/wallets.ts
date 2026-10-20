@@ -109,7 +109,12 @@ export const saveWallet = createServerFn({ method: 'POST' })
     }
     const [created] = await db
       .insert(wallet)
-      .values({ ...values, spaceId: space.id })
+      .values({
+        ...values,
+        spaceId: space.id,
+        // New wallets go to the end of the list.
+        sortOrder: sql`(select coalesce(max(${wallet.sortOrder}), -1) + 1 from ${wallet} where ${wallet.spaceId} = ${space.id})`,
+      })
       .returning({ id: wallet.id })
     return created
   })
@@ -126,4 +131,20 @@ export const setWalletArchived = createServerFn({ method: 'POST' })
       .where(and(eq(wallet.spaceId, space.id), eq(wallet.id, data.id)))
       .returning({ id: wallet.id })
     if (!updated) throw new Error('Wallet not found.')
+  })
+
+// The order wallets appear in everywhere: balances, pickers and this page.
+export const reorderWallets = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ ids: z.array(z.uuid()).min(1).max(200) }))
+  .handler(async ({ context, data }) => {
+    const space = await requireWriter(context.user.id, data.spaceId)
+    const ids = sql`array[${sql.join(
+      data.ids.map((id) => sql`${id}`),
+      sql`, `,
+    )}]::uuid[]`
+    await db
+      .update(wallet)
+      .set({ sortOrder: sql`array_position(${ids}, ${wallet.id})` })
+      .where(and(eq(wallet.spaceId, space.id), sql`${wallet.id} = any(${ids})`))
   })
