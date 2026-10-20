@@ -1,7 +1,7 @@
 // BudgetMaster service worker. Pages hold personal data, so they are never cached: they
 // always come from the network, with a static offline page when there is none. Only the
 // hashed build assets (which never change under the same name) and icons are cached.
-const CACHE = 'budgetmaster-v1'
+const CACHE = 'budgetmaster-v2'
 const OFFLINE = '/offline.html'
 
 self.addEventListener('install', (event) => {
@@ -53,4 +53,35 @@ self.addEventListener('fetch', (event) => {
       ),
     )
   }
+})
+
+// Web Push (I-08): the server sends { title, body, url }; a tap opens that page, reusing an
+// open BudgetMaster tab when there is one.
+self.addEventListener('push', (event) => {
+  const message = event.data?.json() ?? {}
+  event.waitUntil(
+    self.registration.showNotification(message.title ?? 'BudgetMaster', {
+      body: message.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: message.tag,
+      data: { url: message.url ?? '/' },
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = new URL(event.notification.data?.url ?? '/', self.location.origin)
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windows) => {
+        const open = windows.find(
+          (w) => new URL(w.url).origin === url.origin && 'focus' in w,
+        )
+        if (open) return open.navigate(url.href).then((w) => w?.focus())
+        return self.clients.openWindow(url.href)
+      }),
+  )
 })

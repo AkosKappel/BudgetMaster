@@ -1,0 +1,50 @@
+{
+  "notify_heading": "Upozornenia",
+  "notify_push_label": "Pripomienky na tomto zariadení",
+  "notify_push_hint": "Deň pred splatnosťou pravidelnej platby. Prehliadač si najprv vypýta povolenie.",
+  "notify_push_unsupported": "Tento prehliadač nevie zobrazovať upozornenia. Na iPhone najprv pridaj BudgetMaster na plochu.",
+  "notify_push_blocked": "Upozornenia sú pre túto stránku zablokované. Povoľ ich v nastaveniach stránky v prehliadači.",
+  "notify_digest_label": "Týždenné zhrnutie e-mailom",
+  "notify_digest_hint": "Každý pondelok na {email}: výdavky za minulý týždeň a čo je splatné tento týždeň.",
+  "notify_digest_verify": "Potvrď svoju e-mailovú adresu, aby ti chodilo týždenné zhrnutie.",
+  "notify_save_failed": "Nepodarilo sa uložiť. Skús to znova.",
+  "notify_due_title": "Zajtra splatné",
+  "notify_due_more": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "a ešte {count}",
+        "countPlural=few": "a ešte {count}",
+        "countPlural=other": "a ešte {count}"
+      }
+    }
+  ],
+  "notify_digest_subject": "Tvoj týždeň v BudgetMaster",
+  "notify_digest_spent": "{space}: za posledných 7 dní minuté {amount}.",
+  "notify_digest_nothing": "{space}: za posledných 7 dní žiadne výdavky.",
+  "notify_digest_top": "Najviac išlo na: {categories}.",
+  "notify_digest_upcoming": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Tento týždeň splatné: {count} platba, {amount}.",
+        "countPlural=few": "Tento týždeň splatné: {count} platby, {amount}.",
+        "countPlural=other": "Tento týždeň splatné: {count} platieb, {amount}."
+      }
+    }
+  ],
+  "notify_digest_action": "Otvoriť BudgetMaster",
+  "notify_digest_outro": "Dostávaš to, lebo v Nastaveniach máš zapnuté týždenné zhrnutie. Tam ho môžeš kedykoľvek vypnúť."
+}

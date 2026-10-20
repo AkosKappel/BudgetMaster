@@ -1,0 +1,48 @@
+{
+  "notify_heading": "Notifications",
+  "notify_push_label": "Reminders on this device",
+  "notify_push_hint": "A day before a recurring payment is due. Your browser asks for permission first.",
+  "notify_push_unsupported": "This browser cannot show notifications. On an iPhone, add BudgetMaster to the home screen first.",
+  "notify_push_blocked": "Notifications are blocked for this site. Allow them in the browser's site settings.",
+  "notify_digest_label": "Weekly email summary",
+  "notify_digest_hint": "Every Monday to {email}: last week's spending and what is due this week.",
+  "notify_digest_verify": "Confirm your email address to get the weekly summary.",
+  "notify_save_failed": "Could not save. Try again.",
+  "notify_due_title": "Due tomorrow",
+  "notify_due_more": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "and {count} more",
+        "countPlural=other": "and {count} more"
+      }
+    }
+  ],
+  "notify_digest_subject": "Your week in BudgetMaster",
+  "notify_digest_spent": "{space}: {amount} spent in the last 7 days.",
+  "notify_digest_nothing": "{space}: nothing spent in the last 7 days.",
+  "notify_digest_top": "Most of it went to {categories}.",
+  "notify_digest_upcoming": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Due this week: {count} payment, {amount}.",
+        "countPlural=other": "Due this week: {count} payments, {amount}."
+      }
+    }
+  ],
+  "notify_digest_action": "Open BudgetMaster",
+  "notify_digest_outro": "You get this because the weekly summary is on in Settings. You can turn it off there at any time."
+}

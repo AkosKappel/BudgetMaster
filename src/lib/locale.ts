@@ -14,4 +14,8 @@ export const LANGUAGES: { locale: Locale; name: string }[] = [
   { locale: 'sk', name: 'Slovenčina' },
 ]
 
-export const formatLocale = () => FORMAT_LOCALES[getLocale()]
+export const formatLocale = (locale: Locale = getLocale()) =>
+  FORMAT_LOCALES[locale]
+
+export const isLocale = (value: string): value is Locale =>
+  value in FORMAT_LOCALES

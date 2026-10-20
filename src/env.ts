@@ -60,6 +60,18 @@ const schema = z.object({
     (value) => value || undefined,
     z.string().startsWith('sk-ant-').optional(),
   ),
+  // Optional: Web Push reminders (I-08) are offered only with a VAPID key pair, made once
+  // with `npx web-push generate-vapid-keys`. The subject is a contact the push services
+  // can reach: `mailto:` or an https URL.
+  VAPID_PUBLIC_KEY: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  VAPID_PRIVATE_KEY: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  VAPID_SUBJECT: z.string().default('mailto:admin@example.com'),
   // Must be on a domain verified in Resend; onboarding@resend.dev only reaches the account owner.
   EMAIL_FROM: z.string().default('BudgetMaster <onboarding@resend.dev>'),
 })

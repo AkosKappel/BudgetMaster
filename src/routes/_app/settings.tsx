@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { AccountData } from '@/components/account-data'
 import { AccountSecurity } from '@/components/account-security'
+import { NotificationSettings } from '@/components/notification-settings'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { authClient } from '@/lib/auth-client'
 import { LANGUAGES } from '@/lib/locale'
@@ -28,6 +29,7 @@ function Settings() {
       <ThemeSwitch />
       <Language />
       <WeekStart />
+      <NotificationSettings />
       <AiFeatures />
       <AccountSecurity />
       <AccountData />

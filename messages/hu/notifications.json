@@ -1,0 +1,48 @@
+{
+  "notify_heading": "Értesítések",
+  "notify_push_label": "Emlékeztetők ezen az eszközön",
+  "notify_push_hint": "Egy nappal a rendszeres fizetés esedékessége előtt. A böngésződ előbb engedélyt kér.",
+  "notify_push_unsupported": "Ez a böngésző nem tud értesítéseket megjeleníteni. iPhone-on előbb add hozzá a BudgetMastert a kezdőképernyőhöz.",
+  "notify_push_blocked": "Az értesítések le vannak tiltva ennél az oldalnál. Engedélyezd őket a böngésző webhely-beállításaiban.",
+  "notify_digest_label": "Heti összefoglaló e-mailben",
+  "notify_digest_hint": "Minden hétfőn ide: {email}. A múlt heti kiadások és az e heti esedékes fizetések.",
+  "notify_digest_verify": "Erősítsd meg az e-mail-címedet, hogy megkapd a heti összefoglalót.",
+  "notify_save_failed": "Nem sikerült menteni. Próbáld újra.",
+  "notify_due_title": "Holnap esedékes",
+  "notify_due_more": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "és még {count}",
+        "countPlural=other": "és még {count}"
+      }
+    }
+  ],
+  "notify_digest_subject": "A heted a BudgetMasterben",
+  "notify_digest_spent": "{space}: {amount} kiadás az elmúlt 7 napban.",
+  "notify_digest_nothing": "{space}: az elmúlt 7 napban nem volt kiadás.",
+  "notify_digest_top": "A legtöbb erre ment: {categories}.",
+  "notify_digest_upcoming": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Ezen a héten esedékes: {count} fizetés, {amount}.",
+        "countPlural=other": "Ezen a héten esedékes: {count} fizetés, {amount}."
+      }
+    }
+  ],
+  "notify_digest_action": "BudgetMaster megnyitása",
+  "notify_digest_outro": "Azért kapod, mert a Beállításokban be van kapcsolva a heti összefoglaló. Ott bármikor kikapcsolhatod."
+}

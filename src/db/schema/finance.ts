@@ -464,6 +464,37 @@ export const receipt = pgTable(
   ],
 )
 
+// A browser that receives Web Push notifications (I-08); one per device and user. Removed
+// when the push service answers that it is gone.
+export const pushSubscription = pgTable(
+  'push_subscription',
+  {
+    id: id(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    endpoint: text().notNull().unique(),
+    p256dh: text().notNull(),
+    auth: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index().on(t.userId)],
+)
+
+// What a user wants to hear about, and when it was last sent, so the hourly job sends each
+// reminder or digest once. `locale` is the language of the request that saved it: jobs run
+// outside any request.
+export const notificationPreference = pgTable('notification_preference', {
+  userId: text()
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  reminders: boolean().default(true).notNull(),
+  weeklyDigest: boolean().default(false).notNull(),
+  locale: text().default('en').notNull(),
+  remindedOn: date({ mode: 'string' }),
+  digestOn: date({ mode: 'string' }),
+})
+
 // ECB reference rates: units of `currency` for one euro on `date` (I-05). Totals in a
 // space's base currency convert other wallets through them (`convert_minor`, migration
 // 0020). Not per space: the same rates serve everyone.
