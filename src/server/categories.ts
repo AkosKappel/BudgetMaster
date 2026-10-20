@@ -12,14 +12,14 @@ import {
   transactionSplit,
 } from '@/db/schema'
 import { ICONS } from '@/lib/icons'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -52,11 +52,19 @@ export type ManagedCategory = Awaited<
 const categoryInput = spaceInput.extend({
   // Missing for a new category.
   id: z.uuid().optional(),
-  name: z.string().trim().min(1, 'Enter a name.').max(40),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.setup_enter_name() })
+    .max(40),
   // Only used on create: transactions and budgets rely on a category keeping its type.
   type: z.enum(['income', 'expense']),
-  icon: z.string().refine((icon) => icon in ICONS, 'Unknown icon.'),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i, 'Choose a colour.'),
+  icon: z.string().refine((icon) => icon in ICONS, {
+    error: () => m.setup_unknown_icon(),
+  }),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i, {
+    error: () => m.setup_choose_colour(),
+  }),
   parentId: z.uuid().nullable(),
 })
 export type CategoryInput = z.input<typeof categoryInput>
@@ -75,7 +83,7 @@ export const saveCategory = createServerFn({ method: 'POST' })
           .from(category)
           .where(inSpace(data.id))
       : []
-    if (data.id && !existing) throw new Error('Category not found.')
+    if (data.id && !existing) throw new Error(m.setup_categories_not_found())
     const type = existing?.type ?? data.type
 
     // One level only: a parent is a top-level category of the same type, and a category
@@ -91,15 +99,14 @@ export const saveCategory = createServerFn({ method: 'POST' })
         parent.parentId ||
         data.parentId === data.id
       )
-        throw new Error('Choose a top-level category of the same type.')
+        throw new Error(m.setup_categories_parent_same_type())
       if (data.id) {
         const [child] = await db
           .select({ id: category.id })
           .from(category)
           .where(eq(category.parentId, data.id))
           .limit(1)
-        if (child)
-          throw new Error('A category with subcategories cannot be moved.')
+        if (child) throw new Error(m.setup_categories_parent_has_children())
       }
     }
 
@@ -116,7 +123,11 @@ export const saveCategory = createServerFn({ method: 'POST' })
         ),
       )
     if (duplicate)
-      throw new Error(`There is already an ${type} category with this name.`)
+      throw new Error(
+        type === 'income'
+          ? m.setup_categories_duplicate_income()
+          : m.setup_categories_duplicate_expense(),
+      )
 
     const values = {
       name: data.name,
@@ -153,7 +164,7 @@ export const setCategoryArchived = createServerFn({ method: 'POST' })
       .select({ parentId: category.parentId })
       .from(category)
       .where(and(eq(category.spaceId, space.id), eq(category.id, data.id)))
-    if (!target) throw new Error('Category not found.')
+    if (!target) throw new Error(m.setup_categories_not_found())
 
     const affected = data.archived
       ? or(eq(category.id, data.id), eq(category.parentId, data.id))
@@ -167,14 +178,12 @@ export const setCategoryArchived = createServerFn({ method: 'POST' })
       .where(and(eq(category.spaceId, space.id), affected))
   })
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
-
 async function findCategory(spaceId: string, id: string) {
   const [found] = await db
     .select({ id: category.id, type: category.type, name: category.name })
     .from(category)
     .where(and(eq(category.spaceId, spaceId), eq(category.id, id)))
-  if (!found) throw new Error('Category not found.')
+  if (!found) throw new Error(m.setup_categories_not_found())
   const [{ children }] = await db
     .select({ children: count() })
     .from(category)
@@ -191,7 +200,7 @@ export const deleteCategory = createServerFn({ method: 'POST' })
     const space = await requireWriter(context.user.id, data.spaceId)
     const target = await findCategory(space.id, data.id)
     if (target.children > 0)
-      throw new Error('Delete or move its subcategories first.')
+      throw new Error(m.setup_categories_delete_children_first())
     const [[{ used }], [{ parts }], [{ rules }]] = await Promise.all([
       db
         .select({ used: count() })
@@ -208,7 +217,17 @@ export const deleteCategory = createServerFn({ method: 'POST' })
     ])
     if (used + parts + rules > 0)
       throw new Error(
-        `"${target.name}" is used by ${plural(used + parts, 'transaction')}${rules ? ` and ${plural(rules, 'recurring payment')}` : ''}. Merge it into another category or archive it.`,
+        m.setup_categories_in_use({
+          name: target.name,
+          usage: rules
+            ? m.setup_categories_usage_both({
+                transactions: m.setup_categories_usage_transactions({
+                  count: used + parts,
+                }),
+                payments: m.setup_categories_usage_payments({ count: rules }),
+              })
+            : m.setup_categories_usage_transactions({ count: used + parts }),
+        }),
       )
     await db.delete(category).where(eq(category.id, target.id))
   })
@@ -221,15 +240,20 @@ export const mergeCategory = createServerFn({ method: 'POST' })
   .validator(spaceInput.extend({ id: z.uuid(), intoId: z.uuid() }))
   .handler(async ({ context, data }) => {
     const space = await requireWriter(context.user.id, data.spaceId)
-    if (data.id === data.intoId) throw new Error('Choose a different category.')
+    if (data.id === data.intoId)
+      throw new Error(m.setup_categories_merge_same())
     const [source, target] = await Promise.all([
       findCategory(space.id, data.id),
       findCategory(space.id, data.intoId),
     ])
     if (source.type !== target.type)
-      throw new Error(`Choose another ${source.type} category.`)
+      throw new Error(
+        source.type === 'income'
+          ? m.setup_categories_merge_other_income()
+          : m.setup_categories_merge_other_expense(),
+      )
     if (source.children > 0)
-      throw new Error('Merge or move its subcategories first.')
+      throw new Error(m.setup_categories_merge_children_first())
 
     await db.transaction(async (tx) => {
       await tx

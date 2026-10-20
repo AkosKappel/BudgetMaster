@@ -37,6 +37,7 @@ import { formatLocale } from '@/lib/locale'
 import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
 import { formOptionsQuery, importsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import {
   getImportMapping,
   type ImportRecord,
@@ -51,7 +52,7 @@ export const Route = createFileRoute('/_app/import')({
     context.queryClient.ensureQueryData(
       formOptionsQuery(context.activeSpaceId),
     ),
-  head: () => ({ meta: [{ title: 'Import | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_import_meta_title() }] }),
   component: Import,
 })
 
@@ -162,7 +163,7 @@ function Import() {
     setFileName(file.name.slice(0, 200))
     const parsed = parseCsv(await file.text())
     if (parsed.length < 2) {
-      setError('The file has no rows to import.')
+      setError(m.setup_import_no_rows())
       return
     }
     const [fileHeader, ...fileRows] = parsed
@@ -196,7 +197,7 @@ function Import() {
         })),
       )
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not check the rows.')
+      setError(e instanceof Error ? e.message : m.setup_import_review_failed())
     } finally {
       setPending(false)
     }
@@ -221,12 +222,10 @@ function Import() {
       const rules = remember ? rulesToRemember(included) : []
       if (rules.length) await saveRules({ data: { spaceId: space.id, rules } })
       await queryClient.invalidateQueries({ queryKey: ['space', space.id] })
-      toast.success(
-        `${count} ${count === 1 ? 'transaction' : 'transactions'} imported`,
-      )
+      toast.success(m.setup_import_done({ count }))
       await navigate({ to: '/activity' })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not import. Try again.')
+      setError(e instanceof Error ? e.message : m.setup_import_failed())
     } finally {
       setPending(false)
     }
@@ -246,21 +245,24 @@ function Import() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">Import</h1>
+      <h1 className="font-semibold text-2xl tracking-tight">
+        {m.setup_import_title()}
+      </h1>
       <p className="max-w-prose text-muted-foreground">
-        Bring in a CSV export from your bank. The file is read in your browser
-        and nothing is saved until you have reviewed every row.
+        {m.setup_import_intro()}
       </p>
 
       <section aria-labelledby="import-file" className="flex flex-col gap-3">
         <h2 id="import-file" className="font-semibold text-lg">
-          1. File and wallet
+          {m.setup_import_step_file()}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="import-wallet">Into wallet</Label>
+            <Label htmlFor="import-wallet">
+              {m.setup_import_into_wallet()}
+            </Label>
             <select
               id="import-wallet"
               className={selectClass}
@@ -278,7 +280,9 @@ function Import() {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="import-file-input">CSV file</Label>
+            <Label htmlFor="import-file-input">
+              {m.setup_import_csv_file()}
+            </Label>
             <Input
               id="import-file-input"
               type="file"
@@ -298,24 +302,25 @@ function Import() {
           className="flex flex-col gap-3"
         >
           <h2 id="import-columns" className="font-semibold text-lg">
-            2. Columns
+            {m.setup_import_step_columns()}
           </h2>
           {remembered && (
             <p className="text-muted-foreground text-sm" role="status">
-              Same layout as your last import from this bank, so its columns and
-              wallet are already set.
+              {m.setup_import_remembered()}
             </p>
           )}
           <div className="grid gap-3 sm:grid-cols-2">
             <ColumnSelect
               id="map-date"
-              label="Date"
+              label={m.setup_import_column_date()}
               header={header}
               value={mapping.date}
               onChange={(date) => setMapping({ ...mapping, date })}
             />
             <div className="flex flex-col gap-2">
-              <Label htmlFor="map-date-format">Date format</Label>
+              <Label htmlFor="map-date-format">
+                {m.setup_import_date_format()}
+              </Label>
               <select
                 id="map-date-format"
                 className={selectClass}
@@ -340,13 +345,13 @@ function Import() {
                   setMapping({ ...mapping, split: e.target.checked })
                 }
               />
-              Money out and money in are separate columns
+              {m.setup_import_split()}
             </label>
             {mapping.split ? (
               <>
                 <ColumnSelect
                   id="map-out"
-                  label="Money out"
+                  label={m.setup_import_column_out()}
                   header={header}
                   value={mapping.outColumn}
                   onChange={(outColumn) =>
@@ -355,7 +360,7 @@ function Import() {
                 />
                 <ColumnSelect
                   id="map-in"
-                  label="Money in"
+                  label={m.setup_import_column_in()}
                   header={header}
                   value={mapping.inColumn}
                   onChange={(inColumn) => setMapping({ ...mapping, inColumn })}
@@ -364,7 +369,7 @@ function Import() {
             ) : (
               <ColumnSelect
                 id="map-amount"
-                label="Amount (negative for spending)"
+                label={m.setup_import_column_amount()}
                 header={header}
                 value={mapping.amount}
                 onChange={(amount) => setMapping({ ...mapping, amount })}
@@ -372,7 +377,7 @@ function Import() {
             )}
             <ColumnSelect
               id="map-payee"
-              label="Payee or description"
+              label={m.setup_import_column_payee()}
               header={header}
               value={mapping.payee}
               optional
@@ -380,9 +385,11 @@ function Import() {
             />
           </div>
           <p className="text-muted-foreground text-sm" aria-live="polite">
-            {readable.length} of {rows.length} rows readable
-            {readable.length < rows.length &&
-              '. Rows without a valid date or amount (like totals) are left out.'}
+            {m.setup_import_readable({
+              readable: readable.length,
+              total: rows.length,
+            })}
+            {readable.length < rows.length && m.setup_import_unreadable_hint()}
           </p>
           <Button
             className="w-fit"
@@ -390,7 +397,7 @@ function Import() {
             onClick={review}
           >
             <Upload />
-            Review {readable.length} rows
+            {m.setup_import_review_button({ count: readable.length })}
           </Button>
         </section>
       )}
@@ -420,9 +427,7 @@ function RecentImports({ spaceId }: { spaceId: string }) {
     mutationFn: (id: string) => undoImport({ data: { spaceId, id } }),
     onSuccess: async ({ count }) => {
       await queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
-      toast.success(
-        `Import undone, ${count} ${count === 1 ? 'transaction' : 'transactions'} removed`,
-      )
+      toast.success(m.setup_import_undone({ count }))
       setConfirming(null)
     },
     onError: (e) => toast.error(e.message),
@@ -432,32 +437,37 @@ function RecentImports({ spaceId }: { spaceId: string }) {
   return (
     <section aria-labelledby="recent-imports" className="flex flex-col gap-3">
       <h2 id="recent-imports" className="font-semibold text-lg">
-        Recent imports
+        {m.setup_import_recent()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">
         {data.imports.map((i) => (
           <li key={i.id} className="flex items-center gap-3 px-4 py-3">
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate font-medium">
-                {i.fileName ?? 'Statement'}
+                {i.fileName ?? m.setup_import_statement()}
               </span>
               <span className="text-muted-foreground text-sm">
                 {new Date(i.createdAt).toLocaleDateString(formatLocale(), {
                   day: 'numeric',
                   month: 'short',
                 })}{' '}
-                into {i.walletName}, {i.remaining} of {i.count}{' '}
-                {i.count === 1 ? 'transaction' : 'transactions'} left
+                {m.setup_import_recent_detail({
+                  wallet: i.walletName,
+                  remaining: i.remaining,
+                  count: i.count,
+                })}
               </span>
             </span>
             {data.canWrite && (
               <Button
                 variant="outline"
                 size="sm"
-                aria-label={`Undo import: ${i.fileName ?? 'Statement'}`}
+                aria-label={m.setup_import_undo_label({
+                  name: i.fileName ?? m.setup_import_statement(),
+                })}
                 onClick={() => setConfirming(i)}
               >
-                Undo
+                {m.setup_import_undo()}
               </Button>
             )}
           </li>
@@ -469,22 +479,24 @@ function RecentImports({ spaceId }: { spaceId: string }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Undo this import?</DialogTitle>
+            <DialogTitle>{m.setup_import_undo_title()}</DialogTitle>
             <DialogDescription>
-              Deletes the {confirming?.remaining} transactions it created from{' '}
-              {confirming?.walletName}, including any you have edited since.
+              {m.setup_import_undo_description({
+                count: confirming?.remaining ?? 0,
+                wallet: confirming?.walletName ?? '',
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirming(null)}>
-              Keep it
+              {m.setup_import_keep()}
             </Button>
             <Button
               variant="destructive"
               disabled={undo.isPending}
               onClick={() => confirming && undo.mutate(confirming.id)}
             >
-              Undo import
+              {m.setup_import_undo_confirm()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -517,11 +529,11 @@ function ColumnSelect({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       >
-        {optional && <option value={-1}>None</option>}
+        {optional && <option value={-1}>{m.setup_import_column_none()}</option>}
         {header.map((name, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional; names can repeat
           <option key={index} value={index}>
-            {name || `Column ${index + 1}`}
+            {name || m.setup_import_column_fallback({ index: index + 1 })}
           </option>
         ))}
       </select>
@@ -558,17 +570,17 @@ function ReviewStep({
   return (
     <section aria-labelledby="import-review" className="flex flex-col gap-3">
       <h2 id="import-review" className="font-semibold text-lg">
-        3. Review
+        {m.setup_import_step_review()}
       </h2>
       <p className="text-muted-foreground text-sm">
         {duplicates > 0 &&
-          `${duplicates} ${duplicates === 1 ? 'row looks' : 'rows look'} like ${duplicates === 1 ? 'a transaction' : 'transactions'} already in this wallet and ${duplicates === 1 ? 'is' : 'are'} left out; tick ${duplicates === 1 ? 'it' : 'them'} to import anyway. `}
-        Categories come from earlier transactions with the same payee.
+          `${m.setup_import_duplicates({ count: duplicates })} `}
+        {m.setup_import_categories_hint()}
       </p>
       <ul className="divide-y rounded-lg border bg-card">
         {rows.map((row, index) => {
           const type = row.amount > 0 ? 'income' : 'expense'
-          const label = `${row.payee || 'No payee'}, ${formatShortDate(row.date)}`
+          const label = `${row.payee || m.setup_import_no_payee()}, ${formatShortDate(row.date)}`
           return (
             <li
               // biome-ignore lint/suspicious/noArrayIndexKey: rows have no id until imported
@@ -580,18 +592,20 @@ function ReviewStep({
             >
               <input
                 type="checkbox"
-                aria-label={`Import ${label}`}
+                aria-label={m.setup_import_row_include({ label })}
                 checked={row.include}
                 onChange={(e) => onChange(index, { include: e.target.checked })}
               />
               <span className="flex min-w-0 flex-col">
-                <span className="truncate">{row.payee || 'No payee'}</span>
+                <span className="truncate">
+                  {row.payee || m.setup_import_no_payee()}
+                </span>
                 <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
                   {formatShortDate(row.date)}
                   {row.duplicate && (
                     <>
                       <CopyCheck className="size-3.5" aria-hidden="true" />
-                      Possible duplicate
+                      {m.setup_import_possible_duplicate()}
                     </>
                   )}
                 </span>
@@ -600,7 +614,7 @@ function ReviewStep({
                 {formatSignedMoney(row.amount, currency)}
               </span>
               <select
-                aria-label={`Category for ${label}`}
+                aria-label={m.setup_import_row_category({ label })}
                 className={cn(selectClass, 'col-span-2 col-start-2')}
                 value={row.categoryId}
                 disabled={!row.include}
@@ -608,7 +622,7 @@ function ReviewStep({
                   onChange(index, { categoryId: e.target.value })
                 }
               >
-                <option value="">Choose a category</option>
+                <option value="">{m.setup_categories_choose()}</option>
                 {categoryOrder(categories, type).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.parentId ? ` ${c.name}` : c.name}
@@ -621,7 +635,7 @@ function ReviewStep({
       </ul>
       {missing > 0 && (
         <p className="text-sm" role="status">
-          Choose a category for {missing} more {missing === 1 ? 'row' : 'rows'}.
+          {m.setup_import_missing({ count: missing })}
         </p>
       )}
       {learnable > 0 && (
@@ -631,8 +645,7 @@ function ReviewStep({
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
           />
-          Remember the {learnable === 1 ? 'category' : 'categories'} I chose for{' '}
-          {learnable === 1 ? 'this payee' : `these ${learnable} payees`}
+          {m.setup_import_remember({ count: learnable })}
         </label>
       )}
       <Button
@@ -641,8 +654,7 @@ function ReviewStep({
         disabled={pending || included.length === 0 || missing > 0}
         onClick={() => onConfirm(included, remember && learnable > 0)}
       >
-        Import {included.length}{' '}
-        {included.length === 1 ? 'transaction' : 'transactions'}
+        {m.setup_import_confirm({ count: included.length })}
       </Button>
     </section>
   )

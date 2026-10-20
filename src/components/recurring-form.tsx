@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { currencyDigits, parseAmount } from '@/lib/money'
 import { formOptionsQuery } from '@/lib/queries'
 import { describeSchedule } from '@/lib/recurrence'
+import { m } from '@/paraglide/messages.js'
 import type { RecurringRule, RecurringRuleInput } from '@/server/recurring'
 
 export type RuleValues = Omit<RecurringRuleInput, 'spaceId' | 'id'>
@@ -18,11 +19,11 @@ type Frequency = RuleValues['frequency']
 const selectClass =
   'h-9 w-full rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm'
 
-const UNITS: Record<Frequency, [string, string]> = {
-  daily: ['day', 'days'],
-  weekly: ['week', 'weeks'],
-  monthly: ['month', 'months'],
-  yearly: ['year', 'years'],
+const UNITS: Record<Frequency, (inputs: { count: number }) => string> = {
+  daily: m.setup_recurring_unit_day,
+  weekly: m.setup_recurring_unit_week,
+  monthly: m.setup_recurring_unit_month,
+  yearly: m.setup_recurring_unit_year,
 }
 
 const minorToText = (minor: number, currency: string) =>
@@ -74,18 +75,18 @@ export function RecurringForm({
   if (!firstWallet) {
     return (
       <p className="pb-6 text-muted-foreground">
-        Add a wallet first, so the app knows where the money goes.
+        {m.setup_recurring_form_no_wallet()}
       </p>
     )
   }
 
   const submit = () => {
     const minor = parseAmount(amount, currencyDigits(currency))
-    if (!minor) return setLocalError('Enter an amount, like 12.50.')
+    if (!minor) return setLocalError(m.setup_recurring_form_amount_invalid())
     if (type === 'transfer' && !toWalletId)
-      return setLocalError('Choose the wallet the money goes to.')
+      return setLocalError(m.setup_recurring_form_choose_to_wallet())
     if (type !== 'transfer' && !categoryId)
-      return setLocalError('Choose a category.')
+      return setLocalError(m.setup_recurring_form_choose_category())
     setLocalError(null)
     onSubmit({
       type,
@@ -113,7 +114,7 @@ export function RecurringForm({
       }}
     >
       <fieldset>
-        <legend className="sr-only">Type</legend>
+        <legend className="sr-only">{m.setup_form_type()}</legend>
         <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
           {(['expense', 'income', 'transfer'] as const).map((value) => (
             <label
@@ -131,14 +132,21 @@ export function RecurringForm({
                 }}
                 className="sr-only"
               />
-              {value}
+              {value === 'expense'
+                ? m.setup_type_expense()
+                : value === 'income'
+                  ? m.setup_type_income()
+                  : m.setup_type_transfer()}
             </label>
           ))}
         </div>
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label={`Amount in ${currency}`} htmlFor="rule-amount">
+        <Field
+          label={m.setup_recurring_form_amount({ currency })}
+          htmlFor="rule-amount"
+        >
           <Input
             id="rule-amount"
             inputMode="decimal"
@@ -148,7 +156,11 @@ export function RecurringForm({
           />
         </Field>
         <Field
-          label={type === 'transfer' ? 'From' : 'Wallet'}
+          label={
+            type === 'transfer'
+              ? m.setup_recurring_form_from_wallet()
+              : m.setup_recurring_form_wallet()
+          }
           htmlFor="rule-wallet"
         >
           <select
@@ -167,14 +179,17 @@ export function RecurringForm({
       </div>
 
       {type === 'transfer' ? (
-        <Field label="To" htmlFor="rule-to-wallet">
+        <Field
+          label={m.setup_recurring_form_to_wallet()}
+          htmlFor="rule-to-wallet"
+        >
           <select
             id="rule-to-wallet"
             className={selectClass}
             value={toWalletId}
             onChange={(e) => setToWalletId(e.target.value)}
           >
-            <option value="">Choose a wallet</option>
+            <option value="">{m.setup_recurring_form_choose_wallet()}</option>
             {options.wallets
               .filter((w) => w.id !== walletId)
               .map((w) => (
@@ -185,14 +200,14 @@ export function RecurringForm({
           </select>
         </Field>
       ) : (
-        <Field label="Category" htmlFor="rule-category">
+        <Field label={m.setup_form_category()} htmlFor="rule-category">
           <select
             id="rule-category"
             className={selectClass}
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
           >
-            <option value="">Choose a category</option>
+            <option value="">{m.setup_categories_choose()}</option>
             {categoryOrder(options.categories, type).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.parentId ? ` ${c.name}` : c.name}
@@ -203,7 +218,11 @@ export function RecurringForm({
       )}
 
       <Field
-        label={type === 'income' ? 'From (optional)' : 'Paid to (optional)'}
+        label={
+          type === 'income'
+            ? m.setup_recurring_form_payee_from()
+            : m.setup_recurring_form_payee_to()
+        }
         htmlFor="rule-payee"
       >
         <Input
@@ -216,11 +235,13 @@ export function RecurringForm({
       </Field>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium text-sm">Repeats</legend>
+        <legend className="mb-2 font-medium text-sm">
+          {m.setup_recurring_form_repeats()}
+        </legend>
         <div className="flex items-center gap-2">
-          <span className="text-sm">Every</span>
+          <span className="text-sm">{m.setup_recurring_form_every()}</span>
           <Input
-            aria-label="Interval"
+            aria-label={m.setup_recurring_form_interval()}
             type="number"
             min={1}
             max={365}
@@ -229,26 +250,29 @@ export function RecurringForm({
             onChange={(e) => setEvery(Math.max(1, Number(e.target.value) || 1))}
           />
           <select
-            aria-label="Unit"
+            aria-label={m.setup_recurring_form_unit()}
             className={selectClass}
             value={frequencyValue}
             onChange={(e) => setFrequency(e.target.value as Frequency)}
           >
-            {Object.entries(UNITS).map(([value, [one, many]]) => (
+            {Object.entries(UNITS).map(([value, unit]) => (
               <option key={value} value={value}>
-                {interval === 1 ? one : many}
+                {unit({ count: interval })}
               </option>
             ))}
           </select>
         </div>
         <p className="text-muted-foreground text-sm">
           {describeSchedule({ startDate, frequency: frequencyValue, interval })}
-          {endDate ? `, until ${endDate}` : ''}
+          {endDate ? m.setup_recurring_form_until({ date: endDate }) : ''}
         </p>
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="First payment" htmlFor="rule-start">
+        <Field
+          label={m.setup_recurring_form_first_payment()}
+          htmlFor="rule-start"
+        >
           <Input
             id="rule-start"
             type="date"
@@ -257,7 +281,7 @@ export function RecurringForm({
             onChange={(e) => setStartDate(e.target.value)}
           />
         </Field>
-        <Field label="Last payment (optional)" htmlFor="rule-end">
+        <Field label={m.setup_recurring_form_last_payment()} htmlFor="rule-end">
           <Input
             id="rule-end"
             type="date"
@@ -269,11 +293,11 @@ export function RecurringForm({
       </div>
       {!rule && startDate < today && (
         <p className="-mt-3 text-muted-foreground text-sm">
-          Payments due up to today are added right away.
+          {m.setup_recurring_form_backfill_hint()}
         </p>
       )}
 
-      <Field label="Note (optional)" htmlFor="rule-note">
+      <Field label={m.setup_recurring_form_note()} htmlFor="rule-note">
         <Input
           id="rule-note"
           value={note}
@@ -285,10 +309,10 @@ export function RecurringForm({
       <FormError message={localError ?? error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>
         {pending
-          ? 'Saving'
+          ? m.setup_form_saving()
           : rule
-            ? 'Save changes'
-            : 'Create recurring payment'}
+            ? m.setup_form_save_changes()
+            : m.setup_recurring_form_create()}
       </Button>
     </form>
   )

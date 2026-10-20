@@ -23,6 +23,7 @@ import {
 import { headerKey, importMappingSchema } from '@/lib/import'
 import { addDays } from '@/lib/recurrence'
 import { ruleFor } from '@/lib/rules'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -58,13 +59,12 @@ async function requireWallet(
   walletId: string,
 ) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   const [found] = await db
     .select({ id: wallet.id })
     .from(wallet)
     .where(and(eq(wallet.spaceId, space.id), eq(wallet.id, walletId)))
-  if (!found) throw new Error('Choose a wallet.')
+  if (!found) throw new Error(m.setup_import_choose_wallet())
   return space
 }
 
@@ -75,7 +75,9 @@ const stagedRow = z.object({
     .int()
     .min(-Number.MAX_SAFE_INTEGER)
     .max(Number.MAX_SAFE_INTEGER)
-    .refine((value) => value !== 0, 'Zero is not a transaction.'),
+    .refine((value) => value !== 0, {
+      error: () => m.setup_import_zero_amount(),
+    }),
   payee: z.string().trim().max(120),
 })
 
@@ -213,7 +215,11 @@ export const importTransactions = createServerFn({ method: 'POST' })
     const rows = data.rows.map((row, index) => {
       const type = row.amount > 0 ? 'income' : 'expense'
       if (typeOf.get(row.categoryId) !== type)
-        throw new Error(`Row ${index + 1}: choose an ${type} category.`)
+        throw new Error(
+          type === 'income'
+            ? m.setup_import_row_income_category({ row: index + 1 })
+            : m.setup_import_row_expense_category({ row: index + 1 }),
+        )
       return {
         spaceId: space.id,
         walletId: data.walletId,
@@ -304,7 +310,7 @@ export const undoImport = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     if (space.role === 'viewer')
-      throw new Error('Viewers cannot change this space.')
+      throw new Error(m.setup_viewers_cannot_change())
     return db.transaction(async (tx) => {
       const [batch] = await tx
         .select({ id: importBatch.id })
@@ -313,7 +319,7 @@ export const undoImport = createServerFn({ method: 'POST' })
           and(eq(importBatch.spaceId, space.id), eq(importBatch.id, data.id)),
         )
         .for('update')
-      if (!batch) throw new Error('That import was already undone.')
+      if (!batch) throw new Error(m.setup_import_already_undone())
       // Rows first: deleting the record would only unlink them (set null).
       const deleted = await tx
         .delete(transaction)

@@ -25,6 +25,7 @@ import { formOptionsQuery, recurringQuery, useActiveSpace } from '@/lib/queries'
 import { describeSchedule } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import {
   deleteRecurringRule,
   type RecurringRule,
@@ -42,7 +43,7 @@ export const Route = createFileRoute('/_app/recurring')({
         formOptionsQuery(context.activeSpaceId),
       ),
     ]),
-  head: () => ({ meta: [{ title: 'Recurring | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_recurring_meta_title() }] }),
   component: Recurring,
 })
 
@@ -50,7 +51,11 @@ type Editor =
   | { mode: 'create'; draft?: Partial<RuleValues> }
   | { mode: 'edit'; rule: RecurringRule }
 
-const CADENCE_LABEL = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' }
+const CADENCE_LABEL = {
+  weekly: m.setup_recurring_cadence_weekly,
+  monthly: m.setup_recurring_cadence_monthly,
+  yearly: m.setup_recurring_cadence_yearly,
+}
 
 function Recurring() {
   const space = useActiveSpace()
@@ -77,28 +82,29 @@ function Recurring() {
         data: { ...values, spaceId: space.id, id: editing?.id },
       }),
     onSuccess: done(
-      editing ? 'Recurring payment updated' : 'Recurring payment created',
+      editing ? m.setup_recurring_updated() : m.setup_recurring_created(),
     ),
   })
   const pause = useMutation({
     mutationFn: (variables: { id: string; paused: boolean }) =>
       setRecurringRulePaused({ data: { ...variables, spaceId: space.id } }),
-    onSuccess: (_result, { paused }) => done(paused ? 'Paused' : 'Resumed')(),
+    onSuccess: (_result, { paused }) =>
+      done(paused ? m.setup_recurring_paused() : m.setup_recurring_resumed())(),
     onError: (error) => toast.error(error.message),
   })
   const remove = useMutation({
     mutationFn: (id: string) =>
       deleteRecurringRule({ data: { id, spaceId: space.id } }),
-    onSuccess: done('Recurring payment deleted'),
+    onSuccess: done(m.setup_recurring_deleted()),
     onError: (error) => toast.error(error.message),
   })
 
   const label = (rule: RecurringRule) => {
     if (rule.payee) return rule.payee
-    if (rule.type === 'transfer') return 'Transfer'
+    if (rule.type === 'transfer') return m.setup_type_transfer()
     return (
       options.categories.find((c) => c.id === rule.categoryId)?.name ??
-      'Recurring payment'
+      m.setup_recurring_payment()
     )
   }
   const currencyOf = (walletId: string) =>
@@ -112,38 +118,42 @@ function Recurring() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">Recurring</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.setup_recurring_title()}
+        </h1>
         {data.canWrite && (
           <Button onClick={() => setEditor({ mode: 'create' })}>
             <Plus />
-            New
+            {m.setup_recurring_new_short()}
           </Button>
         )}
       </div>
       <p className="max-w-prose text-muted-foreground">
-        Salary, rent and subscriptions are recorded on their due date, so you
-        never type them again.
+        {m.setup_recurring_intro()}
       </p>
 
       {data.yearlyExpenses > 0 && (
         <p className="text-sm">
-          Recurring expenses cost{' '}
+          {m.setup_recurring_yearly_before()}{' '}
           <span className="font-medium">
-            {formatMoney(data.yearlyExpenses, data.currency)} a year
+            {m.setup_recurring_per_year({
+              amount: formatMoney(data.yearlyExpenses, data.currency),
+            })}
           </span>{' '}
-          ({formatMoney(Math.round(data.yearlyExpenses / 12), data.currency)} a
-          month on average).
+          {m.setup_recurring_yearly_after({
+            amount: formatMoney(
+              Math.round(data.yearlyExpenses / 12),
+              data.currency,
+            ),
+          })}
         </p>
       )}
 
       {data.rules.length === 0 ? (
-        <EmptyState icon={Repeat}>
-          Add your rent, salary or a subscription to have it recorded
-          automatically.
-        </EmptyState>
+        <EmptyState icon={Repeat}>{m.setup_recurring_empty()}</EmptyState>
       ) : (
         <ul className="divide-y rounded-lg border bg-card">
           {data.rules.map((rule) => {
@@ -155,10 +165,12 @@ function Recurring() {
             const color = category?.color ?? 'var(--muted-foreground)'
             const currency = currencyOf(rule.walletId)
             const status = rule.paused
-              ? 'Paused'
+              ? m.setup_recurring_status_paused()
               : rule.nextDate
-                ? `Next ${formatShortDate(rule.nextDate)}`
-                : 'Ended'
+                ? m.setup_recurring_status_next({
+                    date: formatShortDate(rule.nextDate),
+                  })
+                : m.setup_recurring_status_ended()
             const content = (
               <>
                 <span
@@ -218,11 +230,10 @@ function Recurring() {
             className="flex items-center gap-2 font-semibold text-lg"
           >
             <Sparkles className="size-4 text-note" aria-hidden="true" />
-            Looks like a subscription
+            {m.setup_recurring_suggestions_title()}
           </h2>
           <p className="max-w-prose text-muted-foreground text-sm">
-            You enter these by hand at a steady rhythm. Make them recurring and
-            they are recorded for you, and show up in the forecast.
+            {m.setup_recurring_suggestions_intro()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
             {data.suggestions.map((s) => {
@@ -235,9 +246,15 @@ function Recurring() {
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium">{s.payee}</span>
                     <span className="text-muted-foreground text-sm">
-                      {CADENCE_LABEL[s.cadence]}, {s.count} payments, last{' '}
-                      {formatShortDate(s.lastDate)} ·{' '}
-                      {formatMoney(s.yearlyCost, currency)} a year
+                      {m.setup_recurring_suggestion_detail({
+                        cadence: CADENCE_LABEL[s.cadence](),
+                        count: s.count,
+                        date: formatShortDate(s.lastDate),
+                      })}{' '}
+                      ·{' '}
+                      {m.setup_recurring_per_year({
+                        amount: formatMoney(s.yearlyCost, currency),
+                      })}
                     </span>
                   </span>
                   <span className="font-medium tabular-nums">
@@ -246,7 +263,9 @@ function Recurring() {
                   <Button
                     variant="outline"
                     size="sm"
-                    aria-label={`Make recurring: ${s.payee}`}
+                    aria-label={m.setup_recurring_make_recurring_label({
+                      payee: s.payee,
+                    })}
                     onClick={() =>
                       setEditor({
                         mode: 'create',
@@ -263,7 +282,7 @@ function Recurring() {
                       })
                     }
                   >
-                    Make recurring
+                    {m.setup_recurring_make_recurring()}
                   </Button>
                 </li>
               )
@@ -285,12 +304,12 @@ function Recurring() {
           <div className="mx-auto max-h-[85dvh] w-full max-w-md overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
               <DrawerTitle>
-                {editing ? 'Edit recurring payment' : 'New recurring payment'}
+                {editing ? m.setup_recurring_edit() : m.setup_recurring_new()}
               </DrawerTitle>
               <DrawerDescription>
                 {editing
-                  ? 'Changes apply to future payments; past ones stay as they are.'
-                  : 'Recorded automatically on every due date.'}
+                  ? m.setup_recurring_edit_description()
+                  : m.setup_recurring_new_description()}
               </DrawerDescription>
             </DrawerHeader>
             {editor && (
@@ -315,7 +334,9 @@ function Recurring() {
                       pause.mutate({ id: editing.id, paused: !editing.paused })
                     }
                   >
-                    {editing.paused ? 'Resume' : 'Pause'}
+                    {editing.paused
+                      ? m.setup_recurring_resume()
+                      : m.setup_recurring_pause()}
                   </Button>
                 )}
                 <Button
@@ -324,7 +345,7 @@ function Recurring() {
                   disabled={remove.isPending}
                   onClick={() => remove.mutate(editing.id)}
                 >
-                  Delete
+                  {m.setup_delete()}
                 </Button>
               </div>
             )}

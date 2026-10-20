@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { formOptionsQuery, rulesQuery, useActiveSpace } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { deleteRule, saveRules } from '@/server/rules'
 
 export const Route = createFileRoute('/_app/rules')({
@@ -25,7 +26,7 @@ export const Route = createFileRoute('/_app/rules')({
         formOptionsQuery(context.activeSpaceId),
       ),
     ]),
-  head: () => ({ meta: [{ title: 'Rules | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_rules_meta_title() }] }),
   component: Rules,
 })
 
@@ -53,7 +54,7 @@ function Rules() {
       }),
     onSuccess: async () => {
       await refresh()
-      toast.success('Rule saved')
+      toast.success(m.setup_rules_saved())
       setMatch('')
     },
   })
@@ -61,7 +62,7 @@ function Rules() {
     mutationFn: (id: string) => deleteRule({ data: { id, spaceId: space.id } }),
     onSuccess: async () => {
       await refresh()
-      toast.success('Rule deleted')
+      toast.success(m.setup_rules_deleted())
     },
     onError: (error) => toast.error(error.message),
   })
@@ -73,13 +74,13 @@ function Rules() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">Rules</h1>
+      <h1 className="font-semibold text-2xl tracking-tight">
+        {m.setup_rules_title()}
+      </h1>
       <p className="max-w-prose text-muted-foreground">
-        When a payee contains the text, quick add and the import use the
-        category. The longest matching text wins, so "lidl" can cover every
-        store while "lidl petrol" points somewhere else.
+        {m.setup_rules_intro()}
       </p>
 
       {data.canWrite && (
@@ -91,19 +92,19 @@ function Rules() {
           }}
         >
           <div className="flex flex-col gap-2">
-            <Label htmlFor="rule-match">Payee contains</Label>
+            <Label htmlFor="rule-match">{m.setup_rules_match_label()}</Label>
             <Input
               id="rule-match"
               value={match}
               maxLength={60}
               required
               autoComplete="off"
-              placeholder="e.g. lidl"
+              placeholder={m.setup_rules_match_placeholder()}
               onChange={(e) => setMatch(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="rule-type">Type</Label>
+            <Label htmlFor="rule-type">{m.setup_form_type()}</Label>
             <select
               id="rule-type"
               className={selectClass}
@@ -113,12 +114,12 @@ function Rules() {
                 setCategoryId('')
               }}
             >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
+              <option value="expense">{m.setup_type_expense()}</option>
+              <option value="income">{m.setup_type_income()}</option>
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="rule-category">Category</Label>
+            <Label htmlFor="rule-category">{m.setup_form_category()}</Label>
             <select
               id="rule-category"
               className={selectClass}
@@ -126,7 +127,7 @@ function Rules() {
               required
               onChange={(e) => setCategoryId(e.target.value)}
             >
-              <option value="">Choose a category</option>
+              <option value="">{m.setup_categories_choose()}</option>
               {categoryOrder(options.categories, type).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.parentId ? ` ${c.name}` : c.name}
@@ -140,7 +141,7 @@ function Rules() {
               create.isPending || match.trim().length < 2 || !categoryId
             }
           >
-            Add rule
+            {m.setup_rules_add()}
           </Button>
           <div className="sm:col-span-4">
             <FormError message={create.error?.message ?? null} />
@@ -149,27 +150,28 @@ function Rules() {
       )}
 
       {data.rules.length === 0 ? (
-        <EmptyState icon={Wand}>
-          No rules yet. Add one here, or tick "Remember" when you import a bank
-          statement.
-        </EmptyState>
+        <EmptyState icon={Wand}>{m.setup_rules_empty()}</EmptyState>
       ) : (
         <ul className="divide-y rounded-lg border bg-card">
           {data.rules.map((rule) => (
             <li key={rule.id} className="flex items-center gap-3 px-4 py-3">
               <span className="min-w-0 flex-1">
-                <span className="font-medium">"{rule.match}"</span>
+                <span className="font-medium">
+                  {m.setup_quoted({ text: rule.match })}
+                </span>
                 <span className="text-muted-foreground">
                   {' '}
                   → {rule.categoryName}
-                  {rule.type === 'income' ? ' (income)' : ''}
+                  {rule.type === 'income'
+                    ? ` ${m.setup_rules_income_suffix()}`
+                    : ''}
                 </span>
               </span>
               {data.canWrite && (
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Delete the rule for "${rule.match}"`}
+                  aria-label={m.setup_rules_delete_label({ match: rule.match })}
                   disabled={remove.isPending}
                   onClick={() => remove.mutate(rule.id)}
                 >

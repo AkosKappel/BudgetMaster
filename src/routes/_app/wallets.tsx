@@ -27,6 +27,7 @@ import { COLORS, iconFor } from '@/lib/icons'
 import { formatMoney } from '@/lib/money'
 import { useActiveSpace, walletsQuery } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import {
   type ManagedWallet,
   reorderWallets,
@@ -37,7 +38,7 @@ import {
 export const Route = createFileRoute('/_app/wallets')({
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(walletsQuery(context.activeSpaceId)),
-  head: () => ({ meta: [{ title: 'Wallets | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_wallets_meta_title() }] }),
   component: Wallets,
 })
 
@@ -62,7 +63,9 @@ function Wallets() {
       saveWallet({ data: { ...values, spaceId: space.id, id: editing?.id } }),
     onSuccess: async () => {
       await refresh()
-      toast.success(editing ? 'Wallet updated' : 'Wallet created')
+      toast.success(
+        editing ? m.setup_wallets_updated() : m.setup_wallets_created(),
+      )
       setEditor(null)
     },
   })
@@ -72,7 +75,9 @@ function Wallets() {
       setWalletArchived({ data: { ...variables, spaceId: space.id } }),
     onSuccess: async (_result, { archived }) => {
       await refresh()
-      toast.success(archived ? 'Wallet archived' : 'Wallet restored')
+      toast.success(
+        archived ? m.setup_wallets_archived() : m.setup_wallets_restored(),
+      )
       setEditor(null)
     },
     onError: (error) => toast.error(error.message),
@@ -97,20 +102,21 @@ function Wallets() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">Wallets</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.setup_wallets_title()}
+        </h1>
         {data.canWrite && (
           <Button onClick={() => openEditor({ mode: 'create' })}>
             <Plus />
-            New wallet
+            {m.setup_wallets_new()}
           </Button>
         )}
       </div>
       <p className="max-w-prose text-muted-foreground">
-        One wallet for each bank account, card or cash you track. Transfers
-        between them are neither income nor expense.
+        {m.setup_wallets_intro()}
       </p>
 
       {active.length > 0 && (
@@ -150,10 +156,10 @@ function Wallets() {
       {archived.length > 0 && (
         <details>
           <summary className="cursor-pointer font-semibold text-lg">
-            Archived ({archived.length})
+            {m.setup_archived_count({ count: archived.length })}
           </summary>
           <p className="my-3 max-w-prose text-muted-foreground text-sm">
-            Left out of balances and pickers. Their transactions stay.
+            {m.setup_wallets_archived_hint()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
             {archived.map((w) => (
@@ -167,7 +173,7 @@ function Wallets() {
                       archive.mutate({ id: w.id, archived: false })
                     }
                   >
-                    Restore
+                    {m.setup_restore()}
                   </Button>
                 )}
               </WalletRow>
@@ -184,12 +190,12 @@ function Wallets() {
           <div className="mx-auto max-h-[85dvh] w-full max-w-md overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
               <DrawerTitle>
-                {editing ? 'Edit wallet' : 'New wallet'}
+                {editing ? m.setup_wallets_edit() : m.setup_wallets_new()}
               </DrawerTitle>
               <DrawerDescription>
                 {editing
-                  ? WALLET_TYPES[editing.type].label
-                  : 'A bank account, card, cash or savings.'}
+                  ? WALLET_TYPES[editing.type].label()
+                  : m.setup_wallets_new_description()}
               </DrawerDescription>
             </DrawerHeader>
             {editor && (
@@ -223,7 +229,7 @@ function Wallets() {
                   archive.mutate({ id: editing.id, archived: true })
                 }
               >
-                Archive
+                {m.setup_archive()}
               </Button>
             )}
           </div>
@@ -257,7 +263,7 @@ function WalletRow({
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate">{wallet.name}</span>
         <span className="text-muted-foreground text-sm">
-          {WALLET_TYPES[wallet.type].label}
+          {WALLET_TYPES[wallet.type].label()}
         </span>
       </span>
       <span className="font-medium tabular-nums">

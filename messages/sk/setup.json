@@ -1,0 +1,513 @@
+{
+  "setup_back_more": "Viac",
+  "setup_archived_count": "Archivované ({count})",
+  "setup_restore": "Obnoviť",
+  "setup_archive": "Archivovať",
+  "setup_form_name": "Názov",
+  "setup_form_type": "Typ",
+  "setup_form_currency": "Mena",
+  "setup_form_saving": "Ukladá sa…",
+  "setup_form_save_changes": "Uložiť zmeny",
+  "setup_viewers_cannot_change": "Ako čitateľ nemôžeš meniť túto kasu.",
+  "setup_enter_name": "Zadaj názov.",
+  "setup_unknown_icon": "Neznáma ikona.",
+  "setup_choose_colour": "Vyber farbu.",
+  "setup_wallet_type_checking": "Bankový účet",
+  "setup_wallet_type_savings": "Sporenie",
+  "setup_wallet_type_cash": "Hotovosť",
+  "setup_wallet_type_credit_card": "Kreditná karta",
+  "setup_wallet_type_investment": "Investícia",
+  "setup_wallet_form_balance_invalid": "Zadaj počiatočný zostatok ako číslo, napríklad 250 alebo -80.",
+  "setup_wallet_form_currency_locked": "Už má transakcie, takže jeho mena sa nemení.",
+  "setup_wallet_form_balance": "Počiatočný zostatok",
+  "setup_wallet_form_balance_hint": "Koľko na ňom bolo pred prvou zaznamenanou transakciou. Záporný pre kartu, ktorá začína s dlhom.",
+  "setup_wallet_form_create": "Vytvoriť účet",
+  "setup_wallets_meta_title": "Účty | BudgetMaster",
+  "setup_wallets_title": "Účty",
+  "setup_wallets_new": "Nový účet",
+  "setup_wallets_edit": "Upraviť účet",
+  "setup_wallets_new_description": "Bankový účet, karta, hotovosť alebo sporenie.",
+  "setup_wallets_intro": "Jeden účet pre každý bankový účet, kartu alebo hotovosť, ktoré sleduješ. Prevody medzi nimi nie sú príjem ani výdavok.",
+  "setup_wallets_archived_hint": "Nezapočítavajú sa do zostatkov a nie sú vo výberoch. Ich transakcie zostávajú.",
+  "setup_wallets_updated": "Účet upravený",
+  "setup_wallets_created": "Účet vytvorený",
+  "setup_wallets_archived": "Účet archivovaný",
+  "setup_wallets_restored": "Účet obnovený",
+  "setup_wallets_not_found": "Účet sa nenašiel.",
+  "setup_wallets_currency_locked": "Tento účet má transakcie alebo pravidelné platby vo svojej mene, takže menu nemožno zmeniť.",
+  "setup_wallets_duplicate": "Účet s týmto názvom už existuje.",
+  "setup_categories_not_found": "Kategória sa nenašla.",
+  "setup_categories_parent_same_type": "Vyber hlavnú kategóriu rovnakého typu.",
+  "setup_categories_parent_has_children": "Kategóriu s podkategóriami nemožno presunúť.",
+  "setup_categories_duplicate_income": "Príjmová kategória s týmto názvom už existuje.",
+  "setup_categories_duplicate_expense": "Výdavková kategória s týmto názvom už existuje.",
+  "setup_categories_delete_children_first": "Najprv vymaž alebo presuň jej podkategórie.",
+  "setup_categories_in_use": "Kategória „{name}“ má {usage}. Zlúč ju s inou kategóriou alebo ju archivuj.",
+  "setup_categories_usage_both": "{transactions} a {payments}",
+  "setup_categories_usage_transactions": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transakciu",
+        "countPlural=few": "{count} transakcie",
+        "countPlural=many": "{count} transakcií",
+        "countPlural=other": "{count} transakcií"
+      }
+    }
+  ],
+  "setup_categories_usage_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} pravidelnú platbu",
+        "countPlural=few": "{count} pravidelné platby",
+        "countPlural=many": "{count} pravidelných platieb",
+        "countPlural=other": "{count} pravidelných platieb"
+      }
+    }
+  ],
+  "setup_categories_merge_same": "Vyber inú kategóriu.",
+  "setup_categories_merge_other_income": "Vyber inú príjmovú kategóriu.",
+  "setup_categories_merge_other_expense": "Vyber inú výdavkovú kategóriu.",
+  "setup_categories_merge_children_first": "Najprv zlúč alebo presuň jej podkategórie.",
+  "setup_tags_duplicate": "Štítok s týmto názvom už existuje.",
+  "setup_tags_not_found": "Štítok sa nenašiel.",
+  "setup_rules_match_too_short": "Zadaj aspoň dva znaky.",
+  "setup_rules_choose_income_category": "Vyber príjmovú kategóriu pre „{match}“.",
+  "setup_rules_choose_expense_category": "Vyber výdavkovú kategóriu pre „{match}“.",
+  "setup_recurring_end_before_start": "Dátum konca musí byť po dátume začiatku.",
+  "setup_recurring_not_found": "Pravidelná platba sa nenašla.",
+  "setup_goals_wallet_not_in_space": "Vyber účet z tejto kasy.",
+  "setup_goals_duplicate": "Cieľ „{name}“ už existuje.",
+  "setup_import_choose_wallet": "Vyber účet.",
+  "setup_import_zero_amount": "Nula nie je transakcia.",
+  "setup_import_row_income_category": "Riadok {row}: vyber príjmovú kategóriu.",
+  "setup_import_row_expense_category": "Riadok {row}: vyber výdavkovú kategóriu.",
+  "setup_import_already_undone": "Tento import už bol vrátený späť.",
+  "setup_type_expense": "Výdavok",
+  "setup_type_income": "Príjem",
+  "setup_category_form_group": "Skupina",
+  "setup_category_form_no_group": "Žiadna (hlavná kategória)",
+  "setup_category_form_parent_locked": "Má podkategórie, takže zostáva hlavnou kategóriou.",
+  "setup_category_form_create": "Vytvoriť kategóriu",
+  "setup_categories_meta_title": "Kategórie | BudgetMaster",
+  "setup_categories_title": "Kategórie",
+  "setup_categories_new": "Nová kategória",
+  "setup_categories_edit": "Upraviť kategóriu",
+  "setup_categories_updated": "Kategória upravená",
+  "setup_categories_created": "Kategória vytvorená",
+  "setup_categories_archived": "Kategória archivovaná",
+  "setup_categories_restored": "Kategória obnovená",
+  "setup_categories_deleted": "Kategória vymazaná",
+  "setup_categories_merged": "Zlúčené do {name}",
+  "setup_categories_expenses": "Výdavky",
+  "setup_categories_income": "Príjmy",
+  "setup_categories_archived_hint": "Nie sú vo výberoch. Ich transakcie a história zostávajú, ako sú.",
+  "setup_categories_expense_category": "Výdavková kategória",
+  "setup_categories_income_category": "Príjmová kategória",
+  "setup_categories_new_description": "Zaraď ju pod inú kategóriu, aby boli zoznamy krátke.",
+  "setup_categories_archive_with_children": "Archivovať aj s podkategóriami",
+  "setup_categories_merge_label": "Zlúčiť s inou kategóriou",
+  "setup_categories_merge_hint": "Presunie tam jej transakcie, pravidelné platby, pravidlá a rozpočet a potom vymaže „{name}“.",
+  "setup_categories_choose": "Vyber kategóriu",
+  "setup_categories_merge": "Zlúčiť",
+  "setup_categories_delete_unused": "Vymazať, ak sa nepoužíva",
+  "setup_edit": "Upraviť",
+  "setup_edit_named": "Upraviť {name}",
+  "setup_tags_meta_title": "Štítky | BudgetMaster",
+  "setup_tags_title": "Štítky",
+  "setup_tags_new": "Nový štítok",
+  "setup_tags_edit": "Upraviť štítok",
+  "setup_tags_updated": "Štítok upravený",
+  "setup_tags_created": "Štítok vytvorený",
+  "setup_tags_deleted": "Štítok vymazaný",
+  "setup_tags_intro": "Štítky idú naprieč kategóriami: výlet, rekonštrukcia alebo pracovný výdavok na preplatenie. Vyfiltruj Pohyby podľa štítka a uvidíš jeho súčet.",
+  "setup_tags_empty": "Zatiaľ nemáš žiadne štítky. Vytvor si jeden a vyber ho pri pridávaní transakcie.",
+  "setup_tags_uses": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transakcia",
+        "countPlural=few": "{count} transakcie",
+        "countPlural=many": "{count} transakcií",
+        "countPlural=other": "{count} transakcií"
+      }
+    }
+  ],
+  "setup_tags_used_by": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Použitý v {count} transakcii.",
+        "countPlural=few": "Použitý v {count} transakciách.",
+        "countPlural=many": "Použitý v {count} transakciách.",
+        "countPlural=other": "Použitý v {count} transakciách."
+      }
+    }
+  ],
+  "setup_tags_new_description": "Neskôr ho vyberieš pri rýchlom pridaní.",
+  "setup_tags_delete": "Vymazať štítok",
+  "setup_tags_create": "Vytvoriť štítok",
+  "setup_form_category": "Kategória",
+  "setup_quoted": "„{text}“",
+  "setup_rules_meta_title": "Pravidlá | BudgetMaster",
+  "setup_rules_title": "Pravidlá",
+  "setup_rules_saved": "Pravidlo uložené",
+  "setup_rules_deleted": "Pravidlo vymazané",
+  "setup_rules_intro": "Keď názov príjemcu obsahuje text, rýchle pridanie aj import použijú túto kategóriu. Vyhráva najdlhší zhodný text, takže „lidl“ pokryje každú predajňu, zatiaľ čo „lidl benzínka“ môže smerovať inam.",
+  "setup_rules_match_label": "Príjemca obsahuje",
+  "setup_rules_match_placeholder": "napr. lidl",
+  "setup_rules_add": "Pridať pravidlo",
+  "setup_rules_empty": "Zatiaľ nemáš žiadne pravidlá. Pridaj si jedno tu alebo pri importe výpisu zaškrtni „Zapamätaj si“.",
+  "setup_rules_income_suffix": "(príjem)",
+  "setup_rules_delete_label": "Vymazať pravidlo pre „{match}“",
+  "setup_type_transfer": "Prevod",
+  "setup_recurring_unit_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "deň",
+        "countPlural=few": "dni",
+        "countPlural=many": "dní",
+        "countPlural=other": "dní"
+      }
+    }
+  ],
+  "setup_recurring_unit_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "týždeň",
+        "countPlural=few": "týždne",
+        "countPlural=many": "týždňov",
+        "countPlural=other": "týždňov"
+      }
+    }
+  ],
+  "setup_recurring_unit_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "mesiac",
+        "countPlural=few": "mesiace",
+        "countPlural=many": "mesiacov",
+        "countPlural=other": "mesiacov"
+      }
+    }
+  ],
+  "setup_recurring_unit_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "rok",
+        "countPlural=few": "roky",
+        "countPlural=many": "rokov",
+        "countPlural=other": "rokov"
+      }
+    }
+  ],
+  "setup_recurring_form_no_wallet": "Najprv pridaj účet, aby aplikácia vedela, kam peniaze idú.",
+  "setup_recurring_form_amount_invalid": "Zadaj sumu, napríklad 12,50.",
+  "setup_recurring_form_choose_to_wallet": "Vyber účet, na ktorý peniaze idú.",
+  "setup_recurring_form_choose_category": "Vyber kategóriu.",
+  "setup_recurring_form_amount": "Suma v {currency}",
+  "setup_recurring_form_from_wallet": "Z účtu",
+  "setup_recurring_form_wallet": "Účet",
+  "setup_recurring_form_to_wallet": "Na účet",
+  "setup_recurring_form_choose_wallet": "Vyber účet",
+  "setup_recurring_form_payee_from": "Od koho (nepovinné)",
+  "setup_recurring_form_payee_to": "Komu (nepovinné)",
+  "setup_recurring_form_repeats": "Opakovanie",
+  "setup_recurring_form_every": "Raz za",
+  "setup_recurring_form_interval": "Interval",
+  "setup_recurring_form_unit": "Jednotka",
+  "setup_recurring_form_until": ", do {date}",
+  "setup_recurring_form_first_payment": "Prvá platba",
+  "setup_recurring_form_last_payment": "Posledná platba (nepovinné)",
+  "setup_recurring_form_backfill_hint": "Platby splatné do dneška sa pridajú hneď.",
+  "setup_recurring_form_note": "Poznámka (nepovinné)",
+  "setup_recurring_form_create": "Vytvoriť pravidelnú platbu",
+  "setup_delete": "Vymazať",
+  "setup_recurring_meta_title": "Pravidelné platby | BudgetMaster",
+  "setup_recurring_title": "Pravidelné platby",
+  "setup_recurring_new_short": "Nová",
+  "setup_recurring_new": "Nová pravidelná platba",
+  "setup_recurring_edit": "Upraviť pravidelnú platbu",
+  "setup_recurring_new_description": "Zaznamená sa automaticky v každý deň splatnosti.",
+  "setup_recurring_edit_description": "Zmeny platia pre budúce platby, minulé zostávajú, ako sú.",
+  "setup_recurring_cadence_weekly": "Týždenne",
+  "setup_recurring_cadence_monthly": "Mesačne",
+  "setup_recurring_cadence_yearly": "Ročne",
+  "setup_recurring_updated": "Pravidelná platba upravená",
+  "setup_recurring_created": "Pravidelná platba vytvorená",
+  "setup_recurring_paused": "Pozastavené",
+  "setup_recurring_resumed": "Obnovené",
+  "setup_recurring_deleted": "Pravidelná platba vymazaná",
+  "setup_recurring_payment": "Pravidelná platba",
+  "setup_recurring_intro": "Výplata, nájom a predplatné sa zaznamenajú v deň splatnosti, takže ich už nikdy nebudeš písať znova.",
+  "setup_recurring_yearly_before": "Pravidelné výdavky stoja",
+  "setup_recurring_per_year": "{amount} ročne",
+  "setup_recurring_yearly_after": "(v priemere {amount} mesačne).",
+  "setup_recurring_empty": "Pridaj nájom, výplatu alebo predplatné a budú sa zaznamenávať automaticky.",
+  "setup_recurring_status_paused": "Pozastavené",
+  "setup_recurring_status_next": "Ďalšia {date}",
+  "setup_recurring_status_ended": "Skončené",
+  "setup_recurring_suggestions_title": "Vyzerá ako predplatné",
+  "setup_recurring_suggestions_intro": "Tieto zadávaš ručne v pravidelnom rytme. Nastav ich ako pravidelné, zaznamenajú sa za teba a objavia sa aj v predpovedi.",
+  "setup_recurring_suggestion_detail": [
+    {
+      "declarations": [
+        "input cadence",
+        "input date",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{cadence}, {count} platba, posledná {date}",
+        "countPlural=few": "{cadence}, {count} platby, posledná {date}",
+        "countPlural=many": "{cadence}, {count} platieb, posledná {date}",
+        "countPlural=other": "{cadence}, {count} platieb, posledná {date}"
+      }
+    }
+  ],
+  "setup_recurring_make_recurring": "Nastaviť ako pravidelnú",
+  "setup_recurring_make_recurring_label": "Nastaviť ako pravidelnú: {payee}",
+  "setup_recurring_pause": "Pozastaviť",
+  "setup_recurring_resume": "Obnoviť",
+  "setup_goals_meta_title": "Ciele | BudgetMaster",
+  "setup_goals_title": "Ciele",
+  "setup_goals_new": "Nový cieľ",
+  "setup_goals_edit": "Upraviť cieľ",
+  "setup_goals_updated": "Cieľ upravený",
+  "setup_goals_created": "Cieľ vytvorený",
+  "setup_goals_deleted": "Cieľ vymazaný",
+  "setup_goals_intro": "Šetri na výlet, nový notebook alebo finančnú rezervu. Cieľ sleduje zostatok účtu, na ktorom peniaze držíš.",
+  "setup_goals_empty": "Zatiaľ nemáš žiadne ciele. Vyber sporiaci účet a sumu, ku ktorej chceš smerovať.",
+  "setup_goals_drawer_description": "Pokrok je zostatok účtu, takže presunom peňazí naň šetríš na cieľ.",
+  "setup_goals_delete": "Vymazať cieľ",
+  "setup_goals_reached": "Dosiahnutý",
+  "setup_goals_per_month": "{amount} mesačne, aby si ho dosiahol do {date}",
+  "setup_goals_date_passed": "Dátum už uplynul, chýba ešte {amount}",
+  "setup_goals_to_go": "Chýba ešte {amount}",
+  "setup_goals_in_wallet": "Na účte {wallet}",
+  "setup_goals_of_target": "z {target}, {percent} %",
+  "setup_goals_no_wallet": "Najprv pridaj účet: cieľ sleduje zostatok účtu.",
+  "setup_goals_amount_invalid": "Zadaj sumu, ktorú chceš ušetriť, napríklad 1500.",
+  "setup_goals_name_placeholder": "napr. Letná dovolenka",
+  "setup_goals_saved_in": "Kde šetríš",
+  "setup_goals_target": "Cieľová suma v {currency}",
+  "setup_goals_reach_by": "Dosiahnuť do (nepovinné)",
+  "setup_goals_create": "Vytvoriť cieľ",
+  "setup_import_meta_title": "Import | BudgetMaster",
+  "setup_import_title": "Import",
+  "setup_import_no_rows": "Súbor neobsahuje žiadne riadky na import.",
+  "setup_import_review_failed": "Riadky sa nepodarilo skontrolovať.",
+  "setup_import_failed": "Import sa nepodaril. Skús to znova.",
+  "setup_import_done": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transakcia importovaná",
+        "countPlural=few": "{count} transakcie importované",
+        "countPlural=many": "{count} transakcií importovaných",
+        "countPlural=other": "{count} transakcií importovaných"
+      }
+    }
+  ],
+  "setup_import_intro": "Nahraj CSV export zo svojej banky. Súbor sa číta v tvojom prehliadači a nič sa neuloží, kým neskontroluješ každý riadok.",
+  "setup_import_step_file": "1. Súbor a účet",
+  "setup_import_into_wallet": "Na účet",
+  "setup_import_csv_file": "Súbor CSV",
+  "setup_import_step_columns": "2. Stĺpce",
+  "setup_import_remembered": "Rovnaké rozloženie ako pri poslednom importe z tejto banky, takže stĺpce aj účet sú už nastavené.",
+  "setup_import_column_date": "Dátum",
+  "setup_import_date_format": "Formát dátumu",
+  "setup_import_split": "Odchádzajúce a prichádzajúce peniaze sú v samostatných stĺpcoch",
+  "setup_import_column_out": "Odchádzajúce peniaze",
+  "setup_import_column_in": "Prichádzajúce peniaze",
+  "setup_import_column_amount": "Suma (záporná pre výdavky)",
+  "setup_import_column_payee": "Príjemca alebo popis",
+  "setup_import_column_none": "Žiadny",
+  "setup_import_column_fallback": "Stĺpec {index}",
+  "setup_import_readable": "Čitateľné riadky: {readable} z {total}",
+  "setup_import_unreadable_hint": ". Riadky bez platného dátumu alebo sumy (napríklad súčty) sa vynechajú.",
+  "setup_import_review_button": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Skontrolovať {count} riadok",
+        "countPlural=few": "Skontrolovať {count} riadky",
+        "countPlural=many": "Skontrolovať {count} riadkov",
+        "countPlural=other": "Skontrolovať {count} riadkov"
+      }
+    }
+  ],
+  "setup_import_undone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Import vrátený späť, odstránená {count} transakcia",
+        "countPlural=few": "Import vrátený späť, odstránené {count} transakcie",
+        "countPlural=many": "Import vrátený späť, odstránených {count} transakcií",
+        "countPlural=other": "Import vrátený späť, odstránených {count} transakcií"
+      }
+    }
+  ],
+  "setup_import_recent": "Posledné importy",
+  "setup_import_statement": "Výpis",
+  "setup_import_recent_detail": [
+    {
+      "declarations": [
+        "input wallet",
+        "input remaining",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "na účet {wallet}, zostáva {remaining} z {count} transakcie",
+        "countPlural=few": "na účet {wallet}, zostáva {remaining} z {count} transakcií",
+        "countPlural=many": "na účet {wallet}, zostáva {remaining} z {count} transakcií",
+        "countPlural=other": "na účet {wallet}, zostáva {remaining} z {count} transakcií"
+      }
+    }
+  ],
+  "setup_import_undo_label": "Vrátiť import späť: {name}",
+  "setup_import_undo": "Späť",
+  "setup_import_undo_title": "Vrátiť tento import späť?",
+  "setup_import_undo_description": [
+    {
+      "declarations": [
+        "input wallet",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Vymaže {count} transakciu, ktorú vytvoril na účte {wallet}, aj keď si ju medzitým upravil.",
+        "countPlural=few": "Vymaže {count} transakcie, ktoré vytvoril na účte {wallet}, vrátane tých, ktoré si medzitým upravil.",
+        "countPlural=many": "Vymaže {count} transakcií, ktoré vytvoril na účte {wallet}, vrátane tých, ktoré si medzitým upravil.",
+        "countPlural=other": "Vymaže {count} transakcií, ktoré vytvoril na účte {wallet}, vrátane tých, ktoré si medzitým upravil."
+      }
+    }
+  ],
+  "setup_import_keep": "Ponechať",
+  "setup_import_undo_confirm": "Vrátiť import späť",
+  "setup_import_step_review": "3. Kontrola",
+  "setup_import_duplicates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} riadok vyzerá ako transakcia, ktorá už na tomto účte je, a preto sa vynechá. Ak ho chceš aj tak importovať, zaškrtni ho.",
+        "countPlural=few": "{count} riadky vyzerajú ako transakcie, ktoré už na tomto účte sú, a preto sa vynechajú. Ak ich chceš aj tak importovať, zaškrtni ich.",
+        "countPlural=many": "{count} riadkov vyzerá ako transakcie, ktoré už na tomto účte sú, a preto sa vynechajú. Ak ich chceš aj tak importovať, zaškrtni ich.",
+        "countPlural=other": "{count} riadkov vyzerá ako transakcie, ktoré už na tomto účte sú, a preto sa vynechajú. Ak ich chceš aj tak importovať, zaškrtni ich."
+      }
+    }
+  ],
+  "setup_import_categories_hint": "Kategórie pochádzajú zo skorších transakcií s rovnakým príjemcom.",
+  "setup_import_no_payee": "Bez príjemcu",
+  "setup_import_row_include": "Importovať {label}",
+  "setup_import_row_category": "Kategória pre {label}",
+  "setup_import_possible_duplicate": "Možný duplikát",
+  "setup_import_missing": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Vyber kategóriu ešte pre {count} riadok.",
+        "countPlural=few": "Vyber kategóriu ešte pre {count} riadky.",
+        "countPlural=many": "Vyber kategóriu ešte pre {count} riadkov.",
+        "countPlural=other": "Vyber kategóriu ešte pre {count} riadkov."
+      }
+    }
+  ],
+  "setup_import_remember": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Zapamätaj si kategóriu, ktorú som vybral pre tohto príjemcu",
+        "countPlural=few": "Zapamätaj si kategórie, ktoré som vybral pre týchto {count} príjemcov",
+        "countPlural=many": "Zapamätaj si kategórie, ktoré som vybral pre týchto {count} príjemcov",
+        "countPlural=other": "Zapamätaj si kategórie, ktoré som vybral pre týchto {count} príjemcov"
+      }
+    }
+  ],
+  "setup_import_confirm": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Importovať {count} transakciu",
+        "countPlural=few": "Importovať {count} transakcie",
+        "countPlural=many": "Importovať {count} transakcií",
+        "countPlural=other": "Importovať {count} transakcií"
+      }
+    }
+  ],
+  "setup_schedule_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Každý deň",
+        "countPlural=few": "Každé {count} dni",
+        "countPlural=many": "Každých {count} dní",
+        "countPlural=other": "Každých {count} dní"
+      }
+    }
+  ],
+  "setup_schedule_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Každý týždeň",
+        "countPlural=few": "Každé {count} týždne",
+        "countPlural=many": "Každých {count} týždňov",
+        "countPlural=other": "Každých {count} týždňov"
+      }
+    }
+  ],
+  "setup_schedule_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Každý mesiac",
+        "countPlural=few": "Každé {count} mesiace",
+        "countPlural=many": "Každých {count} mesiacov",
+        "countPlural=other": "Každých {count} mesiacov"
+      }
+    }
+  ],
+  "setup_schedule_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Každý rok",
+        "countPlural=few": "Každé {count} roky",
+        "countPlural=many": "Každých {count} rokov",
+        "countPlural=other": "Každých {count} rokov"
+      }
+    }
+  ],
+  "setup_schedule_weekly": "{every}, {weekday}",
+  "setup_schedule_monthly": "{every}, {day}. deň v mesiaci",
+  "setup_schedule_yearly": "{every}, {date}"
+}

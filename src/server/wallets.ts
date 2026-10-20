@@ -8,6 +8,7 @@ import { CURRENCIES } from '@/lib/currencies'
 import { ICONS } from '@/lib/icons'
 
 import { currentDay } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -15,8 +16,7 @@ import { walletBalances } from '@/server/wallet-balances'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -43,7 +43,11 @@ export type ManagedWallet = Awaited<
 const walletInput = spaceInput.extend({
   // Missing for a new wallet.
   id: z.uuid().optional(),
-  name: z.string().trim().min(1, 'Enter a name.').max(40),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.setup_enter_name() })
+    .max(40),
   type: z.enum(walletType.enumValues),
   currency: z.enum(CURRENCIES),
   // Minor units; negative for a credit card that starts with a debt.
@@ -51,8 +55,12 @@ const walletInput = spaceInput.extend({
     .int()
     .min(-Number.MAX_SAFE_INTEGER)
     .max(Number.MAX_SAFE_INTEGER),
-  icon: z.string().refine((icon) => icon in ICONS, 'Unknown icon.'),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i, 'Choose a colour.'),
+  icon: z.string().refine((icon) => icon in ICONS, {
+    error: () => m.setup_unknown_icon(),
+  }),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i, {
+    error: () => m.setup_choose_colour(),
+  }),
 })
 export type WalletInput = z.input<typeof walletInput>
 
@@ -69,7 +77,7 @@ export const saveWallet = createServerFn({ method: 'POST' })
         .select({ currency: wallet.currency })
         .from(wallet)
         .where(inSpace(data.id))
-      if (!existing) throw new Error('Wallet not found.')
+      if (!existing) throw new Error(m.setup_wallets_not_found())
       // Recurring rules hold amounts in its currency too, even before their first payment.
       const used =
         (await db.$count(
@@ -87,9 +95,7 @@ export const saveWallet = createServerFn({ method: 'POST' })
           ),
         ))
       if (used > 0 && existing.currency !== data.currency)
-        throw new Error(
-          'This wallet has transactions or recurring payments in its currency, so the currency cannot change.',
-        )
+        throw new Error(m.setup_wallets_currency_locked())
     }
 
     const [duplicate] = await db
@@ -102,7 +108,7 @@ export const saveWallet = createServerFn({ method: 'POST' })
           data.id ? ne(wallet.id, data.id) : undefined,
         ),
       )
-    if (duplicate) throw new Error('There is already a wallet with this name.')
+    if (duplicate) throw new Error(m.setup_wallets_duplicate())
 
     const values = {
       name: data.name,
@@ -139,7 +145,7 @@ export const setWalletArchived = createServerFn({ method: 'POST' })
       .set({ archivedAt: data.archived ? new Date() : null })
       .where(and(eq(wallet.spaceId, space.id), eq(wallet.id, data.id)))
       .returning({ id: wallet.id })
-    if (!updated) throw new Error('Wallet not found.')
+    if (!updated) throw new Error(m.setup_wallets_not_found())
   })
 
 // The order wallets appear in everywhere: balances, pickers and this page.

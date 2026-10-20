@@ -5,6 +5,7 @@ import { ColorPicker, IconPicker } from '@/components/pickers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { m } from '@/paraglide/messages.js'
 import type { CategoryInput, ManagedCategory } from '@/server/categories'
 
 type CategoryType = ManagedCategory['type']
@@ -50,7 +51,9 @@ export function CategoryForm({
     >
       {!editing && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 font-medium text-sm">Type</legend>
+          <legend className="mb-2 font-medium text-sm">
+            {m.setup_form_type()}
+          </legend>
           <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
             {(['expense', 'income'] as const).map((type: CategoryType) => (
               <label
@@ -65,7 +68,9 @@ export function CategoryForm({
                   onChange={() => set({ type, parentId: null })}
                   className="sr-only"
                 />
-                {type === 'expense' ? 'Expense' : 'Income'}
+                {type === 'expense'
+                  ? m.setup_type_expense()
+                  : m.setup_type_income()}
               </label>
             ))}
           </div>
@@ -73,7 +78,7 @@ export function CategoryForm({
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="category-name">Name</Label>
+        <Label htmlFor="category-name">{m.setup_form_name()}</Label>
         <Input
           id="category-name"
           value={values.name}
@@ -85,7 +90,7 @@ export function CategoryForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="category-parent">Group</Label>
+        <Label htmlFor="category-parent">{m.setup_category_form_group()}</Label>
         <select
           id="category-parent"
           className={selectClass}
@@ -94,7 +99,7 @@ export function CategoryForm({
           aria-describedby={hasChildren ? 'category-parent-hint' : undefined}
           onChange={(e) => set({ parentId: e.target.value || null })}
         >
-          <option value="">None (top level)</option>
+          <option value="">{m.setup_category_form_no_group()}</option>
           {parentOptions.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -106,7 +111,7 @@ export function CategoryForm({
             id="category-parent-hint"
             className="text-muted-foreground text-sm"
           >
-            It has subcategories, so it stays at the top level.
+            {m.setup_category_form_parent_locked()}
           </p>
         )}
       </div>
@@ -120,7 +125,11 @@ export function CategoryForm({
 
       <FormError message={error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? 'Saving' : editing ? 'Save changes' : 'Create category'}
+        {pending
+          ? m.setup_form_saving()
+          : editing
+            ? m.setup_form_save_changes()
+            : m.setup_category_form_create()}
       </Button>
     </form>
   )

@@ -23,12 +23,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { COLORS } from '@/lib/icons'
 import { tagsQuery, useActiveSpace } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { deleteTag, type ManagedTag, saveTag } from '@/server/tags'
 
 export const Route = createFileRoute('/_app/tags')({
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(tagsQuery(context.activeSpaceId)),
-  head: () => ({ meta: [{ title: 'Tags | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_tags_meta_title() }] }),
   component: Tags,
 })
 
@@ -50,11 +51,11 @@ function Tags() {
   const save = useMutation({
     mutationFn: (values: { name: string; color: string }) =>
       saveTag({ data: { ...values, spaceId: space.id, id: editing?.id } }),
-    onSuccess: done(editing ? 'Tag updated' : 'Tag created'),
+    onSuccess: done(editing ? m.setup_tags_updated() : m.setup_tags_created()),
   })
   const remove = useMutation({
     mutationFn: (id: string) => deleteTag({ data: { id, spaceId: space.id } }),
-    onSuccess: done('Tag deleted'),
+    onSuccess: done(m.setup_tags_deleted()),
     onError: (error) => toast.error(error.message),
   })
 
@@ -65,26 +66,25 @@ function Tags() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">Tags</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.setup_tags_title()}
+        </h1>
         {data.canWrite && (
           <Button onClick={() => setEditor({ mode: 'create' })}>
             <Plus />
-            New tag
+            {m.setup_tags_new()}
           </Button>
         )}
       </div>
       <p className="max-w-prose text-muted-foreground">
-        Tags cut across categories: a trip, a renovation or a work expense to
-        claim back. Filter Activity by a tag to see its total.
+        {m.setup_tags_intro()}
       </p>
 
       {data.tags.length === 0 ? (
-        <EmptyState icon={Tag}>
-          No tags yet. Create one, then pick it when you add a transaction.
-        </EmptyState>
+        <EmptyState icon={Tag}>{m.setup_tags_empty()}</EmptyState>
       ) : (
         <ul className="divide-y rounded-lg border bg-card">
           {data.tags.map((t) => {
@@ -101,7 +101,7 @@ function Tags() {
                   className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {t.uses} {t.uses === 1 ? 'transaction' : 'transactions'}
+                  {m.setup_tags_uses({ count: t.uses })}
                 </Link>
               </>
             )
@@ -113,9 +113,9 @@ function Tags() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setEditor({ mode: 'edit', tag: t })}
-                    aria-label={`Edit ${t.name}`}
+                    aria-label={m.setup_edit_named({ name: t.name })}
                   >
-                    Edit
+                    {m.setup_edit()}
                   </Button>
                 )}
               </li>
@@ -136,11 +136,13 @@ function Tags() {
         <DrawerContent>
           <div className="mx-auto max-h-[85dvh] w-full max-w-md overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
-              <DrawerTitle>{editing ? 'Edit tag' : 'New tag'}</DrawerTitle>
+              <DrawerTitle>
+                {editing ? m.setup_tags_edit() : m.setup_tags_new()}
+              </DrawerTitle>
               <DrawerDescription>
                 {editing
-                  ? `Used by ${editing.uses} ${editing.uses === 1 ? 'transaction' : 'transactions'}.`
-                  : 'Pick it later in quick add.'}
+                  ? m.setup_tags_used_by({ count: editing.uses })
+                  : m.setup_tags_new_description()}
               </DrawerDescription>
             </DrawerHeader>
             {editor && (
@@ -160,7 +162,7 @@ function Tags() {
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(editing.id)}
               >
-                Delete tag
+                {m.setup_tags_delete()}
               </Button>
             )}
           </div>
@@ -194,7 +196,7 @@ function TagForm({
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="tag-name">Name</Label>
+        <Label htmlFor="tag-name">{m.setup_form_name()}</Label>
         <Input
           id="tag-name"
           value={name}
@@ -207,7 +209,11 @@ function TagForm({
       <ColorPicker value={color} onChange={setColor} />
       <FormError message={error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? 'Saving' : editing ? 'Save changes' : 'Create tag'}
+        {pending
+          ? m.setup_form_saving()
+          : editing
+            ? m.setup_form_save_changes()
+            : m.setup_tags_create()}
       </Button>
     </form>
   )

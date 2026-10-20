@@ -4,14 +4,14 @@ import { z } from 'zod'
 
 import { db } from '@/db'
 import { categorizationRule, category } from '@/db/schema'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -42,7 +42,7 @@ const ruleInput = z.object({
   match: z
     .string()
     .trim()
-    .min(2, 'Use at least two characters.')
+    .min(2, { error: () => m.setup_rules_match_too_short() })
     .max(60)
     .transform((value) => value.toLowerCase()),
   categoryId: z.uuid(),
@@ -62,7 +62,11 @@ export const saveRules = createServerFn({ method: 'POST' })
       .where(and(eq(category.spaceId, space.id), inArray(category.id, ids)))
     for (const rule of data.rules) {
       if (categories.find((c) => c.id === rule.categoryId)?.type !== rule.type)
-        throw new Error(`Choose an ${rule.type} category for "${rule.match}".`)
+        throw new Error(
+          rule.type === 'income'
+            ? m.setup_rules_choose_income_category({ match: rule.match })
+            : m.setup_rules_choose_expense_category({ match: rule.match }),
+        )
     }
     // One row per type and text, the last one wins.
     const unique = [

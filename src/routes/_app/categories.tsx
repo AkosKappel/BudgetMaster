@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { COLORS, iconFor } from '@/lib/icons'
 import { categoriesQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import {
   deleteCategory,
   type ManagedCategory,
@@ -34,7 +35,7 @@ import {
 export const Route = createFileRoute('/_app/categories')({
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(categoriesQuery(context.activeSpaceId)),
-  head: () => ({ meta: [{ title: 'Categories | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_categories_meta_title() }] }),
   component: Categories,
 })
 
@@ -71,7 +72,9 @@ function Categories() {
       }),
     onSuccess: async () => {
       await refresh()
-      toast.success(editing ? 'Category updated' : 'Category created')
+      toast.success(
+        editing ? m.setup_categories_updated() : m.setup_categories_created(),
+      )
       setEditor(null)
     },
   })
@@ -81,7 +84,11 @@ function Categories() {
       setCategoryArchived({ data: { ...variables, spaceId: space.id } }),
     onSuccess: async (_result, { archived }) => {
       await refresh()
-      toast.success(archived ? 'Category archived' : 'Category restored')
+      toast.success(
+        archived
+          ? m.setup_categories_archived()
+          : m.setup_categories_restored(),
+      )
       setEditor(null)
     },
     onError: (error) => toast.error(error.message),
@@ -92,7 +99,7 @@ function Categories() {
       deleteCategory({ data: { id, spaceId: space.id } }),
     onSuccess: async () => {
       await refresh()
-      toast.success('Category deleted')
+      toast.success(m.setup_categories_deleted())
       setEditor(null)
     },
     onError: (error) => toast.error(error.message),
@@ -103,7 +110,7 @@ function Categories() {
       mergeCategory({ data: { ...variables, spaceId: space.id } }),
     onSuccess: async ({ into }) => {
       await refresh()
-      toast.success(`Merged into ${into}`)
+      toast.success(m.setup_categories_merged({ name: into }))
       setEditor(null)
     },
     onError: (error) => toast.error(error.message),
@@ -149,14 +156,16 @@ function Categories() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">Categories</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.setup_categories_title()}
+        </h1>
         {data.canWrite && (
           <Button onClick={() => openEditor({ mode: 'create' })}>
             <Plus />
-            New category
+            {m.setup_categories_new()}
           </Button>
         )}
       </div>
@@ -168,7 +177,9 @@ function Categories() {
           className="flex flex-col gap-3"
         >
           <h2 id={`${type}-heading`} className="font-semibold text-lg">
-            {type === 'expense' ? 'Expenses' : 'Income'}
+            {type === 'expense'
+              ? m.setup_categories_expenses()
+              : m.setup_categories_income()}
           </h2>
           <ul className="divide-y rounded-lg border bg-card">
             {grouped(active.filter((c) => c.type === type)).flatMap(
@@ -210,11 +221,10 @@ function Categories() {
       {archived.length > 0 && (
         <details>
           <summary className="cursor-pointer font-semibold text-lg">
-            Archived ({archived.length})
+            {m.setup_archived_count({ count: archived.length })}
           </summary>
           <p className="my-3 max-w-prose text-muted-foreground text-sm">
-            Hidden from pickers. Their transactions and history stay as they
-            are.
+            {m.setup_categories_archived_hint()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
             {archived.map((c) => (
@@ -228,7 +238,7 @@ function Categories() {
                       archive.mutate({ id: c.id, archived: false })
                     }
                   >
-                    Restore
+                    {m.setup_restore()}
                   </Button>
                 )}
               </CategoryRow>
@@ -245,12 +255,14 @@ function Categories() {
           <div className="mx-auto max-h-[85dvh] w-full max-w-md overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
               <DrawerTitle>
-                {editing ? 'Edit category' : 'New category'}
+                {editing ? m.setup_categories_edit() : m.setup_categories_new()}
               </DrawerTitle>
               <DrawerDescription>
                 {editing
-                  ? `${editing.type === 'expense' ? 'Expense' : 'Income'} category`
-                  : 'Group it under another category to keep lists short.'}
+                  ? editing.type === 'expense'
+                    ? m.setup_categories_expense_category()
+                    : m.setup_categories_income_category()
+                  : m.setup_categories_new_description()}
               </DrawerDescription>
             </DrawerHeader>
             {editor && (
@@ -287,9 +299,9 @@ function Categories() {
                   archive.mutate({ id: editing.id, archived: true })
                 }
               >
-                Archive
-                {active.some((c) => c.parentId === editing.id) &&
-                  ' with its subcategories'}
+                {active.some((c) => c.parentId === editing.id)
+                  ? m.setup_categories_archive_with_children()
+                  : m.setup_archive()}
               </Button>
             )}
             {editing && !active.some((c) => c.parentId === editing.id) && (
@@ -380,10 +392,9 @@ function MergeOrDelete({
   const [intoId, setIntoId] = useState('')
   return (
     <div className="mt-4 flex flex-col gap-3 border-t pt-4">
-      <Label htmlFor="merge-into">Merge into another category</Label>
+      <Label htmlFor="merge-into">{m.setup_categories_merge_label()}</Label>
       <p id="merge-into-hint" className="text-muted-foreground text-sm">
-        Moves its transactions, recurring payments, rules and budget there, then
-        deletes "{category.name}".
+        {m.setup_categories_merge_hint({ name: category.name })}
       </p>
       <div className="flex gap-2">
         <select
@@ -393,7 +404,7 @@ function MergeOrDelete({
           value={intoId}
           onChange={(e) => setIntoId(e.target.value)}
         >
-          <option value="">Choose a category</option>
+          <option value="">{m.setup_categories_choose()}</option>
           {others.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -405,7 +416,7 @@ function MergeOrDelete({
           disabled={!intoId || pending}
           onClick={() => onMerge(intoId)}
         >
-          Merge
+          {m.setup_categories_merge()}
         </Button>
       </div>
       <Button
@@ -414,7 +425,7 @@ function MergeOrDelete({
         disabled={pending}
         onClick={onDelete}
       >
-        Delete if unused
+        {m.setup_categories_delete_unused()}
       </Button>
     </div>
   )

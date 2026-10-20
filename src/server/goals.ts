@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { savingsGoal, wallet } from '@/db/schema'
 import { goalProgress } from '@/lib/goals'
 import { currentDay } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
@@ -14,8 +15,7 @@ import { walletBalances } from '@/server/wallet-balances'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -67,7 +67,11 @@ export type Goal = Awaited<ReturnType<typeof listGoals>>['goals'][number]
 const goalInput = spaceInput.extend({
   // Missing for a new goal.
   id: z.uuid().optional(),
-  name: z.string().trim().min(1, 'Enter a name.').max(60),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.setup_enter_name() })
+    .max(60),
   walletId: z.uuid(),
   targetAmount: z.int().positive().max(Number.MAX_SAFE_INTEGER),
   targetDate: z.iso.date().nullable(),
@@ -83,7 +87,7 @@ export const saveGoal = createServerFn({ method: 'POST' })
       .select({ id: wallet.id })
       .from(wallet)
       .where(and(eq(wallet.spaceId, space.id), eq(wallet.id, data.walletId)))
-    if (!owned) throw new Error('Choose a wallet of this space.')
+    if (!owned) throw new Error(m.setup_goals_wallet_not_in_space())
     const [duplicate] = await db
       .select({ id: savingsGoal.id })
       .from(savingsGoal)
@@ -94,7 +98,7 @@ export const saveGoal = createServerFn({ method: 'POST' })
           data.id ? ne(savingsGoal.id, data.id) : undefined,
         ),
       )
-    if (duplicate) throw new Error(`There is already a goal "${data.name}".`)
+    if (duplicate) throw new Error(m.setup_goals_duplicate({ name: data.name }))
 
     const values = {
       name: data.name,

@@ -1,6 +1,7 @@
 // Calendar dates are ISO `YYYY-MM-DD` strings, computed in UTC so DST never shifts a day.
 // ISO strings sort and compare correctly as plain strings.
 
+import { m } from '../paraglide/messages.js'
 import { formatLocale } from './locale.ts'
 
 export type Frequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
@@ -117,23 +118,38 @@ const ordinal = (n: number) => {
 export function describeSchedule({ startDate, frequency, interval }: Schedule) {
   const date = new Date(`${startDate}T00:00:00Z`)
   const units = {
-    daily: 'day',
-    weekly: 'week',
-    monthly: 'month',
-    yearly: 'year',
+    daily: m.setup_schedule_every_day,
+    weekly: m.setup_schedule_every_week,
+    monthly: m.setup_schedule_every_month,
+    yearly: m.setup_schedule_every_year,
   }
-  const every =
-    interval === 1
-      ? `Every ${units[frequency]}`
-      : `Every ${interval} ${units[frequency]}s`
+  const every = units[frequency]({ count: interval })
   switch (frequency) {
     case 'daily':
       return every
     case 'weekly':
-      return `${every} on ${date.toLocaleDateString(formatLocale(), { weekday: 'long', timeZone: 'UTC' })}`
+      return m.setup_schedule_weekly({
+        every,
+        weekday: date.toLocaleDateString(formatLocale(), {
+          weekday: 'long',
+          timeZone: 'UTC',
+        }),
+      })
     case 'monthly':
-      return `${every} on the ${ordinal(date.getUTCDate())}`
+      // English needs the suffix ("25th"); other languages use the plain day number.
+      return m.setup_schedule_monthly({
+        every,
+        day: date.getUTCDate(),
+        ordinal: ordinal(date.getUTCDate()),
+      })
     case 'yearly':
-      return `${every} on ${date.toLocaleDateString(formatLocale(), { day: 'numeric', month: 'long', timeZone: 'UTC' })}`
+      return m.setup_schedule_yearly({
+        every,
+        date: date.toLocaleDateString(formatLocale(), {
+          day: 'numeric',
+          month: 'long',
+          timeZone: 'UTC',
+        }),
+      })
   }
 }

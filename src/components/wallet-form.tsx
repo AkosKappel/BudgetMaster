@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CURRENCIES, type Currency } from '@/lib/currencies'
 import { currencyDigits, parseAmount } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { WalletInput } from '@/server/wallets'
 
 type WalletType = WalletInput['type']
@@ -15,14 +16,16 @@ export type WalletValues = Pick<
   'name' | 'type' | 'currency' | 'initialBalance' | 'icon' | 'color'
 >
 
-export const WALLET_TYPES: Record<WalletType, { label: string; icon: string }> =
-  {
-    checking: { label: 'Bank account', icon: 'landmark' },
-    savings: { label: 'Savings', icon: 'piggy-bank' },
-    cash: { label: 'Cash', icon: 'wallet' },
-    credit_card: { label: 'Credit card', icon: 'credit-card' },
-    investment: { label: 'Investment', icon: 'coins' },
-  }
+export const WALLET_TYPES: Record<
+  WalletType,
+  { label: () => string; icon: string }
+> = {
+  checking: { label: m.setup_wallet_type_checking, icon: 'landmark' },
+  savings: { label: m.setup_wallet_type_savings, icon: 'piggy-bank' },
+  cash: { label: m.setup_wallet_type_cash, icon: 'wallet' },
+  credit_card: { label: m.setup_wallet_type_credit_card, icon: 'credit-card' },
+  investment: { label: m.setup_wallet_type_investment, icon: 'coins' },
+}
 
 const selectClass =
   'h-9 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm'
@@ -74,9 +77,7 @@ export function WalletForm({
         e.preventDefault()
         const initialBalance = parseBalance(balanceText, values.currency)
         if (initialBalance === null) {
-          setLocalError(
-            'Enter the starting balance as a number, like 250 or -80.',
-          )
+          setLocalError(m.setup_wallet_form_balance_invalid())
           return
         }
         setLocalError(null)
@@ -84,7 +85,7 @@ export function WalletForm({
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="wallet-name">Name</Label>
+        <Label htmlFor="wallet-name">{m.setup_form_name()}</Label>
         <Input
           id="wallet-name"
           value={values.name}
@@ -97,7 +98,7 @@ export function WalletForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="wallet-type">Type</Label>
+          <Label htmlFor="wallet-type">{m.setup_form_type()}</Label>
           <select
             id="wallet-type"
             className={selectClass}
@@ -114,13 +115,13 @@ export function WalletForm({
           >
             {Object.entries(WALLET_TYPES).map(([type, { label }]) => (
               <option key={type} value={type}>
-                {label}
+                {label()}
               </option>
             ))}
           </select>
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="wallet-currency">Currency</Label>
+          <Label htmlFor="wallet-currency">{m.setup_form_currency()}</Label>
           <select
             id="wallet-currency"
             className={selectClass}
@@ -144,12 +145,12 @@ export function WalletForm({
           id="wallet-currency-hint"
           className="-mt-3 text-muted-foreground text-sm"
         >
-          It has transactions, so its currency stays.
+          {m.setup_wallet_form_currency_locked()}
         </p>
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="wallet-balance">Starting balance</Label>
+        <Label htmlFor="wallet-balance">{m.setup_wallet_form_balance()}</Label>
         <Input
           id="wallet-balance"
           inputMode="decimal"
@@ -160,8 +161,7 @@ export function WalletForm({
           onChange={(e) => setBalanceText(e.target.value)}
         />
         <p id="wallet-balance-hint" className="text-muted-foreground text-sm">
-          What it held before the first transaction you record. Negative for a
-          card that starts with a debt.
+          {m.setup_wallet_form_balance_hint()}
         </p>
       </div>
 
@@ -174,7 +174,11 @@ export function WalletForm({
 
       <FormError message={localError ?? error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? 'Saving' : editing ? 'Save changes' : 'Create wallet'}
+        {pending
+          ? m.setup_form_saving()
+          : editing
+            ? m.setup_form_save_changes()
+            : m.setup_wallet_form_create()}
       </Button>
     </form>
   )

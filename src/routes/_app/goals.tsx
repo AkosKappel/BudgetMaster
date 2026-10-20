@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label'
 import { formatShortDate } from '@/lib/format-date'
 import { currencyDigits, formatMoney, parseAmount } from '@/lib/money'
 import { goalsQuery, useActiveSpace, walletsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { deleteGoal, type Goal, type GoalInput, saveGoal } from '@/server/goals'
 
 export const Route = createFileRoute('/_app/goals')({
@@ -31,7 +32,7 @@ export const Route = createFileRoute('/_app/goals')({
       context.queryClient.ensureQueryData(goalsQuery(context.activeSpaceId)),
       context.queryClient.ensureQueryData(walletsQuery(context.activeSpaceId)),
     ]),
-  head: () => ({ meta: [{ title: 'Goals | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.setup_goals_meta_title() }] }),
   component: Goals,
 })
 
@@ -58,11 +59,13 @@ function Goals() {
   const save = useMutation({
     mutationFn: (values: GoalValues) =>
       saveGoal({ data: { ...values, spaceId: space.id, id: editing?.id } }),
-    onSuccess: done(editing ? 'Goal updated' : 'Goal created'),
+    onSuccess: done(
+      editing ? m.setup_goals_updated() : m.setup_goals_created(),
+    ),
   })
   const remove = useMutation({
     mutationFn: (id: string) => deleteGoal({ data: { id, spaceId: space.id } }),
-    onSuccess: done('Goal deleted'),
+    onSuccess: done(m.setup_goals_deleted()),
     onError: (error) => toast.error(error.message),
   })
 
@@ -73,26 +76,25 @@ function Goals() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        More
+        {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">Goals</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.setup_goals_title()}
+        </h1>
         {data.canWrite && (
           <Button onClick={() => setEditor({ mode: 'create' })}>
             <Plus />
-            New goal
+            {m.setup_goals_new()}
           </Button>
         )}
       </div>
       <p className="max-w-prose text-muted-foreground">
-        Save towards a trip, a new laptop or a safety cushion. A goal follows
-        the balance of the wallet you keep the money in.
+        {m.setup_goals_intro()}
       </p>
 
       {data.goals.length === 0 ? (
-        <EmptyState icon={GoalIcon}>
-          No goals yet. Pick a savings wallet and an amount to aim for.
-        </EmptyState>
+        <EmptyState icon={GoalIcon}>{m.setup_goals_empty()}</EmptyState>
       ) : (
         <ul className="flex flex-col gap-3">
           {data.goals.map((goal) => (
@@ -122,10 +124,11 @@ function Goals() {
         <DrawerContent>
           <div className="mx-auto max-h-[85dvh] w-full max-w-md overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
-              <DrawerTitle>{editing ? 'Edit goal' : 'New goal'}</DrawerTitle>
+              <DrawerTitle>
+                {editing ? m.setup_goals_edit() : m.setup_goals_new()}
+              </DrawerTitle>
               <DrawerDescription>
-                Progress is the wallet's balance, so moving money there is
-                saving towards it.
+                {m.setup_goals_drawer_description()}
               </DrawerDescription>
             </DrawerHeader>
             {editor && (
@@ -145,7 +148,7 @@ function Goals() {
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(editing.id)}
               >
-                Delete goal
+                {m.setup_goals_delete()}
               </Button>
             )}
           </div>
@@ -158,12 +161,15 @@ function Goals() {
 function GoalCard({ goal, onEdit }: { goal: Goal; onEdit?: () => void }) {
   const money = (minor: number) => formatMoney(minor, goal.currency)
   const status = goal.reached
-    ? 'Reached'
+    ? m.setup_goals_reached()
     : goal.perMonth !== null
-      ? `${money(goal.perMonth)} a month to reach it by ${formatShortDate(goal.targetDate ?? '')}`
+      ? m.setup_goals_per_month({
+          amount: money(goal.perMonth),
+          date: formatShortDate(goal.targetDate ?? ''),
+        })
       : goal.targetDate
-        ? `The date has passed, ${money(goal.remaining)} to go`
-        : `${money(goal.remaining)} to go`
+        ? m.setup_goals_date_passed({ amount: money(goal.remaining) })
+        : m.setup_goals_to_go({ amount: money(goal.remaining) })
 
   return (
     <article className="flex flex-col gap-3 rounded-lg border bg-card p-4">
@@ -171,7 +177,7 @@ function GoalCard({ goal, onEdit }: { goal: Goal; onEdit?: () => void }) {
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-medium">{goal.name}</h2>
           <p className="truncate text-muted-foreground text-sm">
-            In {goal.walletName}
+            {m.setup_goals_in_wallet({ wallet: goal.walletName })}
           </p>
         </div>
         {onEdit && (
@@ -179,16 +185,19 @@ function GoalCard({ goal, onEdit }: { goal: Goal; onEdit?: () => void }) {
             variant="ghost"
             size="sm"
             onClick={onEdit}
-            aria-label={`Edit ${goal.name}`}
+            aria-label={m.setup_edit_named({ name: goal.name })}
           >
-            Edit
+            {m.setup_edit()}
           </Button>
         )}
       </div>
       <p className="text-sm">
         <span className="font-semibold text-lg">{money(goal.saved)}</span>{' '}
         <span className="text-muted-foreground">
-          of {money(goal.targetAmount)}, {goal.percent} %
+          {m.setup_goals_of_target({
+            target: money(goal.targetAmount),
+            percent: goal.percent,
+          })}
         </span>
       </p>
       <div
@@ -243,9 +252,7 @@ function GoalForm({
 
   if (wallets.length === 0)
     return (
-      <p className="pb-6 text-muted-foreground">
-        Add a wallet first: a goal follows a wallet's balance.
-      </p>
+      <p className="pb-6 text-muted-foreground">{m.setup_goals_no_wallet()}</p>
     )
 
   return (
@@ -255,9 +262,9 @@ function GoalForm({
       onSubmit={(e) => {
         e.preventDefault()
         const targetAmount = parseAmount(amount, currencyDigits(currency))
-        if (!name.trim()) return setLocalError('Enter a name.')
+        if (!name.trim()) return setLocalError(m.setup_enter_name())
         if (!targetAmount || targetAmount <= 0)
-          return setLocalError('Enter the amount to save, like 1500.')
+          return setLocalError(m.setup_goals_amount_invalid())
         setLocalError(null)
         onSubmit({
           name,
@@ -268,19 +275,19 @@ function GoalForm({
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-name">Name</Label>
+        <Label htmlFor="goal-name">{m.setup_form_name()}</Label>
         <Input
           id="goal-name"
           value={name}
           maxLength={60}
           required
           autoComplete="off"
-          placeholder="e.g. Summer trip"
+          placeholder={m.setup_goals_name_placeholder()}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-wallet">Saved in</Label>
+        <Label htmlFor="goal-wallet">{m.setup_goals_saved_in()}</Label>
         <select
           id="goal-wallet"
           className={selectClass}
@@ -295,7 +302,9 @@ function GoalForm({
         </select>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-amount">Target in {currency}</Label>
+        <Label htmlFor="goal-amount">
+          {m.setup_goals_target({ currency })}
+        </Label>
         <Input
           id="goal-amount"
           value={amount}
@@ -306,7 +315,7 @@ function GoalForm({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-date">Reach it by (optional)</Label>
+        <Label htmlFor="goal-date">{m.setup_goals_reach_by()}</Label>
         <Input
           id="goal-date"
           type="date"
@@ -316,7 +325,11 @@ function GoalForm({
       </div>
       <FormError message={localError ?? error ?? null} />
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? 'Saving' : goal ? 'Save changes' : 'Create goal'}
+        {pending
+          ? m.setup_form_saving()
+          : goal
+            ? m.setup_form_save_changes()
+            : m.setup_goals_create()}
       </Button>
     </form>
   )

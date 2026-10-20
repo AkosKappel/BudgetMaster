@@ -1,0 +1,469 @@
+{
+  "setup_back_more": "Továbbiak",
+  "setup_archived_count": "Archivált ({count})",
+  "setup_restore": "Visszaállítás",
+  "setup_archive": "Archiválás",
+  "setup_form_name": "Név",
+  "setup_form_type": "Típus",
+  "setup_form_currency": "Pénznem",
+  "setup_form_saving": "Mentés…",
+  "setup_form_save_changes": "Változások mentése",
+  "setup_viewers_cannot_change": "Megtekintőként nem módosíthatod ezt a kasszát.",
+  "setup_enter_name": "Adj meg egy nevet.",
+  "setup_unknown_icon": "Ismeretlen ikon.",
+  "setup_choose_colour": "Válassz színt.",
+  "setup_wallet_type_checking": "Bankszámla",
+  "setup_wallet_type_savings": "Megtakarítás",
+  "setup_wallet_type_cash": "Készpénz",
+  "setup_wallet_type_credit_card": "Hitelkártya",
+  "setup_wallet_type_investment": "Befektetés",
+  "setup_wallet_form_balance_invalid": "Számként add meg a nyitó egyenleget, pl. 250 vagy -80.",
+  "setup_wallet_form_currency_locked": "Már vannak tranzakciói, ezért a pénzneme nem változhat.",
+  "setup_wallet_form_balance": "Nyitó egyenleg",
+  "setup_wallet_form_balance_hint": "Ennyi volt rajta az első rögzített tranzakció előtt. Negatív, ha egy kártya tartozással indul.",
+  "setup_wallet_form_create": "Számla létrehozása",
+  "setup_wallets_meta_title": "Számlák | BudgetMaster",
+  "setup_wallets_title": "Számlák",
+  "setup_wallets_new": "Új számla",
+  "setup_wallets_edit": "Számla szerkesztése",
+  "setup_wallets_new_description": "Bankszámla, kártya, készpénz vagy megtakarítás.",
+  "setup_wallets_intro": "Minden követett bankszámlához, kártyához vagy készpénzhez egy számla. A köztük lévő átvezetés se nem bevétel, se nem kiadás.",
+  "setup_wallets_archived_hint": "Kimaradnak az egyenlegekből és a választókból. A tranzakcióik megmaradnak.",
+  "setup_wallets_updated": "Számla frissítve",
+  "setup_wallets_created": "Számla létrehozva",
+  "setup_wallets_archived": "Számla archiválva",
+  "setup_wallets_restored": "Számla visszaállítva",
+  "setup_wallets_not_found": "A számla nem található.",
+  "setup_wallets_currency_locked": "Ezen a számlán már vannak tranzakciók vagy rendszeres fizetések a pénznemében, ezért a pénznem nem változhat.",
+  "setup_wallets_duplicate": "Már van ilyen nevű számla.",
+  "setup_categories_not_found": "A kategória nem található.",
+  "setup_categories_parent_same_type": "Válassz egy azonos típusú főkategóriát.",
+  "setup_categories_parent_has_children": "Alkategóriákkal rendelkező kategória nem helyezhető át.",
+  "setup_categories_duplicate_income": "Már van ilyen nevű bevételi kategória.",
+  "setup_categories_duplicate_expense": "Már van ilyen nevű kiadási kategória.",
+  "setup_categories_delete_children_first": "Előbb töröld vagy helyezd át az alkategóriáit.",
+  "setup_categories_in_use": "A(z) „{name}” kategóriához {usage} tartozik. Vond össze egy másik kategóriával, vagy archiváld.",
+  "setup_categories_usage_both": "{transactions} és {payments}",
+  "setup_categories_usage_transactions": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tranzakció",
+        "countPlural=other": "{count} tranzakció"
+      }
+    }
+  ],
+  "setup_categories_usage_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rendszeres fizetés",
+        "countPlural=other": "{count} rendszeres fizetés"
+      }
+    }
+  ],
+  "setup_categories_merge_same": "Válassz egy másik kategóriát.",
+  "setup_categories_merge_other_income": "Válassz egy másik bevételi kategóriát.",
+  "setup_categories_merge_other_expense": "Válassz egy másik kiadási kategóriát.",
+  "setup_categories_merge_children_first": "Előbb vond össze vagy helyezd át az alkategóriáit.",
+  "setup_tags_duplicate": "Már van ilyen nevű címke.",
+  "setup_tags_not_found": "A címke nem található.",
+  "setup_rules_match_too_short": "Legalább két karaktert adj meg.",
+  "setup_rules_choose_income_category": "Válassz bevételi kategóriát ehhez: „{match}”.",
+  "setup_rules_choose_expense_category": "Válassz kiadási kategóriát ehhez: „{match}”.",
+  "setup_recurring_end_before_start": "A záró dátum nem lehet a kezdő dátum előtt.",
+  "setup_recurring_not_found": "A rendszeres fizetés nem található.",
+  "setup_goals_wallet_not_in_space": "Ennek a kasszának egy számláját válaszd.",
+  "setup_goals_duplicate": "Már van „{name}” nevű cél.",
+  "setup_import_choose_wallet": "Válassz számlát.",
+  "setup_import_zero_amount": "A nulla nem tranzakció.",
+  "setup_import_row_income_category": "{row}. sor: válassz bevételi kategóriát.",
+  "setup_import_row_expense_category": "{row}. sor: válassz kiadási kategóriát.",
+  "setup_import_already_undone": "Ezt az importálást már visszavontad.",
+  "setup_type_expense": "Kiadás",
+  "setup_type_income": "Bevétel",
+  "setup_category_form_group": "Csoport",
+  "setup_category_form_no_group": "Nincs (főkategória)",
+  "setup_category_form_parent_locked": "Vannak alkategóriái, ezért főkategória marad.",
+  "setup_category_form_create": "Kategória létrehozása",
+  "setup_categories_meta_title": "Kategóriák | BudgetMaster",
+  "setup_categories_title": "Kategóriák",
+  "setup_categories_new": "Új kategória",
+  "setup_categories_edit": "Kategória szerkesztése",
+  "setup_categories_updated": "Kategória frissítve",
+  "setup_categories_created": "Kategória létrehozva",
+  "setup_categories_archived": "Kategória archiválva",
+  "setup_categories_restored": "Kategória visszaállítva",
+  "setup_categories_deleted": "Kategória törölve",
+  "setup_categories_merged": "Összevonva ezzel: {name}",
+  "setup_categories_expenses": "Kiadások",
+  "setup_categories_income": "Bevételek",
+  "setup_categories_archived_hint": "Nem jelennek meg a választókban. A tranzakcióik és az előzményeik változatlanok maradnak.",
+  "setup_categories_expense_category": "Kiadási kategória",
+  "setup_categories_income_category": "Bevételi kategória",
+  "setup_categories_new_description": "Sorold be egy másik kategória alá, hogy rövidek maradjanak a listák.",
+  "setup_categories_archive_with_children": "Archiválás az alkategóriáival együtt",
+  "setup_categories_merge_label": "Összevonás egy másik kategóriával",
+  "setup_categories_merge_hint": "Átviszi oda a tranzakcióit, rendszeres fizetéseit, szabályait és keretét, majd törli a(z) „{name}” kategóriát.",
+  "setup_categories_choose": "Válassz kategóriát",
+  "setup_categories_merge": "Összevonás",
+  "setup_categories_delete_unused": "Törlés, ha nincs használatban",
+  "setup_edit": "Szerkesztés",
+  "setup_edit_named": "{name} szerkesztése",
+  "setup_tags_meta_title": "Címkék | BudgetMaster",
+  "setup_tags_title": "Címkék",
+  "setup_tags_new": "Új címke",
+  "setup_tags_edit": "Címke szerkesztése",
+  "setup_tags_updated": "Címke frissítve",
+  "setup_tags_created": "Címke létrehozva",
+  "setup_tags_deleted": "Címke törölve",
+  "setup_tags_intro": "A címkék átívelnek a kategóriákon: egy utazás, egy felújítás vagy egy visszaigénylendő munkahelyi kiadás. Szűrd a Mozgásokat egy címkére, és látod az összegét.",
+  "setup_tags_empty": "Még nincs címkéd. Hozz létre egyet, és válaszd ki, amikor tranzakciót rögzítesz.",
+  "setup_tags_uses": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tranzakció",
+        "countPlural=other": "{count} tranzakció"
+      }
+    }
+  ],
+  "setup_tags_used_by": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tranzakcióban szerepel.",
+        "countPlural=other": "{count} tranzakcióban szerepel."
+      }
+    }
+  ],
+  "setup_tags_new_description": "Később gyors rögzítéskor választhatod ki.",
+  "setup_tags_delete": "Címke törlése",
+  "setup_tags_create": "Címke létrehozása",
+  "setup_form_category": "Kategória",
+  "setup_quoted": "„{text}”",
+  "setup_rules_meta_title": "Szabályok | BudgetMaster",
+  "setup_rules_title": "Szabályok",
+  "setup_rules_saved": "Szabály mentve",
+  "setup_rules_deleted": "Szabály törölve",
+  "setup_rules_intro": "Ha a partner neve tartalmazza a szöveget, a gyors rögzítés és az importálás ezt a kategóriát használja. A leghosszabb egyező szöveg nyer, így a „lidl” lefedhet minden üzletet, a „lidl benzinkút” pedig máshová mutathat.",
+  "setup_rules_match_label": "A partner tartalmazza",
+  "setup_rules_match_placeholder": "pl. lidl",
+  "setup_rules_add": "Szabály hozzáadása",
+  "setup_rules_empty": "Még nincs szabályod. Adj hozzá egyet itt, vagy pipáld be a „Jegyezd meg” lehetőséget, amikor bankszámlakivonatot importálsz.",
+  "setup_rules_income_suffix": "(bevétel)",
+  "setup_rules_delete_label": "A(z) „{match}” szabály törlése",
+  "setup_type_transfer": "Átvezetés",
+  "setup_recurring_unit_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "naponta",
+        "countPlural=other": "naponta"
+      }
+    }
+  ],
+  "setup_recurring_unit_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "hetente",
+        "countPlural=other": "hetente"
+      }
+    }
+  ],
+  "setup_recurring_unit_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "havonta",
+        "countPlural=other": "havonta"
+      }
+    }
+  ],
+  "setup_recurring_unit_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "évente",
+        "countPlural=other": "évente"
+      }
+    }
+  ],
+  "setup_recurring_form_no_wallet": "Előbb adj hozzá egy számlát, hogy tudjuk, hová megy a pénz.",
+  "setup_recurring_form_amount_invalid": "Adj meg egy összeget, pl. 12,50.",
+  "setup_recurring_form_choose_to_wallet": "Válaszd ki, melyik számlára megy a pénz.",
+  "setup_recurring_form_choose_category": "Válassz kategóriát.",
+  "setup_recurring_form_amount": "Összeg ({currency})",
+  "setup_recurring_form_from_wallet": "Honnan",
+  "setup_recurring_form_wallet": "Számla",
+  "setup_recurring_form_to_wallet": "Hová",
+  "setup_recurring_form_choose_wallet": "Válassz számlát",
+  "setup_recurring_form_payee_from": "Kitől (nem kötelező)",
+  "setup_recurring_form_payee_to": "Kinek (nem kötelező)",
+  "setup_recurring_form_repeats": "Ismétlődés",
+  "setup_recurring_form_every": "Gyakoriság:",
+  "setup_recurring_form_interval": "Időköz",
+  "setup_recurring_form_unit": "Egység",
+  "setup_recurring_form_until": ", eddig: {date}",
+  "setup_recurring_form_first_payment": "Első fizetés",
+  "setup_recurring_form_last_payment": "Utolsó fizetés (nem kötelező)",
+  "setup_recurring_form_backfill_hint": "A mai napig esedékes fizetéseket azonnal rögzítjük.",
+  "setup_recurring_form_note": "Megjegyzés (nem kötelező)",
+  "setup_recurring_form_create": "Rendszeres fizetés létrehozása",
+  "setup_delete": "Törlés",
+  "setup_recurring_meta_title": "Rendszeres | BudgetMaster",
+  "setup_recurring_title": "Rendszeres",
+  "setup_recurring_new_short": "Új",
+  "setup_recurring_new": "Új rendszeres fizetés",
+  "setup_recurring_edit": "Rendszeres fizetés szerkesztése",
+  "setup_recurring_new_description": "Minden esedékességkor automatikusan rögzítjük.",
+  "setup_recurring_edit_description": "A változások a jövőbeli fizetésekre vonatkoznak, a korábbiak változatlanok maradnak.",
+  "setup_recurring_cadence_weekly": "Heti",
+  "setup_recurring_cadence_monthly": "Havi",
+  "setup_recurring_cadence_yearly": "Éves",
+  "setup_recurring_updated": "Rendszeres fizetés frissítve",
+  "setup_recurring_created": "Rendszeres fizetés létrehozva",
+  "setup_recurring_paused": "Szüneteltetve",
+  "setup_recurring_resumed": "Folytatva",
+  "setup_recurring_deleted": "Rendszeres fizetés törölve",
+  "setup_recurring_payment": "Rendszeres fizetés",
+  "setup_recurring_intro": "A fizetést, a lakbért és az előfizetéseket az esedékességükkor rögzítjük, így soha többé nem kell begépelned őket.",
+  "setup_recurring_yearly_before": "A rendszeres kiadások éves költsége",
+  "setup_recurring_per_year": "{amount} évente",
+  "setup_recurring_yearly_after": "(átlagosan {amount} havonta).",
+  "setup_recurring_empty": "Add hozzá a lakbért, a fizetésedet vagy egy előfizetést, és automatikusan rögzítjük.",
+  "setup_recurring_status_paused": "Szüneteltetve",
+  "setup_recurring_status_next": "Következő: {date}",
+  "setup_recurring_status_ended": "Lejárt",
+  "setup_recurring_suggestions_title": "Előfizetésnek tűnik",
+  "setup_recurring_suggestions_intro": "Ezeket kézzel, egyenletes ütemben rögzíted. Tedd őket rendszeressé, és mi rögzítjük helyetted, ráadásul az előrejelzésben is megjelennek.",
+  "setup_recurring_suggestion_detail": [
+    {
+      "declarations": [
+        "input cadence",
+        "input date",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{cadence}, {count} fizetés, utoljára {date}",
+        "countPlural=other": "{cadence}, {count} fizetés, utoljára {date}"
+      }
+    }
+  ],
+  "setup_recurring_make_recurring": "Legyen rendszeres",
+  "setup_recurring_make_recurring_label": "Legyen rendszeres: {payee}",
+  "setup_recurring_pause": "Szüneteltetés",
+  "setup_recurring_resume": "Folytatás",
+  "setup_goals_meta_title": "Célok | BudgetMaster",
+  "setup_goals_title": "Célok",
+  "setup_goals_new": "Új cél",
+  "setup_goals_edit": "Cél szerkesztése",
+  "setup_goals_updated": "Cél frissítve",
+  "setup_goals_created": "Cél létrehozva",
+  "setup_goals_deleted": "Cél törölve",
+  "setup_goals_intro": "Spórolj egy utazásra, egy új laptopra vagy egy biztonsági tartalékra. A cél annak a számlának az egyenlegét követi, amelyen a pénzt tartod.",
+  "setup_goals_empty": "Még nincs célod. Válassz egy megtakarítási számlát és egy megcélzott összeget.",
+  "setup_goals_drawer_description": "A haladás a számla egyenlege, így ha oda teszel pénzt, azzal a célra spórolsz.",
+  "setup_goals_delete": "Cél törlése",
+  "setup_goals_reached": "Elérted",
+  "setup_goals_per_month": "Havi {amount}, hogy elérd eddig: {date}",
+  "setup_goals_date_passed": "A dátum elmúlt, még {amount} hiányzik",
+  "setup_goals_to_go": "Még {amount} hiányzik",
+  "setup_goals_in_wallet": "Számla: {wallet}",
+  "setup_goals_of_target": "/ {target}, {percent} %",
+  "setup_goals_no_wallet": "Előbb adj hozzá egy számlát: a cél egy számla egyenlegét követi.",
+  "setup_goals_amount_invalid": "Add meg a megtakarítandó összeget, pl. 1500.",
+  "setup_goals_name_placeholder": "pl. Nyári utazás",
+  "setup_goals_saved_in": "Hol gyűjtöd",
+  "setup_goals_target": "Célösszeg ({currency})",
+  "setup_goals_reach_by": "Határidő (nem kötelező)",
+  "setup_goals_create": "Cél létrehozása",
+  "setup_import_meta_title": "Importálás | BudgetMaster",
+  "setup_import_title": "Importálás",
+  "setup_import_no_rows": "A fájlban nincs importálható sor.",
+  "setup_import_review_failed": "Nem sikerült ellenőrizni a sorokat.",
+  "setup_import_failed": "Nem sikerült importálni. Próbáld újra.",
+  "setup_import_done": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tranzakció importálva",
+        "countPlural=other": "{count} tranzakció importálva"
+      }
+    }
+  ],
+  "setup_import_intro": "Hozz be egy CSV-exportot a bankodból. A fájlt a böngésződ olvassa be, és semmi sem mentődik, amíg minden sort át nem néztél.",
+  "setup_import_step_file": "1. Fájl és számla",
+  "setup_import_into_wallet": "Melyik számlára",
+  "setup_import_csv_file": "CSV-fájl",
+  "setup_import_step_columns": "2. Oszlopok",
+  "setup_import_remembered": "Ugyanaz a felépítés, mint a bankod legutóbbi importjánál, így az oszlopok és a számla már be vannak állítva.",
+  "setup_import_column_date": "Dátum",
+  "setup_import_date_format": "Dátumformátum",
+  "setup_import_split": "A kimenő és a bejövő pénz külön oszlopban van",
+  "setup_import_column_out": "Kimenő pénz",
+  "setup_import_column_in": "Bejövő pénz",
+  "setup_import_column_amount": "Összeg (kiadásnál negatív)",
+  "setup_import_column_payee": "Partner vagy leírás",
+  "setup_import_column_none": "Nincs",
+  "setup_import_column_fallback": "{index}. oszlop",
+  "setup_import_readable": "{total} sorból {readable} olvasható",
+  "setup_import_unreadable_hint": ". Az érvényes dátum vagy összeg nélküli sorok (pl. összesítők) kimaradnak.",
+  "setup_import_review_button": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} sor átnézése",
+        "countPlural=other": "{count} sor átnézése"
+      }
+    }
+  ],
+  "setup_import_undone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Importálás visszavonva, {count} tranzakció törölve",
+        "countPlural=other": "Importálás visszavonva, {count} tranzakció törölve"
+      }
+    }
+  ],
+  "setup_import_recent": "Legutóbbi importálások",
+  "setup_import_statement": "Kivonat",
+  "setup_import_recent_detail": [
+    {
+      "declarations": [
+        "input wallet",
+        "input remaining",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "ide: {wallet}, {count} tranzakcióból {remaining} maradt",
+        "countPlural=other": "ide: {wallet}, {count} tranzakcióból {remaining} maradt"
+      }
+    }
+  ],
+  "setup_import_undo_label": "Importálás visszavonása: {name}",
+  "setup_import_undo": "Visszavonás",
+  "setup_import_undo_title": "Visszavonod ezt az importálást?",
+  "setup_import_undo_description": [
+    {
+      "declarations": [
+        "input wallet",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Törli a(z) {wallet} számláról azt a(z) {count} tranzakciót, amelyet létrehozott, azokat is, amelyeket azóta szerkesztettél.",
+        "countPlural=other": "Törli a(z) {wallet} számláról azt a(z) {count} tranzakciót, amelyet létrehozott, azokat is, amelyeket azóta szerkesztettél."
+      }
+    }
+  ],
+  "setup_import_keep": "Megtartom",
+  "setup_import_undo_confirm": "Importálás visszavonása",
+  "setup_import_step_review": "3. Átnézés",
+  "setup_import_duplicates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} sor olyan tranzakciónak tűnik, amely már szerepel ezen a számlán, ezért kimarad. Pipáld be, ha mégis importálnád.",
+        "countPlural=other": "{count} sor olyan tranzakcióknak tűnik, amelyek már szerepelnek ezen a számlán, ezért kimaradnak. Pipáld be őket, ha mégis importálnád."
+      }
+    }
+  ],
+  "setup_import_categories_hint": "A kategóriák az azonos partnerű korábbi tranzakciókból jönnek.",
+  "setup_import_no_payee": "Nincs partner",
+  "setup_import_row_include": "Importálás: {label}",
+  "setup_import_row_category": "Kategória ehhez: {label}",
+  "setup_import_possible_duplicate": "Lehetséges ismétlődés",
+  "setup_import_missing": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Válassz kategóriát még {count} sorhoz.",
+        "countPlural=other": "Válassz kategóriát még {count} sorhoz."
+      }
+    }
+  ],
+  "setup_import_remember": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Jegyezd meg a kategóriát, amit ehhez a partnerhez választottam",
+        "countPlural=other": "Jegyezd meg a kategóriákat, amiket ehhez a(z) {count} partnerhez választottam"
+      }
+    }
+  ],
+  "setup_import_confirm": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tranzakció importálása",
+        "countPlural=other": "{count} tranzakció importálása"
+      }
+    }
+  ],
+  "setup_schedule_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Naponta",
+        "countPlural=other": "{count} naponta"
+      }
+    }
+  ],
+  "setup_schedule_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Hetente",
+        "countPlural=other": "{count} hetente"
+      }
+    }
+  ],
+  "setup_schedule_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Havonta",
+        "countPlural=other": "{count} havonta"
+      }
+    }
+  ],
+  "setup_schedule_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Évente",
+        "countPlural=other": "{count} évente"
+      }
+    }
+  ],
+  "setup_schedule_weekly": "{every}, {weekday}",
+  "setup_schedule_monthly": "{every}, a hónap {day}. napján",
+  "setup_schedule_yearly": "{every}, {date}"
+}

@@ -4,14 +4,14 @@ import { z } from 'zod'
 
 import { db } from '@/db'
 import { tag, transactionTag } from '@/db/schema'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -47,8 +47,14 @@ export type ManagedTag = Awaited<ReturnType<typeof listTags>>['tags'][number]
 const tagInput = spaceInput.extend({
   // Missing for a new tag.
   id: z.uuid().optional(),
-  name: z.string().trim().min(1, 'Enter a name.').max(30),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i, 'Choose a colour.'),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.setup_enter_name() })
+    .max(30),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i, {
+    error: () => m.setup_choose_colour(),
+  }),
 })
 
 export const saveTag = createServerFn({ method: 'POST' })
@@ -66,7 +72,7 @@ export const saveTag = createServerFn({ method: 'POST' })
           data.id ? ne(tag.id, data.id) : undefined,
         ),
       )
-    if (duplicate) throw new Error('There is already a tag with this name.')
+    if (duplicate) throw new Error(m.setup_tags_duplicate())
 
     const values = { name: data.name, color: data.color.toLowerCase() }
     if (data.id) {
@@ -75,7 +81,7 @@ export const saveTag = createServerFn({ method: 'POST' })
         .set(values)
         .where(and(eq(tag.spaceId, space.id), eq(tag.id, data.id)))
         .returning({ id: tag.id })
-      if (!updated.length) throw new Error('Tag not found.')
+      if (!updated.length) throw new Error(m.setup_tags_not_found())
       return { id: data.id }
     }
     const [created] = await db

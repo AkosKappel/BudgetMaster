@@ -17,6 +17,7 @@ import { frequency, recurringRule, transaction, wallet } from '@/db/schema'
 import { addDays, addMonths, nextOccurrence } from '@/lib/recurrence'
 import { findSubscriptions, yearlyCost } from '@/lib/subscriptions'
 import { currentDay } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { checkMovement } from '@/server/movement'
@@ -25,8 +26,7 @@ import { spaceInput } from '@/server/spaces'
 
 async function requireWriter(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.setup_viewers_cannot_change())
   return space
 }
 
@@ -147,7 +147,7 @@ export const saveRecurringRule = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }) => {
     const space = await requireWriter(context.user.id, data.spaceId)
     if (data.endDate && data.endDate < data.startDate)
-      throw new Error('The end date must be after the start date.')
+      throw new Error(m.setup_recurring_end_before_start())
     const movement = await checkMovement(space.id, data)
 
     const values = {
@@ -181,7 +181,7 @@ export const saveRecurringRule = createServerFn({ method: 'POST' })
             and(eq(recurringRule.spaceId, space.id), eq(recurringRule.id, id)),
           )
           .for('update')
-        if (!existing) throw new Error('Recurring payment not found.')
+        if (!existing) throw new Error(m.setup_recurring_not_found())
         const [{ last }] = await tx
           .select({ last: max(transaction.date) })
           .from(transaction)
@@ -215,7 +215,7 @@ export const setRecurringRulePaused = createServerFn({ method: 'POST' })
       .where(
         and(eq(recurringRule.spaceId, space.id), eq(recurringRule.id, data.id)),
       )
-    if (!rule) throw new Error('Recurring payment not found.')
+    if (!rule) throw new Error(m.setup_recurring_not_found())
     const today = currentDay()
     await db
       .update(recurringRule)
