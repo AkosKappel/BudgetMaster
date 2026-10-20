@@ -90,7 +90,7 @@
   "pub_privacy_s_sessions": "Relácie: kedy si sa prihlásil, IP adresa a prehliadač, aby si zostal prihlásený a pokusy o prihlásenie sa dali obmedziť.",
   "pub_privacy_s_two_step": "Pri zapnutom dvojstupňovom prihlásení: kľúč overovacej aplikácie a tvoje záložné kódy, oboje zašifrované.",
   "pub_privacy_s_receipts": "Fotky bločkov, ktoré priložíš, zmenšené v prehliadači pred nahratím. Ukladajú sa s transakciou, otvoriť ich môžu len členovia jej kasy a vymažú sa spolu s ňou.",
-  "pub_privacy_s_ai": "Len ak v Nastaveniach zapneš funkcie AI a ťukneš na „Vyplniť z fotky\": tá fotka bločku a názvy tvojich kategórií výdavkov idú do Claude API od Anthropic, ktoré prečíta sumu, dátum a obchod. Nič iné sa mu neposiela.",
+  "pub_privacy_s_ai": "Len ak v Nastaveniach zapneš funkcie AI a ťukneš na tlačidlo AI: do Claude API od Anthropicu ide to, čo daná funkcia potrebuje, teda fotka bločku, napísaný riadok, PDF výpis alebo súčty pre mesačné zhrnutie či otázku, s názvami tvojich účtov a kategórií. Transakcie uložené v aplikácii sa neposielajú jednotlivo a nič iné tiež nie.",
   "pub_privacy_s_log": "Záznam o tom, kto ktorú transakciu pridal, zmenil alebo zmazal, viditeľný pre členov spoločnej kasy.",
   "pub_privacy_s_social": "Ak sa prihlásiš cez Google, GitHub, Apple alebo Microsoft: identifikátor účtu, meno, e-mailová adresa a odkaz na profilovú fotku. Nič iné sa z neho nečíta.",
   "pub_privacy_s_passkeys": "Prístupové kľúče, ktoré pridáš: ich verejný kľúč a názov. Súkromný kľúč nikdy neopustí tvoje zariadenie.",

@@ -221,5 +221,10 @@
   "ov_forecast_transfer": "Átvezetés",
   "ov_budgets_not_split": "{name}, felosztás nélkül",
   "ov_budgets_viewer_error": "Megtekintőként nem módosíthatod a kereteket.",
-  "ov_budgets_need_expense": "Kerethez kiadási kategória kell."
+  "ov_budgets_need_expense": "Kerethez kiadási kategória kell.",
+  "ov_monthly_summarize": "Összefoglalás Claude-dal",
+  "ov_monthly_summarizing": "Összefoglaló készül",
+  "ov_monthly_summary_hint": "A hónap kategóriánkénti összesítéseit küldi el az Anthropicnak, egyes tranzakciókat nem.",
+  "ov_monthly_summary_failed": "Nem sikerült összefoglalót írni. Próbáld újra később.",
+  "ov_monthly_summary_by": "Claude összefoglalója"
 }

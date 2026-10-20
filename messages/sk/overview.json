@@ -370,5 +370,10 @@
   "ov_forecast_transfer": "Prevod",
   "ov_budgets_not_split": "{name}, nerozdelené",
   "ov_budgets_viewer_error": "Ako čitateľ nemôžeš meniť rozpočty.",
-  "ov_budgets_need_expense": "Rozpočet potrebuje kategóriu výdavkov."
+  "ov_budgets_need_expense": "Rozpočet potrebuje kategóriu výdavkov.",
+  "ov_monthly_summarize": "Zhrnúť cez Claude",
+  "ov_monthly_summarizing": "Píšem zhrnutie",
+  "ov_monthly_summary_hint": "Pošle spoločnosti Anthropic súčty mesiaca podľa kategórií, nie jednotlivé transakcie.",
+  "ov_monthly_summary_failed": "Zhrnutie sa nepodarilo napísať. Skús to neskôr.",
+  "ov_monthly_summary_by": "Zhrnutie od Claude"
 }

@@ -1,0 +1,19 @@
+{
+  "ask_failed": "Na to sa nepodarilo odpovedať. Skús sa opýtať inak.",
+  "ask_title": "Opýtaj sa svojich peňazí",
+  "ask_hint": "Otázky o tejto kase, odpovedá Claude zo tvojich súčtov",
+  "ask_intro": "Pýtaj sa na výdavky, príjmy, rozpočty, zostatky alebo na to, čo ťa čaká. Claude si zistí potrebné súčty a odpovie pár vetami.",
+  "ask_privacy": "Tvoja otázka a súčty, ktoré si Claude vyžiada (sumy podľa kategórie, mesiaca alebo príjemcu, rozpočty, zostatky, nadchádzajúce platby), idú spoločnosti Anthropic. Jednotlivé transakcie sa neposielajú.",
+  "ask_label": "Tvoja otázka",
+  "ask_placeholder": "Koľko som minul na jedlo od leta?",
+  "ask_send": "Opýtať sa",
+  "ask_thinking": "Hľadám",
+  "ask_examples": "Napríklad",
+  "ask_example_1": "Na čo som minulý mesiac minul najviac?",
+  "ask_example_2": "Môžem si dovoliť výlet za 600 € v marci?",
+  "ask_example_3": "Ktoré rozpočty mám blízko k prekročeniu?",
+  "ask_off": "Zapni funkcie AI v Nastaveniach, aby si sa mohol pýtať.",
+  "ask_off_link": "Otvoriť Nastavenia",
+  "ask_you": "Ty",
+  "ask_new": "Nový rozhovor"
+}

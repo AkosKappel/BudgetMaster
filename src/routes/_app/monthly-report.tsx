@@ -1,13 +1,18 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, Printer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Printer, Sparkles } from 'lucide-react'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
-import { budgetReportQuery, useActiveSpace } from '@/lib/queries'
+import {
+  budgetReportQuery,
+  formOptionsQuery,
+  useActiveSpace,
+} from '@/lib/queries'
 import { m } from '@/paraglide/messages.js'
+import { summarizeMonth } from '@/server/ai'
 import type { BudgetReport } from '@/server/budgets'
 
 // One budget month on one page, to read or print (PDF via the browser's print dialog).
@@ -134,6 +139,8 @@ function MonthlyReport() {
           {m.ov_monthly_heading({ period })}
         </h1>
       </header>
+
+      <AiSummary key={month} spaceId={space.id} month={month} />
 
       <section aria-labelledby="totals" className="flex flex-col gap-3">
         <h2 id="totals" className="font-semibold text-lg">
@@ -292,5 +299,55 @@ function MonthlyReport() {
         )}
       </section>
     </article>
+  )
+}
+
+// Offered to users who switched AI features on (AI-04); written on request, not stored. Once
+// written it prints with the page.
+function AiSummary({ spaceId, month }: { spaceId: string; month: number }) {
+  const { data: options } = useQuery(formOptionsQuery(spaceId))
+  const summary = useMutation({
+    mutationFn: () => summarizeMonth({ data: { spaceId, month } }),
+  })
+  if (!options?.canReadReceipts) return null
+
+  if (summary.data)
+    return (
+      <section
+        aria-label={m.ov_monthly_summary_by()}
+        className="flex flex-col gap-1"
+      >
+        <p className="max-w-prose leading-relaxed">{summary.data.text}</p>
+        <p className="text-muted-foreground text-xs">
+          {m.ov_monthly_summary_by()}
+        </p>
+      </section>
+    )
+  return (
+    <div className="flex flex-col gap-1.5 print:hidden">
+      <Button
+        variant="outline"
+        className="w-fit"
+        disabled={summary.isPending}
+        onClick={() => summary.mutate()}
+      >
+        <Sparkles />
+        {summary.isPending
+          ? m.ov_monthly_summarizing()
+          : m.ov_monthly_summarize()}
+      </Button>
+      <p
+        className={
+          summary.isError
+            ? 'text-destructive text-sm'
+            : 'text-muted-foreground text-xs'
+        }
+        role={summary.isError ? 'alert' : undefined}
+      >
+        {summary.isError
+          ? summary.error.message || m.ov_monthly_summary_failed()
+          : m.ov_monthly_summary_hint()}
+      </p>
+    </div>
   )
 }

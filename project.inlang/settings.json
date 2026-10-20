@@ -11,7 +11,8 @@
       "./messages/{locale}/setup.json",
       "./messages/{locale}/account.json",
       "./messages/{locale}/public.json",
-      "./messages/{locale}/notifications.json"
+      "./messages/{locale}/notifications.json",
+      "./messages/{locale}/ask.json"
     ]
   }
 }

@@ -1,0 +1,19 @@
+{
+  "ask_failed": "Erre nem sikerült válaszolni. Próbáld másképp megkérdezni.",
+  "ask_title": "Kérdezd a pénzed",
+  "ask_hint": "Kérdések erről a kasszáról, Claude válaszol az összesítéseid alapján",
+  "ask_intro": "Kérdezz a kiadásaidról, bevételeidről, kereteidről, egyenlegeidről vagy a közelgő fizetésekről. Claude lekéri a szükséges összesítéseket, és pár mondatban válaszol.",
+  "ask_privacy": "A kérdésed és a Claude által kért összesítések (kategóriánkénti, havi vagy partnerenkénti összegek, keretek, egyenlegek, közelgő fizetések) az Anthropichoz kerülnek. Egyes tranzakciókat nem küldünk.",
+  "ask_label": "A kérdésed",
+  "ask_placeholder": "Mennyit költöttem kajára nyár óta?",
+  "ask_send": "Kérdezés",
+  "ask_thinking": "Utánanézek",
+  "ask_examples": "Például",
+  "ask_example_1": "Mire költöttem a legtöbbet múlt hónapban?",
+  "ask_example_2": "Belefér egy 600 eurós utazás márciusban?",
+  "ask_example_3": "Melyik keretemet lépem túl hamarosan?",
+  "ask_off": "Kapcsold be az AI-funkciókat a Beállításokban, hogy kérdezhess.",
+  "ask_off_link": "Beállítások megnyitása",
+  "ask_you": "Te",
+  "ask_new": "Új beszélgetés"
+}

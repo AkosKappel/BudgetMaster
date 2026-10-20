@@ -90,7 +90,7 @@
   "pub_privacy_s_sessions": "Munkamenetek: mikor jelentkeztél be, az IP-cím és a böngésző, hogy bejelentkezve maradj, és a bejelentkezési kísérletek korlátozhatók legyenek.",
   "pub_privacy_s_two_step": "Bekapcsolt kétlépcsős bejelentkezésnél: a hitelesítő kulcs és a tartalékkódjaid, mindkettő titkosítva.",
   "pub_privacy_s_receipts": "A csatolt blokkfotók, amelyeket a böngésződ feltöltés előtt kicsinyít. A tranzakcióval együtt tároljuk őket, csak a kassza tagjai nyithatják meg, és a tranzakcióval együtt törlődnek.",
-  "pub_privacy_s_ai": "Csak ha bekapcsolod a MI-funkciókat a Beállításokban, és megérinted a „Kitöltés fotóból\" gombot: az a blokkfotó és a kiadási kategóriáid neve az Anthropic Claude API-jához kerül, amely kiolvassa a végösszeget, a dátumot és az üzletet. Semmi mást nem küldünk neki.",
+  "pub_privacy_s_ai": "Csak ha bekapcsolod az AI-funkciókat a Beállításokban, és megérintesz egy AI-gombot: az Anthropic Claude API-jához az kerül, amire az adott funkciónak szüksége van, vagyis a blokkfotó, a beírt sor, a PDF-kivonat, vagy egy havi összefoglalóhoz, illetve kérdéshez szükséges összesítések, a számláid és kategóriáid nevével. Az appban tárolt tranzakciókat nem küldjük el egyenként, és mást sem.",
   "pub_privacy_s_log": "Napló arról, ki melyik tranzakciót adta hozzá, módosította vagy törölte, a közös kassza tagjainak megjelenítve.",
   "pub_privacy_s_social": "Ha Google-, GitHub-, Apple- vagy Microsoft-fiókkal jelentkezel be: a fiók azonosítója, neve, e-mail-címe és a profilkép linkje. Semmi mást nem olvasunk ki belőle.",
   "pub_privacy_s_passkeys": "A hozzáadott jelkulcsok: a nyilvános kulcsuk és egy név. A privát kulcs sosem hagyja el az eszközödet.",

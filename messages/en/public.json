@@ -90,7 +90,7 @@
   "pub_privacy_s_sessions": "Sessions: when you signed in, the IP address and the browser, so you stay signed in and sign-in attempts can be limited.",
   "pub_privacy_s_two_step": "With two-step sign-in on: the authenticator key and your backup codes, both encrypted.",
   "pub_privacy_s_receipts": "Receipt photos you attach, made smaller in your browser before the upload. They are stored with the transaction, only members of its space can open them, and they are deleted with it.",
-  "pub_privacy_s_ai": "Only if you switch on AI features in Settings and tap \"Fill in from photo\": that receipt photo and your expense category names go to Anthropic's Claude API, which reads the total, date and shop. Nothing else is sent to it.",
+  "pub_privacy_s_ai": "Only if you switch on AI features in Settings and tap an AI button: what that feature needs goes to Anthropic's Claude API, that is the receipt photo, the typed line, the PDF statement, or the totals for a monthly summary or a question, with your wallet and category names. The transactions stored in the app are not sent one by one, and nothing else is.",
   "pub_privacy_s_log": "A log of who added, changed or deleted which transaction, shown to the members of a shared space.",
   "pub_privacy_s_social": "If you sign in with Google, GitHub, Apple or Microsoft: that account's id, name, email address and profile picture link. Nothing else from it is read.",
   "pub_privacy_s_passkeys": "Passkeys you add: their public key and a name. The private key never leaves your device.",

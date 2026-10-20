@@ -114,16 +114,18 @@
   "txn_choose_income_category": "Válassz bevételkategóriát.",
   "txn_receipt_invalid": "1 MB-nál kisebb fotót használj (JPEG vagy WebP).",
   "txn_receipt_space_full": "Ebben a kasszában elfogyott a hely a blokkoknak.",
-  "txn_ai_not_set_up": "Az MI-funkciók nincsenek beállítva ezen a szerveren.",
-  "txn_ai_switch_on": "Előbb kapcsold be az MI-funkciókat a Beállításokban.",
-  "txn_ai_needs_account": "Az MI-funkciókhoz hozz létre fiókot.",
+  "txn_ai_not_set_up": "Az AI-funkciók nincsenek beállítva ezen a szerveren.",
+  "txn_ai_switch_on": "Előbb kapcsold be az AI-funkciókat a Beállításokban.",
+  "txn_ai_needs_account": "Az AI-funkciókhoz hozz létre fiókot.",
   "txn_ai_not_receipt": "Ez nem tűnik blokknak.",
-  "txn_ai_daily_limit": "Mára elég volt az MI-kérésekből. Próbáld újra holnap.",
+  "txn_ai_daily_limit": "Mára elég volt az AI-kérésekből. Próbáld újra holnap.",
   "txn_ai_ask": "Kérdezd Claude-ot",
   "txn_ai_asking": "Kérdezés",
   "txn_ai_ask_hint": "A „Kérdezd Claude-ot\" ezt a sort, valamint a számláid és kategóriáid nevét küldi el az Anthropicnak.",
   "txn_ai_read_failed": "Claude nem tudta értelmezni ezt a sort.",
   "txn_ai_suggest": "Javaslat",
   "txn_ai_suggest_label": "Kategória javaslata ehhez: {payee}, Claude segítségével",
-  "txn_ai_no_suggestion": "Egyik kategória sem illik. Válassz te."
+  "txn_ai_no_suggestion": "Egyik kategória sem illik. Válassz te.",
+  "txn_ai_unavailable": "Claude most nem érhető el. Próbáld újra később.",
+  "txn_ai_busy": "Claude most túlterhelt. Próbáld újra egy perc múlva."
 }

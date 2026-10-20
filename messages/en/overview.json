@@ -338,5 +338,10 @@
   "ov_forecast_transfer": "Transfer",
   "ov_budgets_not_split": "{name}, not split",
   "ov_budgets_viewer_error": "Viewers cannot change budgets.",
-  "ov_budgets_need_expense": "Budgets need an expense category."
+  "ov_budgets_need_expense": "Budgets need an expense category.",
+  "ov_monthly_summarize": "Summarize with Claude",
+  "ov_monthly_summarizing": "Writing a summary",
+  "ov_monthly_summary_hint": "Sends this month's totals per category to Anthropic, no single transactions.",
+  "ov_monthly_summary_failed": "Could not write a summary. Try again later.",
+  "ov_monthly_summary_by": "Summary by Claude"
 }

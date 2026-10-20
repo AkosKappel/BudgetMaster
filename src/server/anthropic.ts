@@ -25,3 +25,25 @@ export function anthropic() {
   client ??= new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
   return client
 }
+
+// Runs a Claude request; an API failure (bad key, outage, rate limit) reaches the user as a
+// short sentence, and only its status goes to the log.
+export async function withClaude<T>(call: () => Promise<T>) {
+  try {
+    return await call()
+  } catch (error) {
+    if (!(error instanceof Anthropic.APIError)) throw error
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        msg: 'claude request failed',
+        status: error.status,
+      }),
+    )
+    throw new Error(
+      error.status === 429 || error.status === 529
+        ? m.txn_ai_busy()
+        : m.txn_ai_unavailable(),
+    )
+  }
+}

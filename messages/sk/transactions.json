@@ -125,5 +125,7 @@
   "txn_ai_read_failed": "Claude ten riadok nevedel prečítať.",
   "txn_ai_suggest": "Navrhnúť",
   "txn_ai_suggest_label": "Navrhnúť kategóriu pre {payee} cez Claude",
-  "txn_ai_no_suggestion": "Žiadna kategória nesedí. Vyber si sám."
+  "txn_ai_no_suggestion": "Žiadna kategória nesedí. Vyber si sám.",
+  "txn_ai_unavailable": "Claude teraz nie je dostupný. Skús to neskôr.",
+  "txn_ai_busy": "Claude je teraz zaneprázdnený. Skús to o minútu."
 }

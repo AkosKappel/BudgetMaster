@@ -6,10 +6,13 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { category, wallet } from '@/db/schema'
 import { env } from '@/env'
+import { formatMoney } from '@/lib/money'
 import { decodeReceipt } from '@/lib/receipt-image'
 import { m } from '@/paraglide/messages.js'
-import { anthropic, countRead } from '@/server/anthropic'
+import { getLocale, type Locale } from '@/paraglide/runtime.js'
+import { anthropic, countRead, withClaude } from '@/server/anthropic'
 import { authMiddleware } from '@/server/auth'
+import { getBudgetReport } from '@/server/budgets'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
@@ -64,32 +67,34 @@ export const readReceipt = createServerFn({ method: 'POST' })
         .describe('The best fitting category from the list, or null.'),
     })
 
-    const response = await anthropic().beta.messages.parse({
-      model: 'claude-opus-5-5',
-      max_tokens: 2000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: image.type,
-                data: image.bytes.toString('base64'),
+    const response = await withClaude(() =>
+      anthropic().beta.messages.parse({
+        model: 'claude-opus-5-5',
+        max_tokens: 2000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: image.type,
+                  data: image.bytes.toString('base64'),
+                },
               },
-            },
-            {
-              type: 'text',
-              text: `Read this receipt for a personal budgeting app. Today is ${new Date().toISOString().slice(0, 10)}. Categories to choose from: ${names.join(', ') || 'none'}.`,
-            },
-          ],
-        },
-      ],
-    })
+              {
+                type: 'text',
+                text: `Read this receipt for a personal budgeting app. Today is ${new Date().toISOString().slice(0, 10)}. Categories to choose from: ${names.join(', ') || 'none'}.`,
+              },
+            ],
+          },
+        ],
+      }),
+    )
     const result = response.parsed_output
     if (response.stop_reason === 'refusal' || !result)
       throw new Error(m.txn_photo_unreadable())
@@ -165,29 +170,31 @@ export const readEntry = createServerFn({ method: 'POST' })
     })
 
     const today = new Date().toISOString().slice(0, 10)
-    const response = await anthropic().beta.messages.parse({
-      model: 'claude-opus-5-5',
-      max_tokens: 2000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
-      messages: [
-        {
-          role: 'user',
-          content: `A user of a personal budgeting app typed this line to record one transaction. It may be in English, Hungarian or Slovak. Today is ${today}.\n\nWallets: ${wallets.map((w) => w.name).join(', ') || 'none'}\nExpense categories: ${
-            categories
-              .filter((c) => c.type === 'expense')
-              .map((c) => c.name)
-              .join(', ') || 'none'
-          }\nIncome categories: ${
-            categories
-              .filter((c) => c.type === 'income')
-              .map((c) => c.name)
-              .join(', ') || 'none'
-          }\n\n<line>${data.text}</line>`,
-        },
-      ],
-    })
+    const response = await withClaude(() =>
+      anthropic().beta.messages.parse({
+        model: 'claude-opus-5-5',
+        max_tokens: 2000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
+        messages: [
+          {
+            role: 'user',
+            content: `A user of a personal budgeting app typed this line to record one transaction. It may be in English, Hungarian or Slovak. Today is ${today}.\n\nWallets: ${wallets.map((w) => w.name).join(', ') || 'none'}\nExpense categories: ${
+              categories
+                .filter((c) => c.type === 'expense')
+                .map((c) => c.name)
+                .join(', ') || 'none'
+            }\nIncome categories: ${
+              categories
+                .filter((c) => c.type === 'income')
+                .map((c) => c.name)
+                .join(', ') || 'none'
+            }\n\n<line>${data.text}</line>`,
+          },
+        ],
+      }),
+    )
     const result = response.parsed_output
     if (response.stop_reason === 'refusal' || !result)
       throw new Error(m.txn_ai_read_failed())
@@ -250,32 +257,34 @@ export const readStatement = createServerFn({ method: 'POST' })
         )
         .describe('Every transaction, in the order of the statement.'),
     })
-    const response = await anthropic().beta.messages.parse({
-      model: 'claude-opus-5-5',
-      max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: {
-                type: 'base64',
-                media_type: 'application/pdf',
-                data: bytes.toString('base64'),
+    const response = await withClaude(() =>
+      anthropic().beta.messages.parse({
+        model: 'claude-opus-5-5',
+        max_tokens: 16000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: {
+                  type: 'base64',
+                  media_type: 'application/pdf',
+                  data: bytes.toString('base64'),
+                },
               },
-            },
-            {
-              type: 'text',
-              text: 'List the transactions on this bank statement for a personal budgeting app. Leave out opening and closing balances, subtotals and fees summaries that are not transactions of their own. Do not copy account numbers, IBANs or card numbers into any field.',
-            },
-          ],
-        },
-      ],
-    })
+              {
+                type: 'text',
+                text: 'List the transactions on this bank statement for a personal budgeting app. Leave out opening and closing balances, subtotals and fees summaries that are not transactions of their own. Do not copy account numbers, IBANs or card numbers into any field.',
+              },
+            ],
+          },
+        ],
+      }),
+    )
     const result = response.parsed_output
     if (response.stop_reason === 'refusal' || !result)
       throw new Error(m.setup_import_pdf_unreadable())
@@ -290,4 +299,76 @@ export const readStatement = createServerFn({ method: 'POST' })
       .map((t) => [t.date, t.amount, t.payee.trim().slice(0, 120)])
     if (rows.length === 0) throw new Error(m.setup_import_no_rows())
     return { header: ['Date', 'Amount', 'Payee'], rows }
+  })
+
+const LANGUAGE_NAMES: Record<Locale, string> = {
+  en: 'English',
+  hu: 'Hungarian',
+  sk: 'Slovak',
+}
+
+// A few sentences about one budget month (AI-04), written by Claude from the same totals the
+// monthly report shows: income, spending, top categories against the month before and
+// budgets that went over. No single transaction is sent.
+export const summarizeMonth = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ month: z.int().min(-35).max(0) }))
+  .handler(async ({ context, data }) => {
+    if (!env.ANTHROPIC_API_KEY) throw new Error(m.txn_ai_not_set_up())
+    if (!context.user.aiEnabled) throw new Error(m.txn_ai_switch_on())
+    if (context.user.isAnonymous) throw new Error(m.txn_ai_needs_account())
+    const [report, before] = await Promise.all([
+      getBudgetReport({ data: { spaceId: data.spaceId, offset: data.month } }),
+      getBudgetReport({
+        data: { spaceId: data.spaceId, offset: data.month - 1 },
+      }),
+    ])
+    countRead(context.user.id)
+
+    // In the reader's number format, so the sentences can quote them as they are.
+    const money = (minor: number) => formatMoney(minor, report.currency)
+    const previous = new Map(before.breakdown.map((c) => [c.id, c.total]))
+    const facts = [
+      `Budget month ${report.period.start} to ${report.period.end}${report.isCurrent ? ', still running' : ''}.`,
+      `Income ${money(report.income)}, spending ${money(report.spent)}, the month before: income ${money(before.income)}, spending ${money(before.spent)}.`,
+      report.overall && `Overall budget ${money(report.overall.amount)}.`,
+      'Spending by category (this month, month before):',
+      ...report.breakdown
+        .slice(0, 8)
+        .map(
+          (c) =>
+            `- ${c.name}: ${money(c.total)} (${money(previous.get(c.id) ?? 0)})`,
+        ),
+      ...report.categoryBudgets
+        .filter((b) => b.spent > b.amount)
+        .map(
+          (b) =>
+            `Over budget: ${b.name}, ${money(b.spent)} of ${money(b.amount)}.`,
+        ),
+    ].filter(Boolean)
+
+    const response = await withClaude(() =>
+      anthropic().beta.messages.create({
+        model: 'claude-opus-5-5',
+        max_tokens: 1000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low' },
+        system:
+          'You write the short summary at the top of a monthly report in a personal budgeting app. Three sentences at most, plain text, no lists, no advice the numbers do not support, no greeting. Mention what changed most and anything over budget.',
+        messages: [
+          {
+            role: 'user',
+            content: `Write it in ${LANGUAGE_NAMES[getLocale()]}, with amounts as given.\n\n${facts.join('\n')}`,
+          },
+        ],
+      }),
+    )
+    const text = response.content
+      .flatMap((block) => (block.type === 'text' ? [block.text] : []))
+      .join('')
+      .trim()
+    if (response.stop_reason === 'refusal' || !text)
+      throw new Error(m.ov_monthly_summary_failed())
+    return { text }
   })

@@ -25,6 +25,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TwoFactorRouteImport } from './routes/two-factor'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
+import { Route as AppAskRouteImport } from './routes/_app/ask'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppGoalsRouteImport } from './routes/_app/goals'
@@ -124,6 +125,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppActivityRoute = AppActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAskRoute = AppAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBudgetsRoute = AppBudgetsRouteImport.update({
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/two-factor': typeof TwoFactorRoute
   '/activity': typeof AppActivityRoute
+  '/ask': typeof AppAskRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/goals': typeof AppGoalsRoute
@@ -286,6 +293,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/two-factor': typeof TwoFactorRoute
   '/activity': typeof AppActivityRoute
+  '/ask': typeof AppAskRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/goals': typeof AppGoalsRoute
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/two-factor': typeof TwoFactorRoute
   '/_app/activity': typeof AppActivityRoute
+  '/_app/ask': typeof AppAskRoute
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
   '/_app/goals': typeof AppGoalsRoute
@@ -367,6 +376,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/two-factor'
     | '/activity'
+    | '/ask'
     | '/budgets'
     | '/categories'
     | '/goals'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/two-factor'
     | '/activity'
+    | '/ask'
     | '/budgets'
     | '/categories'
     | '/goals'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/two-factor'
     | '/_app/activity'
+    | '/_app/ask'
     | '/_app/budgets'
     | '/_app/categories'
     | '/_app/goals'
@@ -602,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/ask': {
+      id: '/_app/ask'
+      path: '/ask'
+      fullPath: '/ask'
+      preLoaderRoute: typeof AppAskRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/budgets': {
       id: '/_app/budgets'
       path: '/budgets'
@@ -754,6 +773,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
+  AppAskRoute: typeof AppAskRoute
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
   AppGoalsRoute: typeof AppGoalsRoute
@@ -776,6 +796,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
+  AppAskRoute: AppAskRoute,
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
   AppGoalsRoute: AppGoalsRoute,

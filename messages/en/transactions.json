@@ -125,5 +125,7 @@
   "txn_ai_read_failed": "Claude could not read that line.",
   "txn_ai_suggest": "Suggest",
   "txn_ai_suggest_label": "Suggest a category for {payee} with Claude",
-  "txn_ai_no_suggestion": "No category fits. Pick one yourself."
+  "txn_ai_no_suggestion": "No category fits. Pick one yourself.",
+  "txn_ai_unavailable": "Claude is not available right now. Try again later.",
+  "txn_ai_busy": "Claude is busy right now. Try again in a minute."
 }

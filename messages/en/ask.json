@@ -1,0 +1,19 @@
+{
+  "ask_failed": "Could not answer that. Try asking another way.",
+  "ask_title": "Ask your money",
+  "ask_hint": "Questions about this space, answered by Claude from your totals",
+  "ask_intro": "Ask about your spending, income, budgets, balances or what is coming up. Claude looks up the totals it needs and answers in a few sentences.",
+  "ask_privacy": "Your question and the totals Claude asks for (sums per category, month or payee, budgets, balances, upcoming payments) go to Anthropic. Single transactions are not sent.",
+  "ask_label": "Your question",
+  "ask_placeholder": "How much did I spend on food since summer?",
+  "ask_send": "Ask",
+  "ask_thinking": "Looking it up",
+  "ask_examples": "For example",
+  "ask_example_1": "What did I spend most on last month?",
+  "ask_example_2": "Can I afford a 600 € trip in March?",
+  "ask_example_3": "Which budgets am I close to going over?",
+  "ask_off": "Switch on AI features in Settings to ask questions.",
+  "ask_off_link": "Open Settings",
+  "ask_you": "You",
+  "ask_new": "New conversation"
+}

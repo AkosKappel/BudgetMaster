@@ -15,6 +15,7 @@ export const categoryLines = db
     walletId: transaction.walletId,
     type: transaction.type,
     date: transaction.date,
+    payee: transaction.payee,
     categoryId:
       sql<string>`coalesce(${transactionSplit.categoryId}, ${transaction.categoryId})`.as(
         'line_category_id',
