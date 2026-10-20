@@ -4,7 +4,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { category } from '@/db/schema'
+import { category, wallet } from '@/db/schema'
 import { env } from '@/env'
 import { decodeReceipt } from '@/lib/receipt-image'
 import { m } from '@/paraglide/messages.js'
@@ -107,5 +107,106 @@ export const readReceipt = createServerFn({ method: 'POST' })
       payee: result.shop?.trim() || null,
       categoryId:
         categories.find((c) => c.name === result.category)?.id ?? null,
+    }
+  })
+
+// Reads a free-text line into quick add fields (AI-02), e.g. "split dinner 84 with Sam, I
+// paid" or a bare payee whose category nobody has picked yet (AI-04). The line and the
+// space's wallet and category names go to Claude; the user confirms the form as usual.
+export const readEntry = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ text: z.string().trim().min(1).max(300) }))
+  .handler(async ({ context, data }) => {
+    if (!env.ANTHROPIC_API_KEY) throw new Error(m.txn_ai_not_set_up())
+    if (!context.user.aiEnabled) throw new Error(m.txn_ai_switch_on())
+    if (context.user.isAnonymous) throw new Error(m.txn_ai_needs_account())
+    const space = await requireMembership(context.user.id, data.spaceId)
+    countRead(context.user.id)
+
+    const [categories, wallets] = await Promise.all([
+      db
+        .select({ id: category.id, name: category.name, type: category.type })
+        .from(category)
+        .where(
+          and(eq(category.spaceId, space.id), isNull(category.archivedAt)),
+        ),
+      db
+        .select({ id: wallet.id, name: wallet.name })
+        .from(wallet)
+        .where(and(eq(wallet.spaceId, space.id), isNull(wallet.archivedAt))),
+    ])
+    const oneOf = (names: string[]) =>
+      names.length > 0 ? z.enum(names as [string, ...string[]]) : z.string()
+    const schema = z.object({
+      type: z
+        .enum(['expense', 'income'])
+        .nullable()
+        .describe('Money going out is an expense, money coming in is income.'),
+      amount: z
+        .string()
+        .nullable()
+        .describe(
+          'The amount the user paid or received, digits with a dot, e.g. "84.00". For a split bill the user paid, the full amount.',
+        ),
+      date: z
+        .string()
+        .nullable()
+        .describe('YYYY-MM-DD, only when the line names a day.'),
+      payee: z
+        .string()
+        .nullable()
+        .describe('Shop, company or person, as people would call it.'),
+      wallet: oneOf(wallets.map((w) => w.name))
+        .nullable()
+        .describe('Only when the line names one of these wallets.'),
+      category: oneOf(categories.map((c) => c.name))
+        .nullable()
+        .describe('The best fitting category from the list, or null.'),
+    })
+
+    const today = new Date().toISOString().slice(0, 10)
+    const response = await anthropic().beta.messages.parse({
+      model: 'claude-opus-5-5',
+      max_tokens: 2000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
+      messages: [
+        {
+          role: 'user',
+          content: `A user of a personal budgeting app typed this line to record one transaction. It may be in English, Hungarian or Slovak. Today is ${today}.\n\nWallets: ${wallets.map((w) => w.name).join(', ') || 'none'}\nExpense categories: ${
+            categories
+              .filter((c) => c.type === 'expense')
+              .map((c) => c.name)
+              .join(', ') || 'none'
+          }\nIncome categories: ${
+            categories
+              .filter((c) => c.type === 'income')
+              .map((c) => c.name)
+              .join(', ') || 'none'
+          }\n\n<line>${data.text}</line>`,
+        },
+      ],
+    })
+    const result = response.parsed_output
+    if (response.stop_reason === 'refusal' || !result)
+      throw new Error(m.txn_ai_read_failed())
+    const type = result.type ?? undefined
+    return {
+      type,
+      amount:
+        result.amount && /^\d+(\.\d{1,3})?$/.test(result.amount)
+          ? result.amount
+          : undefined,
+      date:
+        result.date && z.iso.date().safeParse(result.date).success
+          ? result.date
+          : undefined,
+      payee: result.payee?.trim() || undefined,
+      walletId: wallets.find((w) => w.name === result.wallet)?.id,
+      // A category of the other type would be refused on save.
+      categoryId: categories.find(
+        (c) => c.name === result.category && (!type || c.type === type),
+      )?.id,
     }
   })

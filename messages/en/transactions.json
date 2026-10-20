@@ -118,5 +118,12 @@
   "txn_ai_switch_on": "Switch on AI features in Settings first.",
   "txn_ai_needs_account": "Create an account to use AI features.",
   "txn_ai_not_receipt": "This does not look like a receipt.",
-  "txn_ai_daily_limit": "That is enough receipts for today. Try again tomorrow."
+  "txn_ai_daily_limit": "That is enough AI requests for today. Try again tomorrow.",
+  "txn_ai_ask": "Ask Claude",
+  "txn_ai_asking": "Asking",
+  "txn_ai_ask_hint": "Ask Claude sends this line and the names of your wallets and categories to Anthropic.",
+  "txn_ai_read_failed": "Claude could not read that line.",
+  "txn_ai_suggest": "Suggest",
+  "txn_ai_suggest_label": "Suggest a category for {payee} with Claude",
+  "txn_ai_no_suggestion": "No category fits. Pick one yourself."
 }

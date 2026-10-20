@@ -118,5 +118,12 @@
   "txn_ai_switch_on": "Előbb kapcsold be az MI-funkciókat a Beállításokban.",
   "txn_ai_needs_account": "Az MI-funkciókhoz hozz létre fiókot.",
   "txn_ai_not_receipt": "Ez nem tűnik blokknak.",
-  "txn_ai_daily_limit": "Mára ennyi blokk elég volt. Próbáld újra holnap."
+  "txn_ai_daily_limit": "Mára elég volt az MI-kérésekből. Próbáld újra holnap.",
+  "txn_ai_ask": "Kérdezd Claude-ot",
+  "txn_ai_asking": "Kérdezés",
+  "txn_ai_ask_hint": "A „Kérdezd Claude-ot\" ezt a sort, valamint a számláid és kategóriáid nevét küldi el az Anthropicnak.",
+  "txn_ai_read_failed": "Claude nem tudta értelmezni ezt a sort.",
+  "txn_ai_suggest": "Javaslat",
+  "txn_ai_suggest_label": "Kategória javaslata ehhez: {payee}, Claude segítségével",
+  "txn_ai_no_suggestion": "Egyik kategória sem illik. Válassz te."
 }

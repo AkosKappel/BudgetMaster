@@ -118,5 +118,12 @@
   "txn_ai_switch_on": "Najprv zapni AI funkcie v Nastaveniach.",
   "txn_ai_needs_account": "Na AI funkcie si vytvor účet.",
   "txn_ai_not_receipt": "Toto nevyzerá ako bloček.",
-  "txn_ai_daily_limit": "Na dnes stačilo bločkov. Skús to znova zajtra."
+  "txn_ai_daily_limit": "Na dnes už bolo dosť požiadaviek na AI. Skús to zajtra.",
+  "txn_ai_ask": "Opýtať sa Claude",
+  "txn_ai_asking": "Pýtam sa",
+  "txn_ai_ask_hint": "„Opýtať sa Claude\" pošle tento riadok a názvy tvojich účtov a kategórií spoločnosti Anthropic.",
+  "txn_ai_read_failed": "Claude ten riadok nevedel prečítať.",
+  "txn_ai_suggest": "Navrhnúť",
+  "txn_ai_suggest_label": "Navrhnúť kategóriu pre {payee} cez Claude",
+  "txn_ai_no_suggestion": "Žiadna kategória nesedí. Vyber si sám."
 }

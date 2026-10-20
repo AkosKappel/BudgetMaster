@@ -26,7 +26,7 @@ import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
 import { uuidv7 } from '@/lib/uuid'
 import { m } from '@/paraglide/messages.js'
-import { readReceipt } from '@/server/ai'
+import { readEntry, readReceipt } from '@/server/ai'
 import type { LedgerTransaction } from '@/server/ledger'
 import { deleteReceipt, saveReceipt } from '@/server/receipts'
 import type { TransactionType } from '@/stores/quick-add'
@@ -375,6 +375,12 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
               }),
             )
           }
+          onAsk={
+            options.canReadReceipts
+              ? async (text) =>
+                  fillIn(await readEntry({ data: { spaceId: space.id, text } }))
+              : undefined
+          }
         />
       )}
 
@@ -641,6 +647,32 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                             )}
                           </div>
                           <FieldError errors={field.state.meta.errors} />
+                          {options.canReadReceipts && !field.state.value && (
+                            <form.Subscribe selector={(s) => s.values.payee}>
+                              {(payee) =>
+                                payee.trim() && (
+                                  <SuggestCategory
+                                    payee={payee.trim()}
+                                    onSuggest={async () => {
+                                      const result = await readEntry({
+                                        data: {
+                                          spaceId: space.id,
+                                          text: `${payee.trim()} (${type})`,
+                                        },
+                                      })
+                                      const fits = options.categories.find(
+                                        (c) =>
+                                          c.id === result.categoryId &&
+                                          c.type === type,
+                                      )
+                                      if (fits) field.handleChange(fits.id)
+                                      else toast(m.txn_ai_no_suggestion())
+                                    }}
+                                  />
+                                )
+                              }
+                            </form.Subscribe>
+                          )}
                           <Button
                             type="button"
                             variant="ghost"
@@ -1094,12 +1126,34 @@ function SplitEditor({
 }
 
 // "coffee 3.20 cash yesterday" fills the form below; read in the browser (src/lib/quick-entry.ts).
-function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
+function QuickEntryField({
+  onParse,
+  onAsk,
+}: {
+  onParse: (text: string) => void
+  // Present when the user switched AI features on: Claude reads the line instead.
+  onAsk?: (text: string) => Promise<void>
+}) {
   const [text, setText] = useState('')
+  const [asking, setAsking] = useState(false)
   const apply = () => {
     if (!text.trim()) return
     onParse(text)
     setText('')
+  }
+  const ask = async () => {
+    if (!onAsk || !text.trim()) return
+    setAsking(true)
+    try {
+      await onAsk(text.trim())
+      setText('')
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : m.txn_ai_read_failed(),
+      )
+    } finally {
+      setAsking(false)
+    }
   }
 
   return (
@@ -1127,10 +1181,24 @@ function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
         <Button type="button" variant="outline" onClick={apply}>
           {m.txn_quick_fill()}
         </Button>
+        {onAsk && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={asking}
+            onClick={ask}
+          >
+            <Sparkles />
+            {asking ? m.txn_ai_asking() : m.txn_ai_ask()}
+          </Button>
+        )}
       </div>
       <p id="quick-entry-hint" className="sr-only">
         {m.txn_quick_hint()}
       </p>
+      {onAsk && (
+        <p className="text-muted-foreground text-xs">{m.txn_ai_ask_hint()}</p>
+      )}
     </div>
   )
 }
@@ -1272,5 +1340,41 @@ function ReceiptField({
         </p>
       )}
     </div>
+  )
+}
+
+// For a payee without history or a rule (AI-04): Claude picks one of the space's categories.
+function SuggestCategory({
+  payee,
+  onSuggest,
+}: {
+  payee: string
+  onSuggest: () => Promise<void>
+}) {
+  const [pending, setPending] = useState(false)
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="w-fit"
+      disabled={pending}
+      aria-label={m.txn_ai_suggest_label({ payee })}
+      onClick={async () => {
+        setPending(true)
+        try {
+          await onSuggest()
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : m.txn_ai_read_failed(),
+          )
+        } finally {
+          setPending(false)
+        }
+      }}
+    >
+      <Sparkles />
+      {m.txn_ai_suggest()}
+    </Button>
   )
 }
