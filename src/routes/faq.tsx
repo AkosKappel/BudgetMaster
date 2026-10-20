@@ -2,60 +2,40 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/public-page'
 import { withCanonical } from '@/lib/site'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/faq')({
   head: () =>
     withCanonical('/faq', {
       meta: [
-        { title: 'FAQ | BudgetMaster' },
-        {
-          name: 'description',
-          content: 'Answers to common questions about BudgetMaster.',
-        },
+        { title: m.pub_faq_title() },
+        { name: 'description', content: m.pub_faq_description() },
       ],
     }),
   component: Faq,
 })
 
-const QUESTIONS: [string, React.ReactNode][] = [
-  ['Is it free?', 'Yes. There are no paid plans and no ads.'],
+// A function, so the answers are read in the visitor's language on every render.
+const questions = (): [string, React.ReactNode][] => [
+  [m.pub_faq_free_q(), m.pub_faq_free_a()],
+  [m.pub_faq_bank_q(), m.pub_faq_bank_a()],
+  [m.pub_faq_currency_q(), m.pub_faq_currency_a()],
+  [m.pub_faq_share_q(), m.pub_faq_share_a()],
+  [m.pub_faq_split_q(), m.pub_faq_split_a()],
+  [m.pub_faq_demo_q(), m.pub_faq_demo_a()],
+  [m.pub_faq_data_q(), m.pub_faq_data_a()],
   [
-    'Does it connect to my bank?',
-    'No. You record transactions yourself; quick add, payee memory and recurring payments keep that to a few seconds. A CSV export from your bank can be imported, with a review of every row.',
-  ],
-  [
-    'Can I use several currencies?',
-    'Each wallet has its own currency, and transfers between currencies record both amounts. Totals and budgets count wallets in the space currency only, until exchange rates are added.',
-  ],
-  [
-    'Can I share it with my partner?',
-    'Yes. Create a shared space under More, Spaces and send an invite link. Everyone keeps their own personal space next to it.',
-  ],
-  [
-    'We pay for some things ourselves. Can it split costs?',
-    'Yes. In a shared space, set "Paid by" when someone paid from their own money (a wallet like "Out of pocket" keeps track of it). The space page shows who owes whom, suggests the payments that settle everything and records them.',
-  ],
-  [
-    'What happens to the demo data?',
-    'Every demo is private to you. It is deleted 48 hours after you start it, unless you create an account from the banner; then you keep everything.',
-  ],
-  [
-    'How do I get my data out, or delete it?',
-    'Under Settings, Your data: download everything as JSON or a space as CSV, or delete your account with all spaces only you belong to.',
-  ],
-  [
-    'I found a bug or a security problem.',
+    m.pub_faq_bug_q(),
     <>
-      Bugs go to the issue tracker on GitHub. For security problems, see the{' '}
-      <Link to="/security">security page</Link>.
+      {m.pub_faq_bug_a()} <Link to="/security">{m.pub_faq_bug_link()}</Link>.
     </>,
   ],
 ]
 
 function Faq() {
   return (
-    <PublicPage title="Frequently asked questions">
-      {QUESTIONS.map(([question, answer]) => (
+    <PublicPage title={m.pub_faq_heading()}>
+      {questions().map(([question, answer]) => (
         <section key={question}>
           <h2>{question}</h2>
           <p>{answer}</p>

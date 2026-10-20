@@ -2,17 +2,14 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/public-page'
 import { withCanonical } from '@/lib/site'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/privacy')({
   head: () =>
     withCanonical('/privacy', {
       meta: [
-        { title: 'Privacy | BudgetMaster' },
-        {
-          name: 'description',
-          content:
-            'What BudgetMaster stores, why, and how to take it with you.',
-        },
+        { title: m.pub_privacy_title() },
+        { name: 'description', content: m.pub_privacy_description() },
       ],
     }),
   component: Privacy,
@@ -20,92 +17,52 @@ export const Route = createFileRoute('/privacy')({
 
 function Privacy() {
   return (
-    <PublicPage title="Privacy" updated="2026-10-19">
-      <p>
-        BudgetMaster is a personal project by Ákos Kappel. Your financial data
-        is yours: it is used only to run the app for you and the people you
-        share a space with.
-      </p>
+    <PublicPage title={m.pub_privacy_heading()} updated="2026-10-20">
+      <p>{m.pub_privacy_intro()}</p>
 
-      <h2>What is stored</h2>
+      <h2>{m.pub_privacy_stored()}</h2>
       <ul>
-        <li>Your name, email address and a hash of your password.</li>
+        <li>{m.pub_privacy_s_account()}</li>
+        <li>{m.pub_privacy_s_entered()}</li>
+        <li>{m.pub_privacy_s_sessions()}</li>
+        <li>{m.pub_privacy_s_two_step()}</li>
+        <li>{m.pub_privacy_s_receipts()}</li>
+        <li>{m.pub_privacy_s_ai()}</li>
+        <li>{m.pub_privacy_s_log()}</li>
+        <li>{m.pub_privacy_s_social()}</li>
+        <li>{m.pub_privacy_s_passkeys()}</li>
+      </ul>
+
+      <h2>{m.pub_privacy_cookies()}</h2>
+      <p>{m.pub_privacy_cookies_intro()}</p>
+      <ul>
+        <li>{m.pub_privacy_c_session()}</li>
+        <li>{m.pub_privacy_c_two_step()}</li>
         <li>
-          What you enter: wallets, transactions, categories, tags, budgets,
-          savings goals, recurring payments and the spaces you belong to.
+          <code>bm-space</code>: {m.pub_privacy_c_space()}
         </li>
         <li>
-          Sessions: when you signed in, the IP address and the browser, so you
-          stay signed in and sign-in attempts can be limited.
+          <code>tz</code>: {m.pub_privacy_c_tz()}
         </li>
         <li>
-          With two-step sign-in on: the authenticator key and your backup codes,
-          both encrypted.
+          <code>theme</code>: {m.pub_privacy_c_theme()}
         </li>
         <li>
-          Receipt photos you attach, made smaller in your browser before the
-          upload. They are stored with the transaction, only members of its
-          space can open them, and they are deleted with it.
-        </li>
-        <li>
-          Only if you switch on AI features in Settings and tap "Fill in from
-          photo": that receipt photo and your expense category names go to
-          Anthropic's Claude API, which reads the total, date and shop. Nothing
-          else is sent to it.
-        </li>
-        <li>
-          A log of who added, changed or deleted which transaction, shown to the
-          members of a shared space.
-        </li>
-        <li>
-          If you sign in with Google, GitHub, Apple or Microsoft: that account's
-          id, name, email address and profile picture link. Nothing else from it
-          is read.
-        </li>
-        <li>
-          Passkeys you add: their public key and a name. The private key never
-          leaves your device.
+          <code>PARAGLIDE_LOCALE</code>: {m.pub_privacy_c_locale()}
         </li>
       </ul>
 
-      <h2>Cookies</h2>
-      <p>Only cookies the app needs, no tracking or advertising cookies:</p>
-      <ul>
-        <li>The Better Auth session cookies, to keep you signed in.</li>
-        <li>
-          With two-step sign-in on: a short-lived cookie between the password
-          and the code, and one for 30 days if you trust the browser.
-        </li>
-        <li>
-          <code>bm-space</code>: the space you looked at last.
-        </li>
-        <li>
-          <code>tz</code>: your time zone, so "today" matches your clock.
-        </li>
-        <li>
-          <code>theme</code>: light, dark or system.
-        </li>
-      </ul>
+      <h2>{m.pub_privacy_who()}</h2>
+      <p>{m.pub_privacy_who_text()}</p>
 
-      <h2>Who sees it</h2>
-      <p>
-        Nobody else, except members of a shared space, who see that space's
-        data. There is no analytics, no advertising and no third-party tracking,
-        and data is never sold. The app and its database run on a server
-        operated by the author.
-      </p>
+      <h2>{m.pub_privacy_control()}</h2>
+      <p>{m.pub_privacy_control_text()}</p>
 
-      <h2>Your control</h2>
+      <h2>{m.pub_privacy_questions()}</h2>
       <p>
-        Under Settings, Your data you can download everything as JSON or a
-        space's transactions as CSV, and delete your account. Deleting removes
-        your account and every space only you belong to. Demo accounts are
-        deleted 48 hours after they start.
-      </p>
-
-      <h2>Questions</h2>
-      <p>
-        See the <Link to="/faq">FAQ</Link> or open an issue on GitHub.
+        {m.pub_privacy_questions_before()}{' '}
+        <Link to="/faq">{m.pub_nav_faq()}</Link>{' '}
+        {m.pub_privacy_questions_after()}
       </p>
     </PublicPage>
   )

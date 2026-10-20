@@ -19,6 +19,7 @@ import { useIsClient } from '@/hooks/use-is-client'
 import { authClient } from '@/lib/auth-client'
 import { sessionQuery } from '@/lib/queries'
 import { withCanonical } from '@/lib/site'
+import { m } from '@/paraglide/messages.js'
 
 // The public front door: what the app is, screenshots and the demo. Signed-out visitors
 // opening `/` land here; signed-in users go straight to the app.
@@ -30,63 +31,51 @@ export const Route = createFileRoute('/start')({
   head: () =>
     withCanonical('/start', {
       meta: [
-        { title: 'BudgetMaster: income, spending and budgets on your phone' },
-        {
-          name: 'description',
-          content:
-            'A calm money app for your phone: quick add, budgets that start on payday, recurring payments, reports and shared spaces. Try the demo without signing up.',
-        },
+        { title: m.pub_start_title() },
+        { name: 'description', content: m.pub_start_description() },
       ],
     }),
   component: Start,
 })
 
-const FEATURES = [
+// Functions, so the text is read in the visitor's language on every render.
+const features = () => [
   {
     icon: Zap,
-    title: 'Five-second quick add',
-    text: 'Known payees fill in their category and wallet. Rules and recurring payments do the rest.',
+    title: m.pub_start_feature_quick_title(),
+    text: m.pub_start_feature_quick_text(),
   },
   {
     icon: ChartColumn,
-    title: 'Know where it went',
-    text: 'Spending pace, cash flow, net worth, a spending calendar and a printable monthly report.',
+    title: m.pub_start_feature_insight_title(),
+    text: m.pub_start_feature_insight_text(),
   },
   {
     icon: Repeat,
-    title: 'Budgets that start on payday',
-    text: 'Limits per category, warnings before you go over, and a 90-day forecast of your balance.',
+    title: m.pub_start_feature_budgets_title(),
+    text: m.pub_start_feature_budgets_text(),
   },
   {
     icon: Users,
-    title: 'Shared spaces',
-    text: 'Keep a household budget with a partner while personal money stays personal.',
+    title: m.pub_start_feature_shared_title(),
+    text: m.pub_start_feature_shared_text(),
   },
   {
     icon: Import,
-    title: 'Bank statement import',
-    text: 'Bring in a CSV export, review every row, skip duplicates. Your bank layout is remembered.',
+    title: m.pub_start_feature_import_title(),
+    text: m.pub_start_feature_import_text(),
   },
   {
     icon: Goal,
-    title: 'Savings goals',
-    text: 'Point a goal at a savings wallet and see what a month needs to reach it on time.',
+    title: m.pub_start_feature_goals_title(),
+    text: m.pub_start_feature_goals_text(),
   },
 ]
 
-const SCREENS = [
-  {
-    src: '/screens/home.webp',
-    alt: 'Home: left to spend this month and the spending pace',
-  },
-  {
-    src: '/screens/budgets.webp',
-    alt: 'Budgets: limits per category with how much is used',
-  },
-  {
-    src: '/screens/reports.webp',
-    alt: 'Reports: income and spending month by month',
-  },
+const screens = () => [
+  { src: '/screens/home.webp', alt: m.pub_start_screen_home() },
+  { src: '/screens/budgets.webp', alt: m.pub_start_screen_budgets() },
+  { src: '/screens/reports.webp', alt: m.pub_start_screen_reports() },
 ]
 
 function Start() {
@@ -100,7 +89,7 @@ function Start() {
       onClick={() => run(() => authClient.signIn.anonymous())}
     >
       <FlaskConical />
-      Try the demo
+      {m.pub_start_try_demo()}
     </Button>
   )
 
@@ -111,42 +100,39 @@ function Start() {
         <header className="flex items-center justify-between gap-4">
           <Logo />
           <Button asChild variant="outline" size="sm">
-            <Link to="/sign-in">Sign in</Link>
+            <Link to="/sign-in">{m.pub_start_sign_in()}</Link>
           </Button>
         </header>
 
         <main className="flex flex-col gap-20">
           <section className="flex max-w-2xl flex-col gap-6">
             <h1 className="font-semibold text-4xl tracking-tight sm:text-5xl">
-              Know what you can still spend this month.
+              {m.pub_start_heading()}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              BudgetMaster is a calm money app for your phone. Record a purchase
-              in a few seconds, keep budgets that start on payday, and see where
-              your money went, alone or with a partner.
+              {m.pub_start_intro()}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               {tryDemo}
               <Button asChild size="lg" variant="outline">
-                <Link to="/sign-up">Create an account</Link>
+                <Link to="/sign-up">{m.pub_start_create_account()}</Link>
               </Button>
             </div>
             <FormError message={error} />
             <p className="text-muted-foreground text-sm">
-              The demo is a private copy of 14 months of sample data, deleted
-              after 48 hours unless you sign up. No card, no email.
+              {m.pub_start_demo_note()}
             </p>
           </section>
 
           {/* Scrolls sideways on phones, so it takes keyboard focus to scroll with the arrows. */}
           <section
-            aria-label="Screenshots"
+            aria-label={m.pub_start_screenshots()}
             // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard (WCAG 2.1.1)
             tabIndex={0}
             className="snap-x overflow-x-auto rounded-xl pb-2 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:overflow-visible"
           >
             <ul className="flex gap-4 sm:grid sm:grid-cols-3">
-              {SCREENS.map((s) => (
+              {screens().map((s) => (
                 <li key={s.src} className="w-56 shrink-0 snap-start sm:w-auto">
                   <img
                     src={s.src}
@@ -166,10 +152,10 @@ function Start() {
               id="features"
               className="font-semibold text-2xl tracking-tight sm:text-3xl"
             >
-              Capture, understand, plan
+              {m.pub_start_features_heading()}
             </h2>
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map(({ icon: Icon, title, text }) => (
+              {features().map(({ icon: Icon, title, text }) => (
                 <li key={title} className="flex flex-col gap-2">
                   <Icon className="size-5 text-note" aria-hidden="true" />
                   <h3 className="font-semibold">{title}</h3>
@@ -188,14 +174,12 @@ function Start() {
             <Lock className="size-8 shrink-0 text-note" aria-hidden="true" />
             <div className="flex flex-1 flex-col gap-1">
               <h2 id="privacy" className="font-semibold text-lg">
-                Your data stays yours
+                {m.pub_start_privacy_heading()}
               </h2>
               <p className="text-muted-foreground">
-                No ads, no tracking, no bank passwords. Export everything at any
-                time, delete your account in one step, and sign in with a
-                passkey or two-step sign-in.{' '}
+                {m.pub_start_privacy_text()}{' '}
                 <Link to="/privacy" className="underline underline-offset-4">
-                  How data is handled
+                  {m.pub_start_privacy_link()}
                 </Link>
                 .
               </p>
