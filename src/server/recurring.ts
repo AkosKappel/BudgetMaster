@@ -150,25 +150,6 @@ export const saveRecurringRule = createServerFn({ method: 'POST' })
       throw new Error('The end date must be after the start date.')
     const movement = await checkMovement(space.id, data)
 
-    let after = addDays(data.startDate, -1)
-    if (data.id) {
-      const [existing] = await db
-        .select({ id: recurringRule.id })
-        .from(recurringRule)
-        .where(
-          and(
-            eq(recurringRule.spaceId, space.id),
-            eq(recurringRule.id, data.id),
-          ),
-        )
-      if (!existing) throw new Error('Recurring payment not found.')
-      const [{ last }] = await db
-        .select({ last: max(transaction.date) })
-        .from(transaction)
-        .where(eq(transaction.recurringRuleId, data.id))
-      if (last && last > after) after = last
-    }
-
     const values = {
       type: data.type,
       walletId: data.walletId,
@@ -180,15 +161,43 @@ export const saveRecurringRule = createServerFn({ method: 'POST' })
       interval: data.interval,
       startDate: data.startDate,
       endDate: data.endDate,
-      nextDate: nextOccurrence(data, after),
     }
-    if (data.id) {
-      await db
-        .update(recurringRule)
-        .set(values)
-        .where(eq(recurringRule.id, data.id))
+    const start = addDays(data.startDate, -1)
+    if (!data.id) {
+      await db.insert(recurringRule).values({
+        ...values,
+        spaceId: space.id,
+        nextDate: nextOccurrence(data, start),
+      })
     } else {
-      await db.insert(recurringRule).values({ ...values, spaceId: space.id })
+      const id = data.id
+      // Locked like in createDueTransactions, so a due run at the same moment cannot
+      // book a date this edit is about to move past.
+      await db.transaction(async (tx) => {
+        const [existing] = await tx
+          .select({ nextDate: recurringRule.nextDate })
+          .from(recurringRule)
+          .where(
+            and(eq(recurringRule.spaceId, space.id), eq(recurringRule.id, id)),
+          )
+          .for('update')
+        if (!existing) throw new Error('Recurring payment not found.')
+        const [{ last }] = await tx
+          .select({ last: max(transaction.date) })
+          .from(transaction)
+          .where(eq(transaction.recurringRuleId, id))
+        // Dates before the stored next date were booked, skipped while paused or
+        // deleted on purpose; an edit must not bring them back.
+        const after = [
+          start,
+          last,
+          existing.nextDate && addDays(existing.nextDate, -1),
+        ].reduce<string>((a, b) => (b && b > a ? b : a), start)
+        await tx
+          .update(recurringRule)
+          .set({ ...values, nextDate: nextOccurrence(data, after) })
+          .where(eq(recurringRule.id, id))
+      })
     }
     await createDueTransactions(space.id, currentDay())
   })
