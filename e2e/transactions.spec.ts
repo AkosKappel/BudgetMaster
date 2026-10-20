@@ -153,3 +153,23 @@ test('a receipt photo is shrunk, saved with the transaction and shown again', as
   })
   expect(anonymous.status()).toBe(401)
 })
+
+test('the add expense shortcut opens quick add', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/?add=expense')
+  await expect(page.getByRole('dialog').getByLabel('Amount')).toBeVisible()
+  await expect(page).toHaveURL(/\/$/)
+})
+
+test('the amount filter keeps only amounts in range', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/activity?type=expense&min=500')
+  const rows = page.locator('main section li')
+  await expect(rows.first()).toBeVisible()
+  for (const text of await rows.allTextContents()) {
+    const amount = Number(
+      /−[€$]([\d,]+\.\d{2})/.exec(text)?.[1].replace(/,/g, ''),
+    )
+    expect(amount).toBeGreaterThanOrEqual(500)
+  }
+})

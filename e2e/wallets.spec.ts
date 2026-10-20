@@ -62,3 +62,17 @@ test('a wallet with transactions keeps its currency and can be archived', async 
     .click()
   await expect(page.getByText('Wallet restored')).toBeVisible()
 })
+
+test('wallets can be moved up and down, and the order is kept', async ({
+  page,
+}) => {
+  await startDemo(page)
+  await page.goto('/wallets')
+  const names = page.locator('main ul').first().locator('li .truncate')
+  const before = await names.allTextContents()
+  await page.getByRole('button', { name: `Move ${before[1]} up` }).click()
+  await expect(names.first()).toHaveText(before[1])
+  await page.reload()
+  await expect(names.nth(0)).toHaveText(before[1])
+  await expect(names.nth(1)).toHaveText(before[0])
+})

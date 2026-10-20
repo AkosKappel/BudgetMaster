@@ -19,3 +19,11 @@ test('a budget with rollover adds last month’s leftover', async ({ page }) => 
   await expect(pets).toContainText('€50.00 left')
   await expect(pets).not.toContainText('left over from last month')
 })
+
+test('budgets say how much of the income has no job yet', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/budgets?month=-1')
+  await expect(
+    page.getByText(/came in, .* is in category budgets/),
+  ).toBeVisible()
+})
