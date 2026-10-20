@@ -65,12 +65,31 @@ export const auth = betterAuth({
           clientSecret: env.GITHUB_CLIENT_SECRET,
         },
       }),
+    ...(env.APPLE_CLIENT_ID &&
+      env.APPLE_CLIENT_SECRET && {
+        apple: {
+          clientId: env.APPLE_CLIENT_ID,
+          clientSecret: env.APPLE_CLIENT_SECRET,
+        },
+      }),
+    ...(env.MICROSOFT_CLIENT_ID &&
+      env.MICROSOFT_CLIENT_SECRET && {
+        microsoft: {
+          clientId: env.MICROSOFT_CLIENT_ID,
+          clientSecret: env.MICROSOFT_CLIENT_SECRET,
+          // Personal Microsoft accounts and any work or school directory.
+          tenantId: 'common',
+        },
+      }),
   },
+  // Apple returns to the callback with a form post from its own site.
+  trustedOrigins: env.APPLE_CLIENT_ID ? ['https://appleid.apple.com'] : [],
   account: {
-    // Signing in with Google to an address that already has a password account adds Google
-    // to that account (Google verifies the address) instead of failing. GitHub links only
-    // when it reports the address as verified, Better Auth's default for untrusted providers.
-    accountLinking: { enabled: true, trustedProviders: ['google'] },
+    // Signing in with Google or Apple to an address that already has a password account adds
+    // it to that account (both verify the address) instead of failing. GitHub and Microsoft
+    // link only when they report the address as verified, Better Auth's default for
+    // untrusted providers (a Microsoft work account's address is set by its organisation).
+    accountLinking: { enabled: true, trustedProviders: ['google', 'apple'] },
   },
   user: {
     additionalFields: {

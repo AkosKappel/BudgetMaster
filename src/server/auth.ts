@@ -67,6 +67,8 @@ export const getSignInOptions = createServerFn({ method: 'GET' }).handler(
   () => ({
     google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
     github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+    apple: Boolean(env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET),
+    microsoft: Boolean(env.MICROSOFT_CLIENT_ID && env.MICROSOFT_CLIENT_SECRET),
     // Not a sign-in method, but the same kind of switch: Settings offers AI features only then.
     ai: Boolean(env.ANTHROPIC_API_KEY),
   }),

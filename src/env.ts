@@ -33,6 +33,27 @@ const schema = z.object({
     (value) => value || undefined,
     z.string().optional(),
   ),
+  // Optional: Apple sign-in (Apple developer account, a Services ID as the client id, return
+  // URL `<BETTER_AUTH_URL>/api/auth/callback/apple`). The secret is a JWT signed with the
+  // Sign in with Apple key; Apple accepts it for at most 6 months, so it has to be renewed.
+  APPLE_CLIENT_ID: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  APPLE_CLIENT_SECRET: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  // Optional: Microsoft sign-in (Microsoft Entra app registration for personal and work
+  // accounts, redirect URI `<BETTER_AUTH_URL>/api/auth/callback/microsoft`).
+  MICROSOFT_CLIENT_ID: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
+  MICROSOFT_CLIENT_SECRET: z.preprocess(
+    (value) => value || undefined,
+    z.string().optional(),
+  ),
   // Optional: AI features (reading receipt photos with Claude) are offered only when set,
   // and each user still opts in under Settings.
   ANTHROPIC_API_KEY: z.preprocess(
