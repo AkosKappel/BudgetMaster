@@ -68,7 +68,7 @@ export const getFormOptions = createServerFn({ method: 'GET' })
         })
         .from(category)
         .where(and(eq(category.spaceId, space.id), isNull(category.archivedAt)))
-        .orderBy(asc(category.name)),
+        .orderBy(asc(category.sortOrder), asc(category.name)),
       db
         .select({ id: tag.id, name: tag.name, color: tag.color })
         .from(tag)

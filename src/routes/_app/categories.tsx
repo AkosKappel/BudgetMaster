@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { CategoryForm, type CategoryValues } from '@/components/category-form'
+import { MoveButtons, swapped } from '@/components/move-buttons'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -25,6 +26,7 @@ import {
   deleteCategory,
   type ManagedCategory,
   mergeCategory,
+  reorderCategories,
   saveCategory,
   setCategoryArchived,
 } from '@/server/categories'
@@ -107,6 +109,34 @@ function Categories() {
     onError: (error) => toast.error(error.message),
   })
 
+  const reorder = useMutation({
+    mutationFn: (ids: string[]) =>
+      reorderCategories({ data: { spaceId: space.id, ids } }),
+    onSuccess: refresh,
+    onError: (error) => toast.error(error.message),
+  })
+
+  // Parents move among the parents of their type, subcategories among their siblings.
+  const moveButtons = (siblings: ManagedCategory[], index: number) =>
+    data.canWrite &&
+    siblings.length > 1 && (
+      <MoveButtons
+        name={siblings[index].name}
+        index={index}
+        count={siblings.length}
+        disabled={reorder.isPending}
+        onMove={(by) =>
+          reorder.mutate(
+            swapped(
+              siblings.map((c) => c.id),
+              index,
+              by,
+            ),
+          )
+        }
+      />
+    )
+
   const openEditor = (next: Editor | null) => {
     save.reset()
     setEditor(next)
@@ -142,19 +172,36 @@ function Categories() {
           </h2>
           <ul className="divide-y rounded-lg border bg-card">
             {grouped(active.filter((c) => c.type === type)).flatMap(
-              ({ parent, children }) =>
-                [parent, ...children].map((c) => (
+              ({ parent, children }, index, groups) => [
+                <CategoryRow
+                  key={parent.id}
+                  category={parent}
+                  onSelect={
+                    data.canWrite
+                      ? () => openEditor({ mode: 'edit', category: parent })
+                      : undefined
+                  }
+                >
+                  {moveButtons(
+                    groups.map((g) => g.parent),
+                    index,
+                  )}
+                </CategoryRow>,
+                ...children.map((c, childIndex) => (
                   <CategoryRow
                     key={c.id}
                     category={c}
-                    nested={c !== parent}
+                    nested
                     onSelect={
                       data.canWrite
                         ? () => openEditor({ mode: 'edit', category: c })
                         : undefined
                     }
-                  />
+                  >
+                    {moveButtons(children, childIndex)}
+                  </CategoryRow>
                 )),
+              ],
             )}
           </ul>
         </section>

@@ -163,6 +163,7 @@ export const category = pgTable(
     type: categoryType().notNull(),
     color: text().notNull(),
     icon: text().notNull(),
+    sortOrder: integer().default(0).notNull(),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },

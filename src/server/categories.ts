@@ -41,7 +41,7 @@ export const listCategories = createServerFn({ method: 'GET' })
       })
       .from(category)
       .where(eq(category.spaceId, space.id))
-      .orderBy(asc(category.name))
+      .orderBy(asc(category.sortOrder), asc(category.name))
     return { categories, canWrite: space.role !== 'viewer' }
   })
 
@@ -130,7 +130,13 @@ export const saveCategory = createServerFn({ method: 'POST' })
     }
     const [created] = await db
       .insert(category)
-      .values({ ...values, spaceId: space.id, type })
+      .values({
+        ...values,
+        spaceId: space.id,
+        type,
+        // New categories go to the end of their list.
+        sortOrder: sql`(select coalesce(max(${category.sortOrder}), -1) + 1 from ${category} where ${category.spaceId} = ${space.id})`,
+      })
       .returning({ id: category.id })
     return created
   })
@@ -255,4 +261,22 @@ export const mergeCategory = createServerFn({ method: 'POST' })
       await tx.delete(category).where(eq(category.id, source.id))
     })
     return { into: target.name }
+  })
+
+// The order categories appear in on this page and in the pickers.
+export const reorderCategories = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(spaceInput.extend({ ids: z.array(z.uuid()).min(1).max(500) }))
+  .handler(async ({ context, data }) => {
+    const space = await requireWriter(context.user.id, data.spaceId)
+    const ids = sql`array[${sql.join(
+      data.ids.map((id) => sql`${id}`),
+      sql`, `,
+    )}]::uuid[]`
+    await db
+      .update(category)
+      .set({ sortOrder: sql`array_position(${ids}, ${category.id})` })
+      .where(
+        and(eq(category.spaceId, space.id), sql`${category.id} = any(${ids})`),
+      )
   })

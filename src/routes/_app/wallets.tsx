@@ -4,10 +4,11 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowDown, ArrowUp, ChevronLeft, Plus } from 'lucide-react'
+import { ChevronLeft, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { MoveButtons, swapped } from '@/components/move-buttons'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -84,12 +85,6 @@ function Wallets() {
     onError: (error) => toast.error(error.message),
   })
 
-  const move = (index: number, by: -1 | 1) => {
-    const ids = active.map((w) => w.id)
-    ;[ids[index], ids[index + by]] = [ids[index + by], ids[index]]
-    reorder.mutate(ids)
-  }
-
   const openEditor = (next: Editor | null) => {
     save.reset()
     setEditor(next)
@@ -131,28 +126,21 @@ function Wallets() {
               }
             >
               {data.canWrite && active.length > 1 && (
-                <div className="flex flex-col">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    aria-label={`Move ${w.name} up`}
-                    disabled={index === 0 || reorder.isPending}
-                    onClick={() => move(index, -1)}
-                  >
-                    <ArrowUp />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    aria-label={`Move ${w.name} down`}
-                    disabled={index === active.length - 1 || reorder.isPending}
-                    onClick={() => move(index, 1)}
-                  >
-                    <ArrowDown />
-                  </Button>
-                </div>
+                <MoveButtons
+                  name={w.name}
+                  index={index}
+                  count={active.length}
+                  disabled={reorder.isPending}
+                  onMove={(by) =>
+                    reorder.mutate(
+                      swapped(
+                        active.map((a) => a.id),
+                        index,
+                        by,
+                      ),
+                    )
+                  }
+                />
               )}
             </WalletRow>
           ))}

@@ -19,7 +19,9 @@ test('a change in one tab shows up in another, and offline is announced', async 
     .getByRole('button', { name: 'Create category' })
     .click()
   await expect(page.getByText('Category created')).toBeVisible()
-  await expect(other.getByRole('button', { name: 'Synced' })).toBeVisible()
+  await expect(
+    other.getByRole('button', { name: 'Synced', exact: true }),
+  ).toBeVisible()
 
   await context.setOffline(true)
   await expect(page.getByText(/You are offline/)).toBeVisible()
@@ -50,7 +52,7 @@ test('a change on one device shows up live on another', async ({
     .click()
   await expect(page.getByText('Category created')).toBeVisible()
   await expect(
-    other.getByRole('button', { name: 'Live from phone' }),
+    other.getByRole('button', { name: 'Live from phone', exact: true }),
   ).toBeVisible()
   await laptop.close()
 })

@@ -58,8 +58,9 @@ function Privacy() {
           members of a shared space.
         </li>
         <li>
-          If you sign in with Google, GitHub, Apple or Microsoft: that account's id, name, email
-          address and profile picture link. Nothing else from it is read.
+          If you sign in with Google, GitHub, Apple or Microsoft: that account's
+          id, name, email address and profile picture link. Nothing else from it
+          is read.
         </li>
         <li>
           Passkeys you add: their public key and a name. The private key never
