@@ -19,7 +19,9 @@ import {
   transaction,
   transactionSplit,
   transactionTag,
+  wallet,
 } from '@/db/schema'
+import { CURRENCIES } from '@/lib/currencies'
 import { currencyDigits } from '@/lib/money'
 import { addDays } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
@@ -124,9 +126,21 @@ export const getOverview = createServerFn({ method: 'GET' })
 const containsPattern = (text: string) =>
   `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
 
-function filterConditions(filters: TransactionFilters, digits: number) {
+// Minor units per major unit of the transaction's wallet currency: the amount filter is
+// typed in major units, and a JPY wallet has no cents while a EUR one has two. Plain
+// column names, because relational queries rename every column to the root table.
+const unitsOf = (walletId: typeof transaction.walletId) =>
+  sql`(select case w.currency ${sql.join(
+    CURRENCIES.filter((c) => currencyDigits(c) !== 2).map(
+      (c) => sql`when ${c} then ${10 ** currencyDigits(c)}`,
+    ),
+    sql` `,
+  )} else 100 end from ${wallet} w where w.id = ${walletId})`
+
+function filterConditions(filters: TransactionFilters) {
   const t = transaction
-  const minor = (major: number) => Math.round(major * 10 ** digits)
+  const minor = (major: number) =>
+    sql`round(${major}::numeric * ${unitsOf(t.walletId)})`
   const conditions: (SQL | undefined)[] = []
   if (filters.q) {
     const pattern = containsPattern(filters.q)
@@ -212,7 +226,7 @@ export const listTransactions = createServerFn({ method: 'GET' })
               and(eq(t.date, cursor.date), lt(t.id, cursor.id)),
             )
           : undefined,
-        ...filterConditions(data.filters, currencyDigits(space.baseCurrency)),
+        ...filterConditions(data.filters),
       ),
       orderBy: (t, { desc }) => [desc(t.date), desc(t.id)],
       limit: PAGE_SIZE + 1,
