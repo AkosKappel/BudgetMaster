@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { expectNoAxeViolations, startDemo } from './helpers'
 
-test('an invite to a shared space is emailed and shown as a link', async ({
+test('a demo user shares an invite as a link, without emailing it', async ({
   page,
 }) => {
   await startDemo(page)
@@ -15,9 +15,11 @@ test('an invite to a shared space is emailed and shown as a link', async ({
   ).toBeVisible()
 
   await page.getByLabel('Email', { exact: true }).fill('flatmate@example.com')
-  await expect(page.getByLabel('Email the invite to them')).toBeChecked()
+  await expect(page.getByLabel('Email the invite to them')).toHaveCount(0)
   await page.getByRole('button', { name: 'Create invite link' }).click()
-  await expect(page.getByText(/Emailed to flatmate@example.com/)).toBeVisible()
+  await expect(
+    page.getByText(/Send this link to flatmate@example.com/),
+  ).toBeVisible()
   await expect(page.getByLabel('Invite link')).toHaveValue(/\/invite\//)
   await expect(
     page.getByRole('region', { name: 'Recent changes' }),

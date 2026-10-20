@@ -4,7 +4,12 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useRouteContext,
+} from '@tanstack/react-router'
 import { ChevronLeft, Copy, Link2, Share2, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -307,6 +312,9 @@ function Invites({
     onError: (error) => toast.error(error.message),
   })
   const canShare = typeof navigator !== 'undefined' && 'share' in navigator
+  // The server only emails invites for verified, non-demo accounts.
+  const { user } = useRouteContext({ from: '/_app' })
+  const canEmail = !user.demoExpiresAt && user.emailVerified
   const now = Date.now()
 
   return (
@@ -355,15 +363,17 @@ function Invites({
             </select>
           </div>
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="send-email"
-            defaultChecked
-            className="size-4"
-          />
-          Email the invite to them
-        </label>
+        {canEmail && (
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="send-email"
+              defaultChecked
+              className="size-4"
+            />
+            Email the invite to them
+          </label>
+        )}
         <p id="invite-hint" className="text-muted-foreground text-sm">
           You also get the link to send another way. It works once, only for
           this email, for 7 days.

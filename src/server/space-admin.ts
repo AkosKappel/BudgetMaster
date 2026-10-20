@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { createServerFn } from '@tanstack/react-start'
 import { setCookie } from '@tanstack/react-start/server'
-import { and, asc, count, desc, eq, isNull, ne, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gt, isNull, ne, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
@@ -24,6 +24,7 @@ import { requireMembership } from '@/server/membership'
 import { ACTIVE_SPACE_COOKIE, spaceInput } from '@/server/spaces'
 
 const INVITE_DAYS = 7
+const INVITE_EMAILS_PER_HOUR = 10
 
 const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('hex')
@@ -158,6 +159,25 @@ export const createInvite = createServerFn({ method: 'POST' })
       throw new Error(
         'Personal spaces cannot be shared. Create a shared space.',
       )
+    }
+    if (data.sendEmail) {
+      // The email goes out from our domain with a name the user chose, so only verified
+      // accounts send it, and only a few an hour.
+      if (context.user.isAnonymous || !context.user.emailVerified)
+        throw new Error(
+          'Verify your email address to send invites by email. You can still share the link.',
+        )
+      const recent = await db.$count(
+        spaceInvite,
+        and(
+          eq(spaceInvite.invitedBy, context.user.id),
+          gt(spaceInvite.createdAt, new Date(Date.now() - 3_600_000)),
+        ),
+      )
+      if (recent >= INVITE_EMAILS_PER_HOUR)
+        throw new Error(
+          'Too many invites in the last hour. Share the link instead, or try again later.',
+        )
     }
     const [existing] = await db
       .select({ id: user.id })
