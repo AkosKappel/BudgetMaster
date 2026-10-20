@@ -168,6 +168,7 @@ export const getSpendingCalendar = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const weekday =
       (new Date(`${today}T00:00:00Z`).getUTCDay() -
         context.user.weekStartsOn +
@@ -211,6 +212,7 @@ export const getCategoryTrends = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const periods = [budgetPeriod(today, space.budgetMonthStartDay)]
     while (periods.length < TREND_MONTHS) {
       periods.unshift(
@@ -357,6 +359,7 @@ export const getPriceChanges = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const purchases = await db
       .select({
         date: transaction.date,
@@ -387,6 +390,7 @@ export const getYearReview = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const [rows, [range], [topCategory]] = await Promise.all([
       db
         .select({
@@ -468,6 +472,7 @@ export const getInsights = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
+    await createDueTransactions(space.id, today)
     const period = budgetPeriod(today, space.budgetMonthStartDay)
     const previous = budgetPeriod(
       addMonths(period.start, -1),
