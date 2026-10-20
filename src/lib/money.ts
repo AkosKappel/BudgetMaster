@@ -60,14 +60,19 @@ function parseNumber(input: string, digits: number): number | null {
     cleaned.lastIndexOf(','),
   )
   const decimals = cleaned.length - lastSeparator - 1
-  const hasFraction = lastSeparator !== -1 && digits > 0 && decimals <= digits
+  // Up to two decimals are a fraction even for a currency without minor units, so a bank
+  // export's "1234.00" yen reads as 1234, not 123400.
+  const hasFraction = lastSeparator !== -1 && decimals <= Math.max(digits, 2)
   const whole = (
     hasFraction ? cleaned.slice(0, lastSeparator) : cleaned
   ).replace(/[.,]/g, '')
   const fraction = hasFraction ? cleaned.slice(lastSeparator + 1) : ''
   const minor =
     Number(whole || '0') * 10 ** digits +
-    Number(fraction.padEnd(digits, '0') || '0')
+    Math.round(
+      Number(fraction.padEnd(digits, '0') || '0') /
+        10 ** Math.max(fraction.length - digits, 0),
+    )
   return Number.isSafeInteger(minor) ? minor : null
 }
 
