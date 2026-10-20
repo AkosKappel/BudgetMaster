@@ -57,6 +57,7 @@ import {
 } from '@/lib/queries'
 import { setTheme, THEMES, useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import { useCommandPalette, useShortcutsHelp } from '@/stores/command-palette'
 import { useQuickAdd } from '@/stores/quick-add'
 
@@ -66,11 +67,11 @@ const HELP_HOTKEY = 'Shift+/'
 
 // Shown in the shortcuts help; the sidebar toggle lives in app-nav.
 export const SHORTCUTS = [
-  { keys: PALETTE_HOTKEY, action: 'Search and commands' },
-  { keys: QUICK_ADD_HOTKEY, action: 'Add a transaction' },
-  { keys: 'Mod+B', action: 'Collapse or expand the sidebar' },
-  { keys: HELP_HOTKEY, action: 'Show these shortcuts' },
-  { keys: 'Escape', action: 'Close a sheet or dialog' },
+  { keys: PALETTE_HOTKEY, action: m.shell_shortcut_palette },
+  { keys: QUICK_ADD_HOTKEY, action: m.shell_shortcut_add },
+  { keys: 'Mod+B', action: m.shell_shortcut_sidebar },
+  { keys: HELP_HOTKEY, action: m.shell_shortcut_help },
+  { keys: 'Escape', action: m.shell_shortcut_close },
 ] as const
 
 export function CommandPalette() {
@@ -134,28 +135,31 @@ export function CommandPalette() {
         if (!actionRan.current && returnFocus?.isConnected) returnFocus.focus()
         actionRan.current = false
       }}
-      title="Search and commands"
-      description="Find transactions, go to a page or run an action."
+      title={m.shell_shortcut_palette()}
+      description={m.shell_palette_description()}
       className="max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0"
     >
       <CommandInput
-        placeholder="Search transactions or type a command"
+        placeholder={m.shell_palette_placeholder()}
         value={query}
         onValueChange={setQuery}
       />
       <CommandList className="max-sm:max-h-[calc(100dvh-3rem)]">
         <CommandEmpty>
-          {isFetching ? 'Searching' : 'Nothing found. Try a payee or a note.'}
+          {isFetching ? m.shell_palette_searching() : m.shell_palette_empty()}
         </CommandEmpty>
 
         {debouncedQuery.length >= 2 && results.length > 0 && (
-          <CommandGroup heading={`Transactions in ${space.name}`}>
+          <CommandGroup
+            heading={m.shell_palette_transactions_in({ space: space.name })}
+          >
             {results.map((t) => {
               const Icon =
                 t.type === 'transfer'
                   ? ArrowLeftRight
                   : iconFor(t.category?.icon)
-              const title = t.payee ?? t.category?.name ?? 'Transfer'
+              const title =
+                t.payee ?? t.category?.name ?? m.shell_palette_transfer()
               return (
                 <CommandItem
                   key={t.id}
@@ -189,7 +193,7 @@ export function CommandPalette() {
         )}
 
         {query.trim() && options && (
-          <CommandGroup heading="Show in activity">
+          <CommandGroup heading={m.shell_palette_show_in_activity()}>
             {options.categories.map((c) => {
               const Icon = iconFor(c.icon)
               return (
@@ -201,7 +205,9 @@ export function CommandPalette() {
                   <Icon style={{ color: c.color }} />
                   {c.name}
                   <span className="ml-auto text-muted-foreground text-xs">
-                    {c.type === 'income' ? 'Income category' : 'Category'}
+                    {c.type === 'income'
+                      ? m.shell_palette_income_category()
+                      : m.shell_palette_category()}
                   </span>
                 </CommandItem>
               )
@@ -217,7 +223,7 @@ export function CommandPalette() {
                   <Icon style={{ color: w.color }} />
                   {w.name}
                   <span className="ml-auto text-muted-foreground text-xs">
-                    Wallet
+                    {m.shell_palette_wallet()}
                   </span>
                 </CommandItem>
               )
@@ -231,7 +237,7 @@ export function CommandPalette() {
                 <Tag style={{ color: t.color }} />
                 {t.name}
                 <span className="ml-auto text-muted-foreground text-xs">
-                  Tag
+                  {m.shell_palette_tag()}
                 </span>
               </CommandItem>
             ))}
@@ -239,35 +245,39 @@ export function CommandPalette() {
         )}
 
         {canWrite && (
-          <CommandGroup heading="Add">
+          <CommandGroup heading={m.shell_palette_add()}>
             <CommandItem onSelect={run(() => openNew('expense'))}>
               <Minus />
-              Add expense
+              {m.shell_palette_add_expense()}
               <HotkeyHint hotkey={QUICK_ADD_HOTKEY} />
             </CommandItem>
             <CommandItem onSelect={run(() => openNew('income'))}>
               <Plus />
-              Add income
+              {m.shell_palette_add_income()}
             </CommandItem>
             <CommandItem onSelect={run(() => openNew('transfer'))}>
               <ArrowLeftRight />
-              Add transfer
+              {m.shell_palette_add_transfer()}
             </CommandItem>
           </CommandGroup>
         )}
 
-        <CommandGroup heading="Go to">
+        <CommandGroup heading={m.shell_palette_go_to()}>
           {(
             [
-              { to: '/', label: 'Home', icon: House },
-              { to: '/activity', label: 'Activity', icon: ReceiptText },
-              { to: '/budgets', label: 'Budgets', icon: Gauge },
-              { to: '/more', label: 'More', icon: Ellipsis },
+              { to: '/', label: m.shell_nav_home(), icon: House },
+              {
+                to: '/activity',
+                label: m.shell_nav_activity(),
+                icon: ReceiptText,
+              },
+              { to: '/budgets', label: m.shell_nav_budgets(), icon: Gauge },
+              { to: '/more', label: m.shell_nav_more(), icon: Ellipsis },
             ] as const
           ).map(({ to, label, icon: Icon }) => (
             <CommandItem
               key={to}
-              value={`Go to ${label}`}
+              value={`${m.shell_palette_go_to()} ${label}`}
               onSelect={run(() => navigate({ to }))}
             >
               <Icon />
@@ -277,7 +287,7 @@ export function CommandPalette() {
         </CommandGroup>
 
         {spaces.length > 1 && (
-          <CommandGroup heading="Switch space">
+          <CommandGroup heading={m.shell_palette_switch_space()}>
             {spaces.map((s) => {
               const Icon = s.personal ? User : Users
               return (
@@ -295,86 +305,86 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
-        <CommandGroup heading="Spaces">
+        <CommandGroup heading={m.shell_palette_spaces()}>
           <CommandItem onSelect={run(() => navigate({ to: '/spaces' }))}>
             <Settings2 />
-            Manage spaces and invites
+            {m.shell_palette_manage_spaces()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/import' }))}>
             <FileUp />
-            Import a bank CSV
+            {m.shell_palette_import()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/reports' }))}>
             <ChartColumn />
-            Reports
+            {m.shell_palette_reports()}
           </CommandItem>
           <CommandItem
             onSelect={run(() => navigate({ to: '/monthly-report' }))}
           >
             <FileText />
-            Monthly report
+            {m.shell_palette_monthly_report()}
           </CommandItem>
           <CommandItem
             onSelect={run(() => navigate({ to: '/year-in-review' }))}
           >
             <Sparkles />
-            Year in review
+            {m.shell_palette_year_in_review()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/goals' }))}>
             <Goal />
-            Savings goals
+            {m.shell_palette_goals()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/recurring' }))}>
             <Repeat />
-            Recurring payments
+            {m.shell_palette_recurring()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/wallets' }))}>
             <WalletCards />
-            Manage wallets
+            {m.shell_palette_wallets()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/rules' }))}>
             <Wand />
-            Categorisation rules
+            {m.shell_palette_rules()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/tags' }))}>
             <Tag />
-            Manage tags
+            {m.shell_palette_tags()}
           </CommandItem>
           <CommandItem onSelect={run(() => navigate({ to: '/categories' }))}>
             <Shapes />
-            Manage categories
+            {m.shell_palette_categories()}
           </CommandItem>
         </CommandGroup>
 
-        <CommandGroup heading="Theme">
+        <CommandGroup heading={m.shell_theme_title()}>
           {THEMES.map((value) => {
             const { label, icon: Icon } = THEME_OPTIONS[value]
             return (
               <CommandItem
                 key={value}
-                value={`Theme ${label} appearance`}
+                value={`${m.shell_theme_title()} ${label()} ${m.shell_theme_appearance()}`}
                 onSelect={run(() => setTheme(value))}
               >
                 <Icon />
-                {label} theme
+                {m.shell_palette_theme_item({ theme: label() })}
                 {theme === value && <Check className="ml-auto" />}
               </CommandItem>
             )
           })}
         </CommandGroup>
 
-        <CommandGroup heading="Account">
+        <CommandGroup heading={m.shell_palette_account()}>
           <CommandItem onSelect={run(() => navigate({ to: '/settings' }))}>
             <Settings />
-            Settings
+            {m.shell_nav_settings()}
           </CommandItem>
           <CommandItem onSelect={run(() => setShortcutsOpen(true))}>
             <Keyboard />
-            Keyboard shortcuts
+            {m.shell_shortcuts_title()}
           </CommandItem>
           <CommandItem onSelect={run(() => signOut())}>
             <LogOut />
-            Sign out
+            {m.shell_nav_sign_out()}
           </CommandItem>
         </CommandGroup>
       </CommandList>
@@ -405,7 +415,7 @@ export function SearchButton({
         variant="ghost"
         size="icon"
         className={cn('size-10', className)}
-        aria-label="Search"
+        aria-label={m.shell_palette_search()}
         onClick={() => setOpen(true)}
       >
         <Search className="size-5" />
@@ -419,7 +429,7 @@ export function SearchButton({
       onClick={() => setOpen(true)}
     >
       <Search />
-      Search
+      {m.shell_palette_search()}
       {isClient && (
         <kbd className="ml-auto rounded-sm border bg-muted px-1.5 font-sans text-xs">
           {formatForDisplay(PALETTE_HOTKEY)}

@@ -10,13 +10,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { setTheme, THEMES, type Theme, useTheme } from '@/lib/theme'
+import { m } from '@/paraglide/messages.js'
 
-export const THEME_OPTIONS: Record<Theme, { label: string; icon: typeof Sun }> =
+export const THEME_OPTIONS: Record<
+  Theme,
   {
-    system: { label: 'System', icon: Monitor },
-    light: { label: 'Light', icon: Sun },
-    dark: { label: 'Dark', icon: Moon },
+    label: () => string
+    icon: typeof Sun
   }
+> = {
+  system: { label: m.shell_theme_system, icon: Monitor },
+  light: { label: m.shell_theme_light, icon: Sun },
+  dark: { label: m.shell_theme_dark, icon: Moon },
+}
 
 const isTheme = (value: string): value is Theme =>
   THEMES.some((theme) => theme === value)
@@ -26,7 +32,9 @@ export function ThemeSwitch() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">Appearance</legend>
+      <legend className="mb-2 font-semibold text-lg">
+        {m.shell_theme_appearance()}
+      </legend>
       <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
         {THEMES.map((value) => {
           const { label, icon: Icon } = THEME_OPTIONS[value]
@@ -44,7 +52,7 @@ export function ThemeSwitch() {
                 className="sr-only"
               />
               <Icon className="size-4" aria-hidden="true" />
-              {label}
+              {label()}
             </label>
           )
         })}
@@ -65,15 +73,15 @@ export function ThemeMenu({ className }: { className?: string }) {
           variant="ghost"
           size="icon"
           className={className}
-          aria-label={`Theme: ${label}. Change theme`}
-          title="Theme"
+          aria-label={m.shell_theme_change({ theme: label() })}
+          title={m.shell_theme_title()}
         >
           <Icon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuLabel className="text-muted-foreground text-xs">
-          Theme
+          {m.shell_theme_title()}
         </DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={theme}
@@ -84,7 +92,7 @@ export function ThemeMenu({ className }: { className?: string }) {
             return (
               <DropdownMenuRadioItem key={value} value={value}>
                 <ItemIcon />
-                {label}
+                {label()}
               </DropdownMenuRadioItem>
             )
           })}

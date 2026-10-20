@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { m } from '@/paraglide/messages.js'
 
 // Up and down buttons for a row in a hand-ordered list (wallets, categories).
 export function MoveButtons({
@@ -22,7 +23,7 @@ export function MoveButtons({
         variant="ghost"
         size="icon"
         className="size-7"
-        aria-label={`Move ${name} up`}
+        aria-label={m.shell_move_up({ name })}
         disabled={disabled || index === 0}
         onClick={() => onMove(-1)}
       >
@@ -32,7 +33,7 @@ export function MoveButtons({
         variant="ghost"
         size="icon"
         className="size-7"
-        aria-label={`Move ${name} down`}
+        aria-label={m.shell_move_down({ name })}
         disabled={disabled || index === count - 1}
         onClick={() => onMove(1)}
       >

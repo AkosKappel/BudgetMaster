@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/drawer'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMediaQuery } from '@/hooks/use-media-query'
+import { m } from '@/paraglide/messages.js'
 import { useQuickAdd } from '@/stores/quick-add'
 
 // Bottom sheet on phones, side panel from `md` up.
@@ -36,10 +37,12 @@ export function QuickAddDrawer() {
         <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col overflow-y-auto">
           <DrawerHeader className="group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
             <DrawerTitle>
-              {editing ? 'Edit transaction' : 'Add transaction'}
+              {editing
+                ? m.shell_quick_add_edit()
+                : m.shell_nav_add_transaction()}
             </DrawerTitle>
             <DrawerDescription className="sr-only">
-              Amount, category, wallet and date.
+              {m.shell_quick_add_description()}
             </DrawerDescription>
           </DrawerHeader>
           {draft && (
@@ -66,7 +69,7 @@ export function QuickAddDrawer() {
 function FormSkeleton() {
   return (
     <div className="flex flex-col gap-4 px-4 pb-6" role="status">
-      <span className="sr-only">Loading</span>
+      <span className="sr-only">{m.shell_loading()}</span>
       <Skeleton className="h-11" />
       <Skeleton className="h-14" />
       <Skeleton className="h-24" />

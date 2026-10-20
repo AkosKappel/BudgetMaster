@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { CURRENCIES, type Currency, toCurrency } from '@/lib/currencies'
 import { currencyDigits, parseAmount } from '@/lib/money'
 import { useActiveSpace, walletsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { setBudget } from '@/server/budgets'
 import { updateSpaceSettings } from '@/server/space-admin'
 import { saveWallet } from '@/server/wallets'
@@ -27,7 +28,9 @@ export const Route = createFileRoute('/_app/welcome')({
     )
     if (wallets.length > 0) throw redirect({ to: '/' })
   },
-  head: () => ({ meta: [{ title: 'Welcome | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.shell_welcome_title()} | BudgetMaster` }],
+  }),
   component: Welcome,
 })
 
@@ -42,7 +45,9 @@ function Welcome() {
     toCurrency(space.baseCurrency),
   )
   const [startDay, setStartDay] = useState(space.budgetMonthStartDay)
-  const [walletName, setWalletName] = useState('Main account')
+  const [walletName, setWalletName] = useState<string>(() =>
+    m.shell_welcome_wallet_default(),
+  )
   const [balance, setBalance] = useState('')
   const [budget, setBudgetText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +58,7 @@ function Welcome() {
     const initialBalance = balance.trim() ? parseAmount(balance, digits) : 0
     const monthly = budget.trim() ? parseAmount(budget, digits) : null
     if (initialBalance === null || (budget.trim() && !monthly)) {
-      setError('Enter amounts as numbers, like 1250 or 1250.50.')
+      setError(m.shell_welcome_amount_error())
       return
     }
     setError(null)
@@ -86,7 +91,7 @@ function Welcome() {
       await queryClient.invalidateQueries()
       await navigate({ to: '/' })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save. Try again.')
+      setError(e instanceof Error ? e.message : m.shell_save_failed())
     } finally {
       setPending(false)
     }
@@ -95,11 +100,10 @@ function Welcome() {
   return (
     <div className="flex max-w-md flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="font-semibold text-2xl tracking-tight">Welcome</h1>
-        <p className="text-muted-foreground">
-          Three quick questions and you are ready to record your first expense.
-          You can change all of this later.
-        </p>
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.shell_welcome_title()}
+        </h1>
+        <p className="text-muted-foreground">{m.shell_welcome_intro()}</p>
       </div>
       <form
         noValidate
@@ -111,7 +115,9 @@ function Welcome() {
       >
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="welcome-currency">Currency</Label>
+            <Label htmlFor="welcome-currency">
+              {m.shell_welcome_currency()}
+            </Label>
             <select
               id="welcome-currency"
               className={selectClass}
@@ -126,7 +132,7 @@ function Welcome() {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="welcome-start">Month starts on day</Label>
+            <Label htmlFor="welcome-start">{m.shell_welcome_start_day()}</Label>
             <select
               id="welcome-start"
               className={selectClass}
@@ -146,12 +152,12 @@ function Welcome() {
           id="welcome-start-hint"
           className="-mt-3 text-muted-foreground text-sm"
         >
-          Pick your payday to budget from salary to salary.
+          {m.shell_welcome_start_hint()}
         </p>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="welcome-wallet">Your main account</Label>
+            <Label htmlFor="welcome-wallet">{m.shell_welcome_wallet()}</Label>
             <Input
               id="welcome-wallet"
               value={walletName}
@@ -160,7 +166,7 @@ function Welcome() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="welcome-balance">Its balance today</Label>
+            <Label htmlFor="welcome-balance">{m.shell_welcome_balance()}</Label>
             <Input
               id="welcome-balance"
               inputMode="decimal"
@@ -172,17 +178,17 @@ function Welcome() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="welcome-budget">Monthly budget (optional)</Label>
+          <Label htmlFor="welcome-budget">{m.shell_welcome_budget()}</Label>
           <Input
             id="welcome-budget"
             inputMode="decimal"
-            placeholder="e.g. 1400"
+            placeholder={m.shell_welcome_budget_placeholder()}
             value={budget}
             aria-describedby="welcome-budget-hint"
             onChange={(e) => setBudgetText(e.target.value)}
           />
           <p id="welcome-budget-hint" className="text-muted-foreground text-sm">
-            What you want to spend at most per month, without fixed savings.
+            {m.shell_welcome_budget_hint()}
           </p>
         </div>
 
@@ -192,13 +198,13 @@ function Welcome() {
           size="lg"
           disabled={pending || !walletName.trim()}
         >
-          {pending ? 'Setting up' : 'Start budgeting'}
+          {pending ? m.shell_welcome_setting_up() : m.shell_welcome_start()}
         </Button>
         <Link
           to="/"
           className="text-center text-muted-foreground text-sm underline-offset-4 hover:underline"
         >
-          Skip for now
+          {m.shell_welcome_skip()}
         </Link>
       </form>
     </div>

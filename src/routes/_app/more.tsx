@@ -17,9 +17,10 @@ import {
 import { useSignOut } from '@/components/auth-page'
 import { accountLabel } from '@/components/demo-banner'
 import { Button } from '@/components/ui/button'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/_app/more')({
-  head: () => ({ meta: [{ title: 'More | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: `${m.shell_nav_more()} | BudgetMaster` }] }),
   component: More,
 })
 
@@ -29,9 +30,11 @@ function More() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">More</h1>
+      <h1 className="font-semibold text-2xl tracking-tight">
+        {m.shell_nav_more()}
+      </h1>
       <section
-        aria-label="Account"
+        aria-label={m.shell_palette_account()}
         className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3"
       >
         <div className="min-w-0 flex-1">
@@ -42,7 +45,7 @@ function More() {
         </div>
         <Button variant="outline" onClick={() => signOut()}>
           <LogOut />
-          Sign out
+          {m.shell_nav_sign_out()}
         </Button>
       </section>
       <ul className="divide-y rounded-lg border bg-card">
@@ -53,9 +56,9 @@ function More() {
           >
             <Settings className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Settings</span>
+              <span className="font-medium">{m.shell_nav_settings()}</span>
               <span className="text-muted-foreground text-sm">
-                Appearance, sign-in and security, your data
+                {m.shell_more_settings_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -68,9 +71,9 @@ function More() {
           >
             <Users className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Spaces</span>
+              <span className="font-medium">{m.shell_palette_spaces()}</span>
               <span className="text-muted-foreground text-sm">
-                Shared spaces, members and invites
+                {m.shell_more_spaces_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -83,9 +86,9 @@ function More() {
           >
             <WalletCards className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Wallets</span>
+              <span className="font-medium">{m.shell_more_wallets()}</span>
               <span className="text-muted-foreground text-sm">
-                Accounts, cards, cash and their balances
+                {m.shell_more_wallets_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -98,9 +101,9 @@ function More() {
           >
             <Goal className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Goals</span>
+              <span className="font-medium">{m.shell_more_goals()}</span>
               <span className="text-muted-foreground text-sm">
-                Save towards a trip, a laptop or a safety cushion
+                {m.shell_more_goals_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -113,9 +116,9 @@ function More() {
           >
             <FileUp className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Import</span>
+              <span className="font-medium">{m.shell_more_import()}</span>
               <span className="text-muted-foreground text-sm">
-                Bring in a CSV export from your bank, with review
+                {m.shell_more_import_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -128,9 +131,9 @@ function More() {
           >
             <ChartColumn className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Reports</span>
+              <span className="font-medium">{m.shell_palette_reports()}</span>
               <span className="text-muted-foreground text-sm">
-                Income and spending month by month
+                {m.shell_more_reports_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -143,9 +146,9 @@ function More() {
           >
             <Repeat className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Recurring</span>
+              <span className="font-medium">{m.shell_more_recurring()}</span>
               <span className="text-muted-foreground text-sm">
-                Salary, rent and subscriptions, recorded automatically
+                {m.shell_more_recurring_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -158,9 +161,9 @@ function More() {
           >
             <Shapes className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Categories</span>
+              <span className="font-medium">{m.shell_more_categories()}</span>
               <span className="text-muted-foreground text-sm">
-                Names, groups, icons and colours
+                {m.shell_more_categories_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -173,9 +176,9 @@ function More() {
           >
             <Wand className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Rules</span>
+              <span className="font-medium">{m.shell_more_rules()}</span>
               <span className="text-muted-foreground text-sm">
-                Categories picked automatically by payee
+                {m.shell_more_rules_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />
@@ -188,9 +191,9 @@ function More() {
           >
             <Tag className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
-              <span className="font-medium">Tags</span>
+              <span className="font-medium">{m.shell_more_tags()}</span>
               <span className="text-muted-foreground text-sm">
-                Trips, projects and anything across categories
+                {m.shell_more_tags_hint()}
               </span>
             </span>
             <ChevronRight className="size-4 text-muted-foreground" />

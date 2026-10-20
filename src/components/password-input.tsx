@@ -2,6 +2,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { type ComponentProps, useEffect, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 
 // The toggle sits next to the <input>, not on top of it: password managers (1Password,
 // Bitwarden, LastPass, the browser's own) draw their icon inside the input's right edge, so
@@ -37,7 +38,7 @@ export function PasswordInput({
       />
       <button
         type="button"
-        aria-label={visible ? 'Hide password' : 'Show password'}
+        aria-label={visible ? m.shell_password_hide() : m.shell_password_show()}
         aria-pressed={visible}
         aria-controls={props.id}
         // Keeps focus and the caret in the input when clicked with a mouse or finger.

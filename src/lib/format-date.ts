@@ -1,5 +1,6 @@
 import { formatLocale } from '@/lib/locale'
 import { addDays } from '@/lib/recurrence'
+import { m } from '@/paraglide/messages.js'
 
 // Calendar dates are formatted in UTC, the zone they were parsed in, so a day never shifts.
 const format = (date: string, options: Intl.DateTimeFormatOptions) =>
@@ -20,9 +21,9 @@ export const formatShortDate = (date: string) =>
   })
 
 export function formatDayHeading(date: string, today: string) {
-  if (date === today) return 'Today'
-  if (date === addDays(today, -1)) return 'Yesterday'
-  if (date === addDays(today, 1)) return 'Tomorrow'
+  if (date === today) return m.shell_date_today()
+  if (date === addDays(today, -1)) return m.shell_date_yesterday()
+  if (date === addDays(today, 1)) return m.shell_date_tomorrow()
   return format(date, {
     weekday: 'long',
     day: 'numeric',

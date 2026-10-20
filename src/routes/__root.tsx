@@ -15,6 +15,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { siteOrigin } from '@/lib/site'
 import { getTheme } from '@/lib/theme'
 import { TIME_ZONE_COOKIE } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { getLocale } from '@/paraglide/runtime.js'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
@@ -48,8 +49,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: 'description',
-        content:
-          'Track income, expenses and budgets on your phone, alone or with a partner. Try the demo without signing up.',
+        content: m.shell_meta_description(),
       },
       // Link previews in chats and social posts. Pages keep their own title.
       { property: 'og:type', content: 'website' },
@@ -57,16 +57,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       { property: 'og:title', content: 'BudgetMaster' },
       {
         property: 'og:description',
-        content:
-          'Income, spending and budgets on your phone, alone or shared with a partner. Try the demo, no sign-up needed.',
+        content: m.shell_meta_og_description(),
       },
       { property: 'og:image', content: `${siteOrigin()}/og-image.png` },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
       {
         property: 'og:image:alt',
-        content:
-          'BudgetMaster logo and the line "Try the demo, no sign-up needed"',
+        content: m.shell_meta_og_image_alt(),
       },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],

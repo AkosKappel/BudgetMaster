@@ -9,17 +9,22 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { authClient } from '@/lib/auth-client'
 import { LANGUAGES } from '@/lib/locale'
 import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import { getLocale, setLocale } from '@/paraglide/runtime.js'
 
 export const Route = createFileRoute('/_app/settings')({
-  head: () => ({ meta: [{ title: 'Settings | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.shell_nav_settings()} | BudgetMaster` }],
+  }),
   component: Settings,
 })
 
 function Settings() {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">Settings</h1>
+      <h1 className="font-semibold text-2xl tracking-tight">
+        {m.shell_nav_settings()}
+      </h1>
       <ThemeSwitch />
       <Language />
       <WeekStart />
@@ -36,7 +41,9 @@ function Language() {
   const current = getLocale()
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">Language</legend>
+      <legend className="mb-2 font-semibold text-lg">
+        {m.shell_settings_language()}
+      </legend>
       <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
         {LANGUAGES.map((option) => (
           <label
@@ -61,8 +68,8 @@ function Language() {
 }
 
 const WEEK_STARTS = [
-  { value: 1, label: 'Monday' },
-  { value: 0, label: 'Sunday' },
+  { value: 1, label: m.shell_settings_monday },
+  { value: 0, label: m.shell_settings_sunday },
 ] as const
 
 function WeekStart() {
@@ -77,7 +84,7 @@ function WeekStart() {
     const { error } = await authClient.updateUser({ weekStartsOn: next })
     if (error) {
       setValue(before)
-      toast.error(error.message ?? 'Could not save. Try again.')
+      toast.error(error.message ?? m.shell_save_failed())
       return
     }
     await queryClient.invalidateQueries(sessionQuery)
@@ -90,7 +97,9 @@ function WeekStart() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">Week starts on</legend>
+      <legend className="mb-2 font-semibold text-lg">
+        {m.shell_settings_week_starts()}
+      </legend>
       <div className="grid w-full max-w-sm grid-cols-2 gap-1 rounded-lg bg-muted p-1">
         {WEEK_STARTS.map((option) => (
           <label
@@ -105,7 +114,7 @@ function WeekStart() {
               onChange={() => change(option.value)}
               className="sr-only"
             />
-            {option.label}
+            {option.label()}
           </label>
         ))}
       </div>
@@ -128,7 +137,7 @@ function AiFeatures() {
     const { error } = await authClient.updateUser({ aiEnabled: next })
     if (error) {
       setEnabled(!next)
-      toast.error(error.message ?? 'Could not save. Try again.')
+      toast.error(error.message ?? m.shell_save_failed())
       return
     }
     // The quick add form asks the server whether to offer reading receipts.
@@ -138,7 +147,9 @@ function AiFeatures() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">AI features</legend>
+      <legend className="mb-2 font-semibold text-lg">
+        {m.shell_settings_ai()}
+      </legend>
       <label className="flex max-w-prose items-start gap-2 text-sm">
         <input
           type="checkbox"
@@ -147,12 +158,9 @@ function AiFeatures() {
           className="mt-0.5"
         />
         <span>
-          Read receipt photos with Claude
+          {m.shell_settings_ai_receipts()}
           <span className="block text-muted-foreground">
-            When you tap "Fill in from photo", that photo and the names of your
-            expense categories are sent to Anthropic's Claude API to read the
-            total, date and shop. Nothing else is sent, and nothing is sent
-            unless you tap it.
+            {m.shell_settings_ai_receipts_hint()}
           </span>
         </span>
       </label>

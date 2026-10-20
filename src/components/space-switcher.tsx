@@ -12,6 +12,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useActiveSpace, useSpaces, useSwitchSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
+
+const ROLE_LABELS: Record<string, () => string> = {
+  owner: m.shell_role_owner,
+  editor: m.shell_role_editor,
+  viewer: m.shell_role_viewer,
+}
 
 export function SpaceSwitcher({
   className,
@@ -36,7 +43,7 @@ export function SpaceSwitcher({
             compact && 'justify-center px-0',
             className,
           )}
-          aria-label={`Space: ${active.name}. Switch space`}
+          aria-label={m.shell_space_label({ name: active.name })}
           title={compact ? active.name : undefined}
           disabled={pendingId !== null}
         >
@@ -51,7 +58,7 @@ export function SpaceSwitcher({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         <DropdownMenuLabel className="text-muted-foreground text-xs">
-          Spaces
+          {m.shell_palette_spaces()}
         </DropdownMenuLabel>
         {spaces.map((s) => {
           const Icon = s.personal ? User : Users
@@ -66,8 +73,11 @@ export function SpaceSwitcher({
                 <span className="truncate">{s.name}</span>
                 <span className="text-muted-foreground text-xs">
                   {s.personal
-                    ? 'Only you'
-                    : `${s.memberCount} members, you are ${s.role}`}
+                    ? m.shell_space_only_you()
+                    : m.shell_space_members({
+                        count: s.memberCount,
+                        role: ROLE_LABELS[s.role]?.() ?? s.role,
+                      })}
                 </span>
               </span>
               {s.id === active.id && <Check className="ml-auto" />}
@@ -78,7 +88,7 @@ export function SpaceSwitcher({
         <DropdownMenuItem asChild className="gap-3 py-2">
           <Link to="/spaces">
             <Settings2 />
-            Manage spaces
+            {m.shell_space_manage()}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

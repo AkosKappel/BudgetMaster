@@ -7,6 +7,7 @@ import {
 import { CircleAlert, SearchX } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { m } from '@/paraglide/messages.js'
 
 function StatusPage({
   icon: Icon,
@@ -32,10 +33,8 @@ export function RouteError({ error }: ErrorComponentProps) {
   console.error(error)
 
   return (
-    <StatusPage icon={CircleAlert} title="Something went wrong">
-      <p className="text-muted-foreground text-sm">
-        This page could not be loaded. Your data is safe; try again in a moment.
-      </p>
+    <StatusPage icon={CircleAlert} title={m.shell_error_title()}>
+      <p className="text-muted-foreground text-sm">{m.shell_error_body()}</p>
       <div className="flex gap-2">
         <Button
           onClick={() => {
@@ -44,10 +43,10 @@ export function RouteError({ error }: ErrorComponentProps) {
             router.invalidate()
           }}
         >
-          Try again
+          {m.shell_error_retry()}
         </Button>
         <Button variant="outline" asChild>
-          <Link to="/">Go home</Link>
+          <Link to="/">{m.shell_go_home()}</Link>
         </Button>
       </div>
     </StatusPage>
@@ -56,12 +55,12 @@ export function RouteError({ error }: ErrorComponentProps) {
 
 export function NotFound() {
   return (
-    <StatusPage icon={SearchX} title="Page not found">
+    <StatusPage icon={SearchX} title={m.shell_not_found_title()}>
       <p className="text-muted-foreground text-sm">
-        The link may be old, or the page was moved.
+        {m.shell_not_found_body()}
       </p>
       <Button asChild>
-        <Link to="/">Go home</Link>
+        <Link to="/">{m.shell_go_home()}</Link>
       </Button>
     </StatusPage>
   )

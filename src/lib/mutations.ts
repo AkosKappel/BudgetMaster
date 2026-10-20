@@ -10,6 +10,7 @@ import { notifyOtherTabs } from '@/components/app-sync'
 
 import { haptic } from '@/lib/haptics'
 import { overviewQuery, transactionsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import type { LedgerTransaction, TransactionCursor } from '@/server/ledger'
 import {
   createTransaction,
@@ -145,16 +146,23 @@ export function useSaveTransaction(spaceId: string) {
         overviewQuery(spaceId).queryKey,
         previous?.overview,
       )
-      toast.error(error.message || 'Could not save. Try again.')
+      toast.error(error.message || m.shell_save_failed())
     },
     onSuccess: (_result, { mode, optimistic }) => {
-      const kind =
+      const created = mode === 'create'
+      const message =
         optimistic.type === 'transfer'
-          ? 'Transfer'
+          ? created
+            ? m.shell_toast_transfer_saved()
+            : m.shell_toast_transfer_updated()
           : optimistic.type === 'income'
-            ? 'Income'
-            : 'Expense'
-      toast.success(`${kind} ${mode === 'create' ? 'saved' : 'updated'}`)
+            ? created
+              ? m.shell_toast_income_saved()
+              : m.shell_toast_income_updated()
+            : created
+              ? m.shell_toast_expense_saved()
+              : m.shell_toast_expense_updated()
+      toast.success(message)
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: spaceKey }),
   })
@@ -188,7 +196,7 @@ export function useDeleteWithUndo(spaceId: string) {
       deleteTransaction({ data: { spaceId, id: row.id } })
         .catch((error: Error) => {
           restore()
-          toast.error(error.message || 'Could not delete. Try again.')
+          toast.error(error.message || m.shell_delete_failed())
         })
         .finally(() => {
           queryClient.invalidateQueries({ queryKey: ['space', spaceId] })
@@ -198,11 +206,11 @@ export function useDeleteWithUndo(spaceId: string) {
     }
 
     haptic('delete')
-    toast('Transaction deleted', {
+    toast(m.shell_toast_deleted(), {
       description: row.payee ?? row.category?.name ?? undefined,
       duration: 5000,
       action: {
-        label: 'Undo',
+        label: m.shell_toast_undo(),
         onClick: () => {
           undone = true
           restore()

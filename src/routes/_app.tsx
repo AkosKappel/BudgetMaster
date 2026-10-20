@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formOptionsQuery, sessionQuery, spacesQuery } from '@/lib/queries'
 import { getSidebarCollapsed, saveSidebarCollapsed } from '@/lib/sidebar'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
@@ -29,7 +30,7 @@ export const Route = createFileRoute('/_app')({
       throw redirect({ to: '/sign-in', search: { redirect: location.href } })
     }
     const { activeId } = await context.queryClient.ensureQueryData(spacesQuery)
-    if (!activeId) throw new Error('This account has no space.')
+    if (!activeId) throw new Error(m.shell_app_no_space())
     return {
       user: session.user,
       activeSpaceId: activeId,
@@ -90,7 +91,7 @@ function AppShell() {
 function PageSkeleton() {
   return (
     <div className="flex flex-col gap-4" role="status" aria-busy="true">
-      <span className="sr-only">Loading</span>
+      <span className="sr-only">{m.shell_loading()}</span>
       <Skeleton className="h-40 rounded-xl" />
       <Skeleton className="h-6 w-32" />
       {[0, 1, 2, 3].map((i) => (

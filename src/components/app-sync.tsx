@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { haptic } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 
 // One channel per tab: a channel never receives its own messages, so a tab does not
 // refetch for its own changes (the mutation already did).
@@ -80,7 +81,7 @@ export function OfflineNotice() {
         className="size-4 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
-      You are offline. Saving waits until the connection is back.
+      {m.shell_sync_offline()}
     </p>
   )
 }
@@ -144,7 +145,7 @@ export function PullToRefresh() {
           aria-hidden="true"
         />
         <span className="sr-only">
-          {refreshing ? 'Refreshing' : 'Release to refresh'}
+          {refreshing ? m.shell_sync_refreshing() : m.shell_sync_release()}
         </span>
       </span>
     </div>

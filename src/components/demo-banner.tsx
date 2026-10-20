@@ -1,6 +1,8 @@
 import { Link, useRouteContext } from '@tanstack/react-router'
 import { FlaskConical } from 'lucide-react'
 
+import { m } from '@/paraglide/messages.js'
+
 // Shown to "Try the demo" visitors: their data is temporary until they sign up.
 export function DemoBanner() {
   const { user } = useRouteContext({ from: '/_app' })
@@ -14,9 +16,9 @@ export function DemoBanner() {
     <div className="mb-4 flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm print:hidden">
       <FlaskConical className="size-4 shrink-0 text-muted-foreground" />
       <p className="min-w-0 flex-1">
-        Demo data, deleted in {hours} h.{' '}
+        {m.shell_demo_banner({ hours })}{' '}
         <Link to="/sign-up" className="font-medium underline">
-          Sign up to keep it
+          {m.shell_demo_sign_up()}
         </Link>
       </p>
     </div>
@@ -26,4 +28,4 @@ export function DemoBanner() {
 export const accountLabel = (user: {
   email: string
   demoExpiresAt: string | null
-}) => (user.demoExpiresAt ? 'Temporary demo account' : user.email)
+}) => (user.demoExpiresAt ? m.shell_demo_account() : user.email)

@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { m } from '@/paraglide/messages.js'
 import { useShortcutsHelp } from '@/stores/command-palette'
 
 export function ShortcutsHelp() {
@@ -16,9 +17,9 @@ export function ShortcutsHelp() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Keyboard shortcuts</DialogTitle>
+          <DialogTitle>{m.shell_shortcuts_title()}</DialogTitle>
           <DialogDescription>
-            Single keys work when you are not typing in a field.
+            {m.shell_shortcuts_description()}
           </DialogDescription>
         </DialogHeader>
         <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
@@ -29,7 +30,7 @@ export function ShortcutsHelp() {
                   {keys === 'Shift+/' ? '?' : formatForDisplay(keys)}
                 </kbd>
               </dt>
-              <dd className="text-muted-foreground">{action}</dd>
+              <dd className="text-muted-foreground">{action()}</dd>
             </div>
           ))}
         </dl>

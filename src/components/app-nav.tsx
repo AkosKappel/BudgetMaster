@@ -24,19 +24,20 @@ import { Button } from '@/components/ui/button'
 import { snappySpring } from '@/lib/motion'
 import { useCanWrite } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import { useQuickAdd } from '@/stores/quick-add'
 
 interface NavItem {
   to: '/' | '/activity' | '/budgets' | '/more'
-  label: string
+  label: () => string
   icon: LucideIcon
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Home', icon: House },
-  { to: '/activity', label: 'Activity', icon: ReceiptText },
-  { to: '/budgets', label: 'Budgets', icon: Gauge },
-  { to: '/more', label: 'More', icon: Ellipsis },
+  { to: '/', label: m.shell_nav_home, icon: House },
+  { to: '/activity', label: m.shell_nav_activity, icon: ReceiptText },
+  { to: '/budgets', label: m.shell_nav_budgets, icon: Gauge },
+  { to: '/more', label: m.shell_nav_more, icon: Ellipsis },
 ]
 
 function TabLink({ to, label, icon: Icon }: NavItem) {
@@ -56,7 +57,7 @@ function TabLink({ to, label, icon: Icon }: NavItem) {
             />
           )}
           <Icon className="size-5" strokeWidth={isActive ? 2.25 : 1.75} />
-          {label}
+          {label()}
         </>
       )}
     </Link>
@@ -70,7 +71,7 @@ export function TabBar() {
 
   return (
     <nav
-      aria-label="Main"
+      aria-label={m.shell_nav_main()}
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden print:hidden"
     >
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5">
@@ -85,7 +86,7 @@ export function TabBar() {
               type="button"
               onClick={() => openNew()}
               whileTap={{ scale: 0.9 }}
-              aria-label="Add transaction"
+              aria-label={m.shell_nav_add_transaction()}
               className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] shadow-primary/40 outline-none ring-4 ring-background focus-visible:ring-ring"
             >
               <Plus className="size-6" strokeWidth={2.25} />
@@ -125,7 +126,7 @@ export function Sidebar({
     >
       <Link
         to="/"
-        aria-label={collapsed ? 'BudgetMaster, home' : undefined}
+        aria-label={collapsed ? m.shell_nav_logo_home() : undefined}
         className="rounded-md px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {collapsed ? <LogoMark /> : <Logo />}
@@ -138,26 +139,29 @@ export function Sidebar({
         <Button
           size="icon-lg"
           onClick={() => openNew()}
-          aria-label="Add transaction"
-          title="Add transaction"
+          aria-label={m.shell_nav_add_transaction()}
+          title={m.shell_nav_add_transaction()}
         >
           <Plus />
         </Button>
       ) : (
         <Button size="lg" onClick={() => openNew()} className="justify-start">
           <Plus />
-          Add transaction
+          {m.shell_nav_add_transaction()}
         </Button>
       )}
       <SearchButton className="-mt-5" compact={collapsed} />
-      <nav aria-label="Main" className={cn(collapsed && 'w-full')}>
+      <nav
+        aria-label={m.shell_nav_main()}
+        className={cn(collapsed && 'w-full')}
+      >
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <li key={to}>
               <Link
                 to={to}
                 activeOptions={{ exact: true }}
-                title={collapsed ? label : undefined}
+                title={collapsed ? label() : undefined}
                 className={cn(
                   'relative isolate flex h-10 items-center gap-3 rounded-md px-3 text-muted-foreground text-sm outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[status=active]:font-medium data-[status=active]:text-foreground',
                   collapsed && 'justify-center px-0',
@@ -173,7 +177,9 @@ export function Sidebar({
                       />
                     )}
                     <Icon className="size-4" />
-                    <span className={cn(collapsed && 'sr-only')}>{label}</span>
+                    <span className={cn(collapsed && 'sr-only')}>
+                      {label()}
+                    </span>
                   </>
                 )}
               </Link>
@@ -197,7 +203,11 @@ export function Sidebar({
         )}
         <ThemeMenu />
         <Button variant="ghost" size="icon" asChild>
-          <Link to="/settings" aria-label="Settings" title="Settings">
+          <Link
+            to="/settings"
+            aria-label={m.shell_nav_settings()}
+            title={m.shell_nav_settings()}
+          >
             <Settings />
           </Link>
         </Button>
@@ -205,8 +215,12 @@ export function Sidebar({
           variant="ghost"
           size="icon"
           onClick={() => signOut()}
-          aria-label="Sign out"
-          title={collapsed ? `Sign out ${user.name}` : undefined}
+          aria-label={m.shell_nav_sign_out()}
+          title={
+            collapsed
+              ? m.shell_nav_sign_out_user({ name: user.name })
+              : undefined
+          }
         >
           <LogOut />
         </Button>
@@ -214,10 +228,14 @@ export function Sidebar({
           variant="ghost"
           size="icon"
           onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={
+            collapsed
+              ? m.shell_nav_expand_sidebar()
+              : m.shell_nav_collapse_sidebar()
+          }
           aria-controls="sidebar"
           aria-expanded={!collapsed}
-          title={`${collapsed ? 'Expand' : 'Collapse'} sidebar (${formatForDisplay(SIDEBAR_HOTKEY)})`}
+          title={`${collapsed ? m.shell_nav_expand_sidebar() : m.shell_nav_collapse_sidebar()} (${formatForDisplay(SIDEBAR_HOTKEY)})`}
         >
           {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
         </Button>
