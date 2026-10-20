@@ -68,7 +68,7 @@
   "pub_faq_bank_q": "Pripojí sa k mojej banke?",
   "pub_faq_bank_a": "Nie. Transakcie zapisuješ sám; vďaka rýchlemu pridaniu, zapamätaným príjemcom a pravidelným platbám to trvá pár sekúnd. Export z banky v CSV sa dá importovať, s kontrolou každého riadku.",
   "pub_faq_currency_q": "Môžem používať viac mien?",
-  "pub_faq_currency_a": "Každý účet má vlastnú menu a prevody medzi menami zapíšu obe sumy. Súčty a rozpočty počítajú len účty v mene kasy, kým nepribudnú kurzy.",
+  "pub_faq_currency_a": "Každý účet má vlastnú menu a prevody medzi menami zapíšu obe sumy. Súčty, rozpočty a prehľady prepočítajú ostatné meny na menu kasy dennými referenčnými kurzami Európskej centrálnej banky.",
   "pub_faq_share_q": "Môžem ju zdieľať s partnerom?",
   "pub_faq_share_a": "Áno. Vytvor spoločnú kasu v časti Viac, Kasy a pošli odkaz s pozvánkou. Každý si popri nej ponechá vlastnú osobnú kasu.",
   "pub_faq_split_q": "Niektoré veci platíme z vlastného. Vie rozdeliť náklady?",

@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, between, eq, isNull, sql, sum } from 'drizzle-orm'
+import { and, between, eq, isNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
@@ -9,6 +9,8 @@ import { currentDay } from '@/lib/today'
 import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { categoryLines } from '@/server/category-lines'
+import { sumConverted } from '@/server/convert'
+import { ensureExchangeRates } from '@/server/exchange-rates'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
@@ -17,15 +19,17 @@ const daysInRange = (start: string, end: string) =>
   Math.round((Date.parse(end) - Date.parse(start)) / 86_400_000) + 1
 
 // Expenses per category and per day for one budget month, the budgets, and the previous
-// month for comparison. Only wallets in the space currency count until exchange rates
-// exist (I-05). `offset` 0 is the current budget month, -1 the one before, and so on.
+// month for comparison. Other currencies count at the day's exchange rate (I-05). `offset` 0 is the current budget month, -1 the one before, and so on.
 export const getBudgetReport = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput.extend({ offset: z.int().min(-36).max(0) }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const startDay = space.budgetMonthStartDay
     const current = budgetPeriod(today, startDay)
     const period = budgetPeriod(addMonths(current.start, data.offset), startDay)
@@ -40,7 +44,6 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       and(
         eq(transaction.spaceId, space.id),
         eq(transaction.type, type),
-        eq(wallet.currency, space.baseCurrency),
         between(transaction.date, from, to),
       )
     const expensesIn = (from: string, to: string) =>
@@ -51,7 +54,12 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       db
         .select({
           categoryId: categoryLines.categoryId,
-          total: sum(categoryLines.amount).mapWith(Number),
+          total: sumConverted(
+            categoryLines.amount,
+            wallet.currency,
+            space.baseCurrency,
+            categoryLines.date,
+          ),
         })
         .from(categoryLines)
         .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
@@ -59,7 +67,6 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
           and(
             eq(categoryLines.spaceId, space.id),
             eq(categoryLines.type, 'expense'),
-            eq(wallet.currency, space.baseCurrency),
             between(categoryLines.date, from, to),
           ),
         )
@@ -78,7 +85,12 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       db
         .select({
           date: transaction.date,
-          total: sum(transaction.amount).mapWith(Number),
+          total: sumConverted(
+            transaction.amount,
+            wallet.currency,
+            space.baseCurrency,
+            transaction.date,
+          ),
         })
         .from(transaction)
         .innerJoin(wallet, eq(wallet.id, transaction.walletId))
@@ -108,7 +120,14 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
         .from(budget)
         .where(eq(budget.spaceId, space.id)),
       db
-        .select({ total: sum(transaction.amount).mapWith(Number) })
+        .select({
+          total: sumConverted(
+            transaction.amount,
+            wallet.currency,
+            space.baseCurrency,
+            transaction.date,
+          ),
+        })
         .from(transaction)
         .innerJoin(wallet, eq(wallet.id, transaction.walletId))
         .where(movementsIn('income', period.start, asOf)),

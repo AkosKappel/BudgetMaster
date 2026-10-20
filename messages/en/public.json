@@ -68,7 +68,7 @@
   "pub_faq_bank_q": "Does it connect to my bank?",
   "pub_faq_bank_a": "No. You record transactions yourself; quick add, payee memory and recurring payments keep that to a few seconds. A CSV export from your bank can be imported, with a review of every row.",
   "pub_faq_currency_q": "Can I use several currencies?",
-  "pub_faq_currency_a": "Each wallet has its own currency, and transfers between currencies record both amounts. Totals and budgets count wallets in the space currency only, until exchange rates are added.",
+  "pub_faq_currency_a": "Each wallet has its own currency, and transfers between currencies record both amounts. Totals, budgets and reports convert other currencies into the space currency with the European Central Bank's daily reference rates.",
   "pub_faq_share_q": "Can I share it with my partner?",
   "pub_faq_share_a": "Yes. Create a shared space under More, Spaces and send an invite link. Everyone keeps their own personal space next to it.",
   "pub_faq_split_q": "We pay for some things ourselves. Can it split costs?",

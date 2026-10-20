@@ -8,6 +8,8 @@ import { memberBalances, settleUp } from '@/lib/balances'
 import { currentDay } from '@/lib/today'
 import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
+import { converted } from '@/server/convert'
+import { ensureExchangeRates } from '@/server/exchange-rates'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
 
@@ -20,24 +22,41 @@ const membersOf = (spaceId: string) =>
     .orderBy(asc(spaceMember.createdAt))
 
 // Balances between the members of a shared space and the payments that would clear them.
-// Like budgets, only wallets in the space currency count until exchange rates exist (I-05).
+// Like budgets, other currencies count at the day's exchange rate (I-05).
 export const getBalances = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
+    await ensureExchangeRates()
     const [members, expenses, settlements] = await Promise.all([
       membersOf(space.id),
       db
-        .select({ paidBy: transaction.paidBy, amount: transaction.amount })
+        .select({
+          paidBy: transaction.paidBy,
+          // Other currencies at the day's rate (I-05); without one the expense stays out.
+          amount: converted(
+            transaction.amount,
+            wallet.currency,
+            space.baseCurrency,
+            transaction.date,
+          ).mapWith(Number),
+        })
         .from(transaction)
         .innerJoin(wallet, eq(wallet.id, transaction.walletId))
         .where(
           and(
             eq(transaction.spaceId, space.id),
             eq(transaction.type, 'expense'),
-            eq(wallet.currency, space.baseCurrency),
             isNotNull(transaction.paidBy),
+            isNotNull(
+              converted(
+                transaction.amount,
+                wallet.currency,
+                space.baseCurrency,
+                transaction.date,
+              ),
+            ),
           ),
         ),
       db

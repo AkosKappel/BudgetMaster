@@ -19,7 +19,7 @@ export const transactionFiltersSchema = z.object({
   tag: optional(z.uuid()),
   from: optional(z.iso.date()),
   to: optional(z.iso.date()),
-  // Whole amounts in the space currency, as people type them: min=50, not 5000 cents.
+  // Whole amounts in each wallet's own currency, as people type them: min=50, not 5000 cents.
   min: optional(z.number().nonnegative()),
   max: optional(z.number().nonnegative()),
 })

@@ -1,15 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import {
-  and,
-  between,
-  eq,
-  gt,
-  inArray,
-  isNotNull,
-  lte,
-  sql,
-  sum,
-} from 'drizzle-orm'
+import { and, between, eq, gt, inArray, isNotNull, lte, sql } from 'drizzle-orm'
 
 import { z } from 'zod'
 
@@ -18,6 +8,7 @@ import { category, recurringRule, transaction, wallet } from '@/db/schema'
 import {
   changeFor,
   type ForecastEvent,
+  type Movement,
   projectBalance,
   ruleDates,
 } from '@/lib/forecast'
@@ -33,6 +24,8 @@ import { yearReview } from '@/lib/year-review'
 import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { categoryLines } from '@/server/category-lines'
+import { converted, rateConverter, sumConverted } from '@/server/convert'
+import { ensureExchangeRates } from '@/server/exchange-rates'
 import { requireMembership } from '@/server/membership'
 import { createDueTransactions } from '@/server/recurring-due'
 import { spaceInput } from '@/server/spaces'
@@ -40,15 +33,18 @@ import { walletBalances } from '@/server/wallet-balances'
 
 const MONTHS = 12
 
-// Income and expenses per budget month for the last year, oldest first. Like budgets,
-// it counts wallets in the space currency only (I-05) and leaves transfers out.
+// Income and expenses per budget month for the last year, oldest first. Like budgets, other
+// currencies count at the day's exchange rate (I-05); transfers are left out.
 export const getCashFlow = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
 
     const periods = [budgetPeriod(today, space.budgetMonthStartDay)]
     while (periods.length < MONTHS) {
@@ -62,14 +58,18 @@ export const getCashFlow = createServerFn({ method: 'GET' })
       .select({
         date: transaction.date,
         type: transaction.type,
-        total: sum(transaction.amount).mapWith(Number),
+        total: sumConverted(
+          transaction.amount,
+          wallet.currency,
+          space.baseCurrency,
+          transaction.date,
+        ),
       })
       .from(transaction)
       .innerJoin(wallet, eq(wallet.id, transaction.walletId))
       .where(
         and(
           eq(transaction.spaceId, space.id),
-          eq(wallet.currency, space.baseCurrency),
           inArray(transaction.type, ['income', 'expense']),
           between(transaction.date, periods[0].start, today),
         ),
@@ -93,25 +93,35 @@ export const getCashFlow = createServerFn({ method: 'GET' })
 
 export type CashFlow = Awaited<ReturnType<typeof getCashFlow>>
 
-// Total balance of the space-currency wallets (archived ones too: money does not vanish
-// when a wallet is hidden) at the end of each of the last 12 budget months, and today.
+// Total balance of all wallets (archived ones too: money does not vanish when a wallet is
+// hidden) at the end of each of the last 12 budget months, and today. Each wallet's balance
+// on a day is valued at that day's exchange rate (I-05); a currency without a rate is left
+// out.
 export const getNetWorth = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
-    const inBase = and(
-      eq(wallet.spaceId, space.id),
-      eq(wallet.currency, space.baseCurrency),
-    )
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
+    const inSpace = eq(wallet.spaceId, space.id)
 
     const [wallets, outgoing, incoming] = await Promise.all([
-      db.select({ initial: wallet.initialBalance }).from(wallet).where(inBase),
+      db
+        .select({
+          id: wallet.id,
+          currency: wallet.currency,
+          initial: wallet.initialBalance,
+        })
+        .from(wallet)
+        .where(inSpace),
       // Income adds, expenses and outgoing transfers subtract.
       db
         .select({
+          walletId: transaction.walletId,
           date: transaction.date,
           change:
             sql<number>`sum(case when ${transaction.type} = 'income' then ${transaction.amount} else -${transaction.amount} end)`.mapWith(
@@ -120,11 +130,12 @@ export const getNetWorth = createServerFn({ method: 'GET' })
         })
         .from(transaction)
         .innerJoin(wallet, eq(wallet.id, transaction.walletId))
-        .where(and(inBase, lte(transaction.date, today)))
-        .groupBy(transaction.date),
+        .where(and(inSpace, lte(transaction.date, today)))
+        .groupBy(transaction.walletId, transaction.date),
       // Incoming transfers add their target amount.
       db
         .select({
+          walletId: sql<string>`${transaction.toWalletId}`,
           date: transaction.date,
           change:
             sql<number>`sum(coalesce(${transaction.toAmount}, ${transaction.amount}))`.mapWith(
@@ -133,18 +144,9 @@ export const getNetWorth = createServerFn({ method: 'GET' })
         })
         .from(transaction)
         .innerJoin(wallet, eq(wallet.id, transaction.toWalletId))
-        .where(and(inBase, lte(transaction.date, today)))
-        .groupBy(transaction.date),
+        .where(and(inSpace, lte(transaction.date, today)))
+        .groupBy(transaction.toWalletId, transaction.date),
     ])
-
-    const changes = [...outgoing, ...incoming].sort((a, b) =>
-      a.date.localeCompare(b.date),
-    )
-    const start = wallets.reduce((sum, w) => sum + w.initial, 0)
-    const balanceOn = (date: string) =>
-      changes
-        .filter((c) => c.date <= date)
-        .reduce((sum, c) => sum + c.change, start)
 
     const ends = [today]
     let period = budgetPeriod(today, space.budgetMonthStartDay)
@@ -153,6 +155,21 @@ export const getNetWorth = createServerFn({ method: 'GET' })
       ends.unshift(previousEnd)
       period = budgetPeriod(previousEnd, space.budgetMonthStartDay)
     }
+
+    const convert = await rateConverter(
+      space.baseCurrency,
+      wallets.map((w) => w.currency),
+      ends,
+    )
+    const changes = [...outgoing, ...incoming]
+    const balanceOn = (date: string) =>
+      wallets.reduce((total, w) => {
+        const own = changes
+          .filter((c) => c.walletId === w.id && c.date <= date)
+          .reduce((sum, c) => sum + c.change, w.initial)
+        return total + (convert(own, w.currency, date) ?? 0)
+      }, 0)
+
     return {
       points: ends.map((date) => ({ date, balance: balanceOn(date) })),
       currency: space.baseCurrency,
@@ -169,7 +186,10 @@ export const getSpendingCalendar = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const weekday =
       (new Date(`${today}T00:00:00Z`).getUTCDay() -
         context.user.weekStartsOn +
@@ -180,14 +200,18 @@ export const getSpendingCalendar = createServerFn({ method: 'GET' })
     const rows = await db
       .select({
         date: transaction.date,
-        total: sum(transaction.amount).mapWith(Number),
+        total: sumConverted(
+          transaction.amount,
+          wallet.currency,
+          space.baseCurrency,
+          transaction.date,
+        ),
       })
       .from(transaction)
       .innerJoin(wallet, eq(wallet.id, transaction.walletId))
       .where(
         and(
           eq(transaction.spaceId, space.id),
-          eq(wallet.currency, space.baseCurrency),
           eq(transaction.type, 'expense'),
           between(transaction.date, from, today),
         ),
@@ -213,7 +237,10 @@ export const getCategoryTrends = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const periods = [budgetPeriod(today, space.budgetMonthStartDay)]
     while (periods.length < TREND_MONTHS) {
       periods.unshift(
@@ -237,14 +264,18 @@ export const getCategoryTrends = createServerFn({ method: 'GET' })
         .select({
           categoryId: categoryLines.categoryId,
           date: categoryLines.date,
-          total: sum(categoryLines.amount).mapWith(Number),
+          total: sumConverted(
+            categoryLines.amount,
+            wallet.currency,
+            space.baseCurrency,
+            categoryLines.date,
+          ),
         })
         .from(categoryLines)
         .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
         .where(
           and(
             eq(categoryLines.spaceId, space.id),
-            eq(wallet.currency, space.baseCurrency),
             inArray(categoryLines.type, ['income', 'expense']),
             between(categoryLines.date, periods[0].start, today),
           ),
@@ -287,16 +318,20 @@ export type CategoryTrends = Awaited<ReturnType<typeof getCategoryTrends>>
 
 const FORECAST_DAYS = 90
 
-// Balance of the space-currency wallets for the next 90 days: today's balance plus the
-// payments recurring rules will make and transactions already entered for later dates.
-// Everyday spending is not guessed, so the line is what is certain, not a prediction.
+// Balance of all wallets in the space currency (today's rates) for the next 90 days: today's
+// balance plus the payments recurring rules will make and transactions already entered for
+// later dates. Everyday spending is not guessed, so the line is what is certain, not a
+// prediction.
 export const getForecast = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(spaceInput)
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const until = addDays(today, FORECAST_DAYS)
 
     const [wallets, rules, planned] = await Promise.all([
@@ -317,8 +352,29 @@ export const getForecast = createServerFn({ method: 'GET' })
         with: { category: { columns: { name: true } } },
       }),
     ])
-    const inBase = wallets.filter((w) => w.currency === space.baseCurrency)
-    const ids = new Set(inBase.map((w) => w.id))
+    // Today's rates: a wallet in another currency counts at its value today, and so do its
+    // future payments. A currency without a rate stays out.
+    const convert = await rateConverter(
+      space.baseCurrency,
+      wallets.map((w) => w.currency),
+      [today],
+    )
+    const currencyOf = new Map(wallets.map((w) => [w.id, w.currency]))
+    const counted = wallets.filter(
+      (w) => convert(0, w.currency, today) !== null,
+    )
+    const ids = new Set(counted.map((w) => w.id))
+    const inBase = (amount: number, walletId: string | null) =>
+      walletId && ids.has(walletId)
+        ? (convert(amount, currencyOf.get(walletId) ?? '', today) ?? 0)
+        : 0
+    const valued = <T extends Movement>(item: T): T => ({
+      ...item,
+      amount: inBase(item.amount, item.walletId),
+      toAmount: item.toWalletId
+        ? inBase(item.toAmount ?? item.amount, item.toWalletId)
+        : null,
+    })
     const label = (item: {
       payee: string | null
       category: { name: string } | null
@@ -330,20 +386,20 @@ export const getForecast = createServerFn({ method: 'GET' })
           id: `${rule.id}-${date}`,
           date,
           label: label(rule),
-          change: changeFor(rule, ids),
+          change: changeFor(valued(rule), ids),
         })),
       ),
       ...planned.map((t) => ({
         id: t.id,
         date: t.date,
         label: label(t),
-        change: changeFor(t, ids),
+        change: changeFor(valued(t), ids),
       })),
     ]
       .filter((e) => e.change !== 0)
       .sort((a, b) => a.date.localeCompare(b.date))
 
-    const balance = inBase.reduce((sum, w) => sum + w.balance, 0)
+    const balance = counted.reduce((sum, w) => sum + inBase(w.balance, w.id), 0)
     return {
       ...projectBalance(balance, today, FORECAST_DAYS, events),
       events,
@@ -360,7 +416,10 @@ export const getPriceChanges = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const purchases = await db
       .select({
         date: transaction.date,
@@ -383,7 +442,7 @@ export const getPriceChanges = createServerFn({ method: 'GET' })
 
 export type PriceChanges = Awaited<ReturnType<typeof getPriceChanges>>
 
-// One calendar year in a few numbers (I-14), space-currency wallets only, plus the years
+// One calendar year in a few numbers (I-14), other currencies converted, plus the years
 // that have transactions so the page can offer them.
 export const getYearReview = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
@@ -391,13 +450,21 @@ export const getYearReview = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const [rows, [range], [topCategory]] = await Promise.all([
       db
         .select({
           date: transaction.date,
           type: sql<'income' | 'expense'>`${transaction.type}`,
-          amount: transaction.amount,
+          amount: converted(
+            transaction.amount,
+            wallet.currency,
+            space.baseCurrency,
+            transaction.date,
+          ).mapWith(Number),
           payee: transaction.payee,
           category: category.name,
         })
@@ -407,8 +474,8 @@ export const getYearReview = createServerFn({ method: 'GET' })
         .where(
           and(
             eq(transaction.spaceId, space.id),
-            eq(wallet.currency, space.baseCurrency),
             inArray(transaction.type, ['income', 'expense']),
+            sql`${converted(transaction.amount, wallet.currency, space.baseCurrency, transaction.date)} is not null`,
             between(
               transaction.date,
               `${data.year}-01-01`,
@@ -427,7 +494,12 @@ export const getYearReview = createServerFn({ method: 'GET' })
       db
         .select({
           name: category.name,
-          total: sum(categoryLines.amount).mapWith(Number),
+          total: sumConverted(
+            categoryLines.amount,
+            wallet.currency,
+            space.baseCurrency,
+            categoryLines.date,
+          ),
           count: sql<number>`count(*)`.mapWith(Number),
         })
         .from(categoryLines)
@@ -436,7 +508,6 @@ export const getYearReview = createServerFn({ method: 'GET' })
         .where(
           and(
             eq(categoryLines.spaceId, space.id),
-            eq(wallet.currency, space.baseCurrency),
             eq(categoryLines.type, 'expense'),
             between(
               categoryLines.date,
@@ -473,7 +544,10 @@ export const getInsights = createServerFn({ method: 'GET' })
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
     const today = currentDay()
-    await createDueTransactions(space.id, today)
+    await Promise.all([
+      createDueTransactions(space.id, today),
+      ensureExchangeRates(),
+    ])
     const period = budgetPeriod(today, space.budgetMonthStartDay)
     const previous = budgetPeriod(
       addMonths(period.start, -1),
@@ -508,7 +582,12 @@ export const getInsights = createServerFn({ method: 'GET' })
         .select({
           categoryId: categoryLines.categoryId,
           date: categoryLines.date,
-          amount: categoryLines.amount,
+          amount: converted(
+            categoryLines.amount,
+            wallet.currency,
+            space.baseCurrency,
+            categoryLines.date,
+          ).mapWith(Number),
         })
         .from(categoryLines)
         .innerJoin(wallet, eq(wallet.id, categoryLines.walletId))
@@ -516,7 +595,7 @@ export const getInsights = createServerFn({ method: 'GET' })
           and(
             eq(categoryLines.spaceId, space.id),
             eq(categoryLines.type, 'expense'),
-            eq(wallet.currency, space.baseCurrency),
+            sql`${converted(categoryLines.amount, wallet.currency, space.baseCurrency, categoryLines.date)} is not null`,
             between(categoryLines.date, previous.start, today),
           ),
         ),

@@ -68,7 +68,7 @@
   "pub_faq_bank_q": "Kapcsolódik a bankomhoz?",
   "pub_faq_bank_a": "Nem. A tranzakciókat te rögzíted; a gyors rögzítés, a megjegyzett partnerek és a rendszeres fizetések miatt ez pár másodperc. A bankod CSV exportja importálható, minden sor átnézésével.",
   "pub_faq_currency_q": "Használhatok több pénznemet?",
-  "pub_faq_currency_a": "Minden számlának saját pénzneme van, a pénznemek közötti átvezetés mindkét összeget rögzíti. Az összesítések és a keretek csak a kassza pénznemében vezetett számlákat számolják, amíg nincsenek árfolyamok.",
+  "pub_faq_currency_a": "Minden számlának saját pénzneme van, a pénznemek közötti átvezetés mindkét összeget rögzíti. Az összesítések, keretek és kimutatások a többi pénznemet az Európai Központi Bank napi referencia-árfolyamaival váltják át a kassza pénznemére.",
   "pub_faq_share_q": "Megoszthatom a párommal?",
   "pub_faq_share_a": "Igen. Hozz létre egy közös kasszát a Továbbiak, Kasszák alatt, és küldj meghívó linket. Mindenkinek megmarad mellette a saját személyes kasszája.",
   "pub_faq_split_q": "Néhány dolgot a saját pénzünkből fizetünk. Meg tudja osztani a költségeket?",

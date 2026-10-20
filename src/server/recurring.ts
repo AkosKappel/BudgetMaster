@@ -19,6 +19,8 @@ import { findSubscriptions, yearlyCost } from '@/lib/subscriptions'
 import { currentDay } from '@/lib/today'
 import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
+import { rateConverter } from '@/server/convert'
+import { ensureExchangeRates } from '@/server/exchange-rates'
 import { requireMembership } from '@/server/membership'
 import { checkMovement } from '@/server/movement'
 import { createDueTransactions } from '@/server/recurring-due'
@@ -82,20 +84,25 @@ export const listRecurringRules = createServerFn({ method: 'GET' })
       (s) => !covered.has(`${s.walletId}|${s.payee.trim().toLowerCase()}`),
     )
 
-    // What the running expense rules cost a year, in the space currency only (I-05).
-    const inBase = new Set(
-      wallets.filter((w) => w.currency === space.baseCurrency).map((w) => w.id),
+    // What the running expense rules cost a year, in the space currency at today's rates
+    // (I-05); a currency without a rate is left out.
+    await ensureExchangeRates()
+    const convert = await rateConverter(
+      space.baseCurrency,
+      wallets.map((w) => w.currency),
+      [today],
     )
+    const currencyOf = new Map(wallets.map((w) => [w.id, w.currency]))
     const yearlyExpenses = rules
-      .filter(
-        (r) =>
-          r.type === 'expense' &&
-          !r.paused &&
-          r.nextDate &&
-          inBase.has(r.walletId),
-      )
+      .filter((r) => r.type === 'expense' && !r.paused && r.nextDate)
       .reduce(
-        (sum, r) => sum + yearlyCost(r.amount, r.frequency, r.interval),
+        (sum, r) =>
+          sum +
+          (convert(
+            yearlyCost(r.amount, r.frequency, r.interval),
+            currencyOf.get(r.walletId) ?? '',
+            today,
+          ) ?? 0),
         0,
       )
 

@@ -14,7 +14,7 @@ const config = {
   balance: { label: 'Net worth', color: 'var(--note)' },
 } satisfies ChartConfig
 
-// Everything in the space-currency wallets added up, at the end of each budget month.
+// Every wallet added up in the space currency, at the end of each budget month.
 export function NetWorthChart({ points, currency }: NetWorth) {
   const money = (minor: number) => formatMoney(minor, currency)
   const compact = (minor: number) =>

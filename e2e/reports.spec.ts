@@ -17,7 +17,7 @@ test('cash flow shows a year of months that open in activity', async ({
   await expect(page.getByRole('button', { name: /Filters/ })).toContainText('2')
 })
 
-test('net worth today matches the wallet balances, and the calendar is filled', async ({
+test('net worth today adds up the wallets, other currencies converted', async ({
   page,
 }) => {
   await startDemo(page)
@@ -27,27 +27,33 @@ test('net worth today matches the wallet balances, and the calendar is filled', 
     .getByRole('main')
     .getByRole('listitem')
     .allInnerTexts()
-  // Euro wallets only: net worth counts the space currency (archived wallets hold 0 here).
-  const cents = amounts
-    .map((text) => /([−-]?)€([\d,]+\.\d{2})/.exec(text))
-    .filter((m) => m !== null)
-    .reduce(
-      (sum, [, sign, value]) =>
-        sum +
-        (sign ? -1 : 1) * Math.round(Number(value.replaceAll(',', '')) * 100),
-      0,
-    )
-  const expected = new Intl.NumberFormat('en-IE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(cents / 100)
+  // Archived wallets hold 0 here.
+  const total = (symbol: string) =>
+    amounts
+      .map((text) =>
+        new RegExp(`([−-]?)\\${symbol}([\\d,]+\\.\\d{2})`).exec(text),
+      )
+      .filter((m) => m !== null)
+      .reduce(
+        (sum, [, sign, value]) =>
+          sum +
+          (sign ? -1 : 1) * Math.round(Number(value.replaceAll(',', '')) * 100),
+        0,
+      )
+  const euros = total('€')
+  const dollars = total('$')
 
   await page.goto('/reports')
-  await expect(
-    page
-      .getByRole('region', { name: 'Net worth' })
-      .getByText(`${expected} today`),
-  ).toBeVisible()
+  const netWorth = page.getByRole('region', { name: 'Net worth' })
+  const text = await netWorth.locator('figcaption').innerText()
+  const [, sign, value] = /([−-]?)€([\d,]+\.\d{2}) today/.exec(text) ?? []
+  const cents =
+    (sign ? -1 : 1) * Math.round(Number(value.replaceAll(',', '')) * 100)
+  // The dollar wallet counts at the ECB rate of the day, so only its range is known; without
+  // rates (no network) it is left out.
+  const low = euros + Math.min(dollars * 0.5, dollars * 1.5)
+  const high = euros + Math.max(dollars * 0.5, dollars * 1.5)
+  expect(cents === euros || (cents >= low && cents <= high)).toBe(true)
   await expect(
     page.getByText(/days without spending in the last 27 weeks/),
   ).toBeVisible()
