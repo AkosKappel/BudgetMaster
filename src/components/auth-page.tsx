@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 import { signInOptionsQuery } from '@/lib/queries'
 
-// `?redirect=` on the auth pages: same-site paths only, never `//other.site`.
+// `?redirect=` on the auth pages: same-site paths only, never `//other.site` or
+// `/\other.site` (browsers read the backslash as a slash).
 export const redirectSearch = z.object({
   redirect: z
     .string()
-    .regex(/^\/(?!\/)/)
+    .regex(/^\/(?![/\\])/)
     .optional()
     .catch(undefined),
 })
