@@ -7,7 +7,9 @@ import { AccountData } from '@/components/account-data'
 import { AccountSecurity } from '@/components/account-security'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { authClient } from '@/lib/auth-client'
+import { LANGUAGES } from '@/lib/locale'
 import { sessionQuery, signInOptionsQuery } from '@/lib/queries'
+import { getLocale, setLocale } from '@/paraglide/runtime.js'
 
 export const Route = createFileRoute('/_app/settings')({
   head: () => ({ meta: [{ title: 'Settings | BudgetMaster' }] }),
@@ -19,11 +21,42 @@ function Settings() {
     <div className="flex flex-col gap-6">
       <h1 className="font-semibold text-2xl tracking-tight">Settings</h1>
       <ThemeSwitch />
+      <Language />
       <WeekStart />
       <AiFeatures />
       <AccountSecurity />
       <AccountData />
     </div>
+  )
+}
+
+// Also sets number, money and date formats. Kept in a cookie on this device; setLocale
+// reloads the page so the server renders in the new language too.
+function Language() {
+  const current = getLocale()
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 font-semibold text-lg">Language</legend>
+      <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
+        {LANGUAGES.map((option) => (
+          <label
+            key={option.locale}
+            lang={option.locale}
+            className="flex h-9 cursor-pointer items-center justify-center rounded-md text-sm has-checked:bg-card has-checked:shadow-xs has-focus-visible:ring-2 has-focus-visible:ring-ring"
+          >
+            <input
+              type="radio"
+              name="language"
+              value={option.locale}
+              checked={current === option.locale}
+              onChange={() => setLocale(option.locale)}
+              className="sr-only"
+            />
+            {option.name}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   )
 }
 

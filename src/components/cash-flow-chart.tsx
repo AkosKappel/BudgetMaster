@@ -13,6 +13,7 @@ import {
   ChartContainer,
   ChartTooltip,
 } from '@/components/ui/chart'
+import { formatLocale } from '@/lib/locale'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
 import type { CashFlow } from '@/server/reports'
 
@@ -22,7 +23,7 @@ const config = {
 } satisfies ChartConfig
 
 const monthLabel = (start: string, startDay: boolean) =>
-  new Date(`${start}T00:00:00Z`).toLocaleDateString('en-IE', {
+  new Date(`${start}T00:00:00Z`).toLocaleDateString(formatLocale(), {
     month: 'short',
     // Months that start mid-month are named after the day they start.
     day: startDay ? 'numeric' : undefined,
@@ -210,7 +211,7 @@ function summary(months: CashFlow['months'], money: (minor: number) => string) {
   const worst = complete.reduce((a, b) => (b.net < a.net ? b : a))
   const name = (m: { start: string }) => {
     const date = new Date(`${m.start}T00:00:00Z`)
-    const month = date.toLocaleDateString('en-IE', {
+    const month = date.toLocaleDateString(formatLocale(), {
       month: 'long',
       timeZone: 'UTC',
     })

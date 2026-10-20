@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label'
 import { describeActivity } from '@/lib/activity'
 import { toCurrency } from '@/lib/currencies'
 import { formatShortDate } from '@/lib/format-date'
-import { APP_LOCALE } from '@/lib/money'
+import { formatLocale } from '@/lib/locale'
 import {
   activityQuery,
   spaceDetailsQuery,
@@ -652,7 +652,7 @@ function RecentChanges({
                   dateTime={e.createdAt}
                   className="text-muted-foreground text-xs"
                 >
-                  {new Date(e.createdAt).toLocaleString(APP_LOCALE, {
+                  {new Date(e.createdAt).toLocaleString(formatLocale(), {
                     day: 'numeric',
                     month: 'short',
                     hour: '2-digit',

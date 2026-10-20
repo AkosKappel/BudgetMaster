@@ -12,6 +12,9 @@ dist-ssr
 __unconfig*
 todos.json
 
+# Paraglide output, compiled from messages/ by the Vite plugin and `pnpm i18n`
+src/paraglide
+
 # Local planning file
 BACKLOG.md
 

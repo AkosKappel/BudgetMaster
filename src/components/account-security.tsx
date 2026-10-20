@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { describeDevice } from '@/lib/devices'
-import { APP_LOCALE } from '@/lib/money'
+import { formatLocale } from '@/lib/locale'
 import { devicesQuery, sessionQuery, signInOptionsQuery } from '@/lib/queries'
 import { signOutDevice } from '@/server/devices'
 
@@ -143,7 +143,7 @@ function ChangePasswordForm() {
 }
 
 const formatTime = (iso: string) =>
-  new Date(iso).toLocaleString(APP_LOCALE, {
+  new Date(iso).toLocaleString(formatLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

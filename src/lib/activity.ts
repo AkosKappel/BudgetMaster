@@ -1,7 +1,8 @@
-import { APP_LOCALE, formatMoney } from './money.ts'
+import { formatLocale } from './locale.ts'
+import { formatMoney } from './money.ts'
 
 const shortDate = (date: string) =>
-  new Date(date).toLocaleDateString(APP_LOCALE, {
+  new Date(date).toLocaleDateString(formatLocale(), {
     day: 'numeric',
     month: 'short',
     timeZone: 'UTC',

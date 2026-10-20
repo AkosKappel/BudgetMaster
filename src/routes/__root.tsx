@@ -15,6 +15,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { siteOrigin } from '@/lib/site'
 import { getTheme } from '@/lib/theme'
 import { TIME_ZONE_COOKIE } from '@/lib/today'
+import { getLocale } from '@/paraglide/runtime.js'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -92,7 +93,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const { theme } = Route.useRouteContext()
   return (
     // The theme switch changes data-theme on the client before the next render.
-    <html lang="en" data-theme={theme} suppressHydrationWarning>
+    <html lang={getLocale()} data-theme={theme} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

@@ -33,12 +33,8 @@ import {
   parseDate,
   parseSignedAmount,
 } from '@/lib/import'
-import {
-  APP_LOCALE,
-  currencyDigits,
-  formatSignedMoney,
-  parseAmount,
-} from '@/lib/money'
+import { formatLocale } from '@/lib/locale'
+import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
 import { formOptionsQuery, importsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import {
@@ -446,7 +442,7 @@ function RecentImports({ spaceId }: { spaceId: string }) {
                 {i.fileName ?? 'Statement'}
               </span>
               <span className="text-muted-foreground text-sm">
-                {new Date(i.createdAt).toLocaleDateString(APP_LOCALE, {
+                {new Date(i.createdAt).toLocaleDateString(formatLocale(), {
                   day: 'numeric',
                   month: 'short',
                 })}{' '}

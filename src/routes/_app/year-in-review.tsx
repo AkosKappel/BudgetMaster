@@ -6,7 +6,8 @@ import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
-import { APP_LOCALE, formatMoney } from '@/lib/money'
+import { formatLocale } from '@/lib/locale'
+import { formatMoney } from '@/lib/money'
 import { useActiveSpace, yearReviewQuery } from '@/lib/queries'
 import { currentDay } from '@/lib/today'
 import { cn } from '@/lib/utils'
@@ -31,7 +32,7 @@ export const Route = createFileRoute('/_app/year-in-review')({
 })
 
 const monthName = (month: string) =>
-  new Date(`${month}-01T00:00:00Z`).toLocaleDateString(APP_LOCALE, {
+  new Date(`${month}-01T00:00:00Z`).toLocaleDateString(formatLocale(), {
     month: 'long',
     timeZone: 'UTC',
   })

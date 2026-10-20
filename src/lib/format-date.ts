@@ -1,9 +1,12 @@
-import { APP_LOCALE } from '@/lib/money'
+import { formatLocale } from '@/lib/locale'
 import { addDays } from '@/lib/recurrence'
 
 // Calendar dates are formatted in UTC, the zone they were parsed in, so a day never shifts.
 const format = (date: string, options: Intl.DateTimeFormatOptions) =>
-  new Date(date).toLocaleDateString(APP_LOCALE, { timeZone: 'UTC', ...options })
+  new Date(date).toLocaleDateString(formatLocale(), {
+    timeZone: 'UTC',
+    ...options,
+  })
 
 // "24 Oct", or "31 Oct 2025" outside the current year.
 export const formatShortDate = (date: string) =>

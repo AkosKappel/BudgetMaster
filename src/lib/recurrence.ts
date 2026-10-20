@@ -1,6 +1,8 @@
 // Calendar dates are ISO `YYYY-MM-DD` strings, computed in UTC so DST never shifts a day.
 // ISO strings sort and compare correctly as plain strings.
 
+import { formatLocale } from './locale.ts'
+
 export type Frequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 export interface Schedule {
@@ -128,10 +130,10 @@ export function describeSchedule({ startDate, frequency, interval }: Schedule) {
     case 'daily':
       return every
     case 'weekly':
-      return `${every} on ${date.toLocaleDateString('en-IE', { weekday: 'long', timeZone: 'UTC' })}`
+      return `${every} on ${date.toLocaleDateString(formatLocale(), { weekday: 'long', timeZone: 'UTC' })}`
     case 'monthly':
       return `${every} on the ${ordinal(date.getUTCDate())}`
     case 'yearly':
-      return `${every} on ${date.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', timeZone: 'UTC' })}`
+      return `${every} on ${date.toLocaleDateString(formatLocale(), { day: 'numeric', month: 'long', timeZone: 'UTC' })}`
   }
 }
