@@ -1,3 +1,4 @@
+import { parseDate } from './import.ts'
 import { addDays } from './recurrence.ts'
 
 export interface QuickEntryOptions {
@@ -34,7 +35,8 @@ function dateFor(word: string, today: string): string | undefined {
   if (word === 'today') return today
   if (word === 'yesterday') return addDays(today, -1)
   if (word === 'tomorrow') return addDays(today, 1)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(word)) return word
+  if (/^\d{4}-\d{2}-\d{2}$/.test(word))
+    return parseDate(word, 'YYYY-MM-DD') ?? undefined
   // "fri", "friday"; at least three letters, so "sun" works but "s" is a payee.
   const weekday =
     word.length >= 3 ? WEEKDAYS.findIndex((day) => day.startsWith(word)) : -1

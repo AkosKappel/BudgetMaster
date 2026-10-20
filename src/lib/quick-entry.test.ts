@@ -65,3 +65,10 @@ test('only the first amount counts, later numbers stay in the payee', () => {
   assert.equal(entry.amount, '12')
   assert.equal(entry.payee, '7eleven 24')
 })
+
+test('a date that does not exist stays in the payee', () => {
+  assert.deepEqual(parseQuickEntry('2026-02-30 tesco 5', options), {
+    amount: '5',
+    payee: '2026-02-30 tesco',
+  })
+})
