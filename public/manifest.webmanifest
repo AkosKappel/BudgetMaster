@@ -23,6 +23,7 @@
     }
   ],
   "shortcuts": [
+    { "name": "Add expense", "url": "/?add=expense" },
     { "name": "Activity", "url": "/activity" },
     { "name": "Budgets", "url": "/budgets" },
     { "name": "Reports", "url": "/reports" }

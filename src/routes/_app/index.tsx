@@ -6,7 +6,7 @@ import {
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight, Plus, ReceiptText } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { z } from 'zod'
 
 import { BudgetMeter, budgetStatus } from '@/components/budget-meter'
@@ -33,6 +33,8 @@ export const Route = createFileRoute('/_app/')({
   // Optional, so the current month keeps the plain `/` URL.
   validateSearch: z.object({
     month: z.int().min(-36).max(-1).optional().catch(undefined),
+    // `?add=expense` opens quick add, for the app shortcut in the web manifest.
+    add: z.enum(['expense', 'income', 'transfer']).optional().catch(undefined),
   }),
   loaderDeps: ({ search }) => ({ month: search.month ?? 0 }),
   loader: ({ context, deps }) =>
@@ -50,10 +52,22 @@ export const Route = createFileRoute('/_app/')({
 
 function Home() {
   const space = useActiveSpace()
-  const month = Route.useSearch().month ?? 0
+  const search = Route.useSearch()
+  const month = search.month ?? 0
   const { data } = useSuspenseQuery(overviewQuery(space.id))
   const { openEdit, openNew } = useQuickAdd()
   const canWrite = useCanWrite()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!search.add) return
+    if (canWrite) openNew(search.add)
+    void navigate({
+      to: '.',
+      search: ({ add: _, ...rest }) => rest,
+      replace: true,
+    })
+  }, [search.add, canWrite, openNew, navigate])
 
   return (
     <div className="flex flex-col gap-10">
