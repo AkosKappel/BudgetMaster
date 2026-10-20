@@ -57,6 +57,9 @@ const amountField = z
   .string()
   .refine((value) => (parseAmount(value) ?? 0) > 0, 'Enter an amount.')
 
+// The server takes at most this many tags and split parts per transaction.
+const MAX_PARTS = 20
+
 const formSchema = z
   .object({
     type: z.enum(['income', 'expense', 'transfer']),
@@ -79,6 +82,14 @@ const formSchema = z
           code: 'custom',
           path: ['toWalletId'],
           message: 'Choose a different wallet to move the money to.',
+        })
+      }
+      // Empty means the same amount as sent.
+      if (value.toAmount.trim() && !(parseAmount(value.toAmount) ?? 0)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['toAmount'],
+          message: 'Enter the amount received, or leave it empty.',
         })
       }
     } else if (value.splits.length > 0) {
@@ -485,6 +496,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
                           />
+                          <FieldError errors={field.state.meta.errors} />
                         </div>
                       )}
                     </form.Field>
@@ -734,6 +746,10 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                         <input
                           type="checkbox"
                           checked={field.state.value.includes(t.id)}
+                          disabled={
+                            field.state.value.length >= MAX_PARTS &&
+                            !field.state.value.includes(t.id)
+                          }
                           onChange={(e) =>
                             field.handleChange(
                               e.target.checked
@@ -1010,6 +1026,7 @@ function SplitEditor({
           type="button"
           variant="outline"
           size="sm"
+          disabled={value.length >= MAX_PARTS}
           onClick={() =>
             onChange([
               ...value,
