@@ -82,15 +82,11 @@ function SpaceSettingsPage() {
   const queryClient = useQueryClient()
   const isOwner = space.role === 'owner'
 
+  // Currency, month start day and members change balances, budgets and reports too.
   const refresh = () =>
     Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: spaceDetailsQuery(spaceId).queryKey,
-      }),
+      queryClient.invalidateQueries({ queryKey: ['space', spaceId] }),
       queryClient.invalidateQueries({ queryKey: spacesQuery.queryKey }),
-      queryClient.invalidateQueries({
-        queryKey: ['space', spaceId, 'overview'],
-      }),
     ])
 
   const save = useMutation({
