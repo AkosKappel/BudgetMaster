@@ -210,3 +210,84 @@ export const readEntry = createServerFn({ method: 'POST' })
       )?.id,
     }
   })
+
+// A PDF bank statement read by Claude for the import page (AI-01, M-16): the transactions
+// come back as a Date, Amount, Payee table, so they go through the same column mapping,
+// duplicate check and review as a CSV file. Nothing is saved before the user confirms.
+export const readStatement = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  // Base64 of up to about 1.4 MB, under the proxy's 2 MB request limit.
+  .validator(spaceInput.extend({ pdf: z.string().max(1_950_000) }))
+  .handler(async ({ context, data }) => {
+    if (!env.ANTHROPIC_API_KEY) throw new Error(m.txn_ai_not_set_up())
+    if (!context.user.aiEnabled) throw new Error(m.txn_ai_switch_on())
+    if (context.user.isAnonymous) throw new Error(m.txn_ai_needs_account())
+    await requireMembership(context.user.id, data.spaceId)
+    const bytes = Buffer.from(data.pdf, 'base64')
+    if (bytes.subarray(0, 5).toString('latin1') !== '%PDF-')
+      throw new Error(m.setup_import_pdf_invalid())
+    countRead(context.user.id)
+
+    const schema = z.object({
+      isStatement: z
+        .boolean()
+        .describe('False when the document is not a bank or card statement.'),
+      transactions: z
+        .array(
+          z.object({
+            date: z.string().describe('Booking date as YYYY-MM-DD.'),
+            amount: z
+              .string()
+              .describe(
+                'Signed amount with a dot, money out negative: "-42.10", "1250.00".',
+              ),
+            payee: z
+              .string()
+              .describe(
+                'Who was paid or who paid, as people would call them. Never an account number or IBAN.',
+              ),
+          }),
+        )
+        .describe('Every transaction, in the order of the statement.'),
+    })
+    const response = await anthropic().beta.messages.parse({
+      model: 'claude-opus-5-5',
+      max_tokens: 16000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'low', format: betaZodOutputFormat(schema) },
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: {
+                type: 'base64',
+                media_type: 'application/pdf',
+                data: bytes.toString('base64'),
+              },
+            },
+            {
+              type: 'text',
+              text: 'List the transactions on this bank statement for a personal budgeting app. Leave out opening and closing balances, subtotals and fees summaries that are not transactions of their own. Do not copy account numbers, IBANs or card numbers into any field.',
+            },
+          ],
+        },
+      ],
+    })
+    const result = response.parsed_output
+    if (response.stop_reason === 'refusal' || !result)
+      throw new Error(m.setup_import_pdf_unreadable())
+    if (!result.isStatement) throw new Error(m.setup_import_pdf_not_statement())
+    const rows = result.transactions
+      .filter(
+        (t) =>
+          z.iso.date().safeParse(t.date).success &&
+          /^-?\d+(\.\d{1,3})?$/.test(t.amount),
+      )
+      .slice(0, 1000)
+      .map((t) => [t.date, t.amount, t.payee.trim().slice(0, 120)])
+    if (rows.length === 0) throw new Error(m.setup_import_no_rows())
+    return { header: ['Date', 'Amount', 'Payee'], rows }
+  })

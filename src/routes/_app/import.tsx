@@ -38,6 +38,7 @@ import { currencyDigits, formatSignedMoney, parseAmount } from '@/lib/money'
 import { formOptionsQuery, importsQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 import { m } from '@/paraglide/messages.js'
+import { readStatement } from '@/server/ai'
 import {
   getImportMapping,
   type ImportRecord,
@@ -116,6 +117,18 @@ function guessMapping(header: string[], rows: string[][]): Mapping {
   }
 }
 
+// PDF statements are read by Claude (AI-01) into the same table a CSV file gives.
+const PDF_MAX_BYTES = 1_400_000
+const isPdf = (file: File) =>
+  file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+const base64Of = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+
 function stage(rows: string[][], mapping: Mapping, digits: number) {
   const parse = (text: string) => parseAmount(text, digits)
   return rows.map((row): Staged | null => {
@@ -152,6 +165,7 @@ function Import() {
   const [reviewed, setReviewed] = useState<Reviewed[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [readingPdf, setReadingPdf] = useState(false)
 
   const wallet = options.wallets.find((w) => w.id === walletId)
   const currency = wallet?.currency ?? space.baseCurrency
@@ -161,7 +175,29 @@ function Import() {
   const readFile = async (file: File) => {
     setError(null)
     setFileName(file.name.slice(0, 200))
-    const parsed = parseCsv(await file.text())
+    let parsed: string[][]
+    if (isPdf(file)) {
+      if (file.size > PDF_MAX_BYTES) {
+        setError(m.setup_import_pdf_too_large())
+        return
+      }
+      setReadingPdf(true)
+      try {
+        const table = await readStatement({
+          data: { spaceId: space.id, pdf: await base64Of(file) },
+        })
+        parsed = [table.header, ...table.rows]
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : m.setup_import_pdf_unreadable(),
+        )
+        return
+      } finally {
+        setReadingPdf(false)
+      }
+    } else {
+      parsed = parseCsv(await file.text())
+    }
     if (parsed.length < 2) {
       setError(m.setup_import_no_rows())
       return
@@ -281,17 +317,34 @@ function Import() {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="import-file-input">
-              {m.setup_import_csv_file()}
+              {options.canReadReceipts
+                ? m.setup_import_file_or_pdf()
+                : m.setup_import_csv_file()}
             </Label>
             <Input
               id="import-file-input"
               type="file"
-              accept=".csv,text/csv"
+              accept={
+                options.canReadReceipts
+                  ? '.csv,text/csv,.pdf,application/pdf'
+                  : '.csv,text/csv'
+              }
+              disabled={readingPdf}
+              aria-describedby={
+                options.canReadReceipts ? 'import-pdf-hint' : undefined
+              }
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) readFile(file)
               }}
             />
+            {options.canReadReceipts && (
+              <p id="import-pdf-hint" className="text-muted-foreground text-xs">
+                {readingPdf
+                  ? m.setup_import_pdf_reading()
+                  : m.setup_import_pdf_hint()}
+              </p>
+            )}
           </div>
         </div>
       </section>
