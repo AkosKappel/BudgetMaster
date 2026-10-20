@@ -8,6 +8,7 @@ test('monthsUntil counts a started month as one', () => {
   assert.equal(monthsUntil('2026-10-19', '2027-04-20'), 7)
   assert.equal(monthsUntil('2026-10-19', '2026-10-31'), 1)
   assert.equal(monthsUntil('2026-10-19', '2026-10-01'), 0)
+  assert.equal(monthsUntil('2026-10-19', '2026-10-19'), 1)
 })
 
 test('goalProgress spreads what is missing over the months left', () => {
