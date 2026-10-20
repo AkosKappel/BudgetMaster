@@ -46,13 +46,8 @@
   "setup_categories_usage_both": "{transactions} a {payments}",
   "setup_categories_usage_transactions": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transakciu",
         "countPlural=few": "{count} transakcie",
@@ -63,13 +58,8 @@
   ],
   "setup_categories_usage_payments": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} pravidelnú platbu",
         "countPlural=few": "{count} pravidelné platby",
@@ -137,13 +127,8 @@
   "setup_tags_empty": "Zatiaľ nemáš žiadne štítky. Vytvor si jeden a vyber ho pri pridávaní transakcie.",
   "setup_tags_uses": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transakcia",
         "countPlural=few": "{count} transakcie",
@@ -154,13 +139,8 @@
   ],
   "setup_tags_used_by": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Použitý v {count} transakcii.",
         "countPlural=few": "Použitý v {count} transakciách.",
@@ -188,13 +168,8 @@
   "setup_type_transfer": "Prevod",
   "setup_recurring_unit_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "deň",
         "countPlural=few": "dni",
@@ -205,13 +180,8 @@
   ],
   "setup_recurring_unit_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "týždeň",
         "countPlural=few": "týždne",
@@ -222,13 +192,8 @@
   ],
   "setup_recurring_unit_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "mesiac",
         "countPlural=few": "mesiace",
@@ -239,13 +204,8 @@
   ],
   "setup_recurring_unit_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "rok",
         "countPlural=few": "roky",
@@ -310,9 +270,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{cadence}, {count} platba, posledná {date}",
         "countPlural=few": "{cadence}, {count} platby, posledná {date}",
@@ -356,13 +314,8 @@
   "setup_import_failed": "Import sa nepodaril. Skús to znova.",
   "setup_import_done": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transakcia importovaná",
         "countPlural=few": "{count} transakcie importované",
@@ -390,13 +343,8 @@
   "setup_import_unreadable_hint": ". Riadky bez platného dátumu alebo sumy (napríklad súčty) sa vynechajú.",
   "setup_import_review_button": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Skontrolovať {count} riadok",
         "countPlural=few": "Skontrolovať {count} riadky",
@@ -407,13 +355,8 @@
   ],
   "setup_import_undone": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Import vrátený späť, odstránená {count} transakcia",
         "countPlural=few": "Import vrátený späť, odstránené {count} transakcie",
@@ -432,9 +375,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "na účet {wallet}, zostáva {remaining} z {count} transakcie",
         "countPlural=few": "na účet {wallet}, zostáva {remaining} z {count} transakcií",
@@ -453,9 +394,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Vymaže {count} transakciu, ktorú vytvoril na účte {wallet}, aj keď si ju medzitým upravil.",
         "countPlural=few": "Vymaže {count} transakcie, ktoré vytvoril na účte {wallet}, vrátane tých, ktoré si medzitým upravil.",
@@ -469,13 +408,8 @@
   "setup_import_step_review": "3. Kontrola",
   "setup_import_duplicates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} riadok vyzerá ako transakcia, ktorá už na tomto účte je, a preto sa vynechá. Ak ho chceš aj tak importovať, zaškrtni ho.",
         "countPlural=few": "{count} riadky vyzerajú ako transakcie, ktoré už na tomto účte sú, a preto sa vynechajú. Ak ich chceš aj tak importovať, zaškrtni ich.",
@@ -491,13 +425,8 @@
   "setup_import_possible_duplicate": "Možný duplikát",
   "setup_import_missing": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Vyber kategóriu ešte pre {count} riadok.",
         "countPlural=few": "Vyber kategóriu ešte pre {count} riadky.",
@@ -508,13 +437,8 @@
   ],
   "setup_import_remember": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Zapamätaj si kategóriu, ktorú som vybral pre tohto príjemcu",
         "countPlural=few": "Zapamätaj si kategórie, ktoré som vybral pre týchto {count} príjemcov",
@@ -525,13 +449,8 @@
   ],
   "setup_import_confirm": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Importovať {count} transakciu",
         "countPlural=few": "Importovať {count} transakcie",
@@ -542,13 +461,8 @@
   ],
   "setup_schedule_every_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Každý deň",
         "countPlural=few": "Každé {count} dni",
@@ -559,13 +473,8 @@
   ],
   "setup_schedule_every_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Každý týždeň",
         "countPlural=few": "Každé {count} týždne",
@@ -576,13 +485,8 @@
   ],
   "setup_schedule_every_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Každý mesiac",
         "countPlural=few": "Každé {count} mesiace",
@@ -593,13 +497,8 @@
   ],
   "setup_schedule_every_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Každý rok",
         "countPlural=few": "Každé {count} roky",

@@ -116,13 +116,8 @@
   "acct_spaces_personal_only_you": "Személyes, csak te",
   "acct_spaces_role_members": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{role}, {count} tag",
         "countPlural=other": "{role}, {count} tag"

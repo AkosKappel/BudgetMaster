@@ -27,14 +27,12 @@ async function main() {
   await db.delete(user).where(eq(user.email, EMAIL))
 
   const userId = crypto.randomUUID()
-  await db
-    .insert(user)
-    .values({
-      id: userId,
-      name: 'Big Ledger',
-      email: EMAIL,
-      emailVerified: true,
-    })
+  await db.insert(user).values({
+    id: userId,
+    name: 'Big Ledger',
+    email: EMAIL,
+    emailVerified: true,
+  })
   await db.insert(account).values({
     id: crypto.randomUUID(),
     userId,

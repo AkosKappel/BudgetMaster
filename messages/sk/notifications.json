@@ -11,13 +11,8 @@
   "notify_due_title": "Zajtra splatné",
   "notify_due_more": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "a ešte {count}",
         "countPlural=few": "a ešte {count}",
@@ -31,13 +26,8 @@
   "notify_digest_top": "Najviac išlo na: {categories}.",
   "notify_digest_upcoming": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Tento týždeň splatné: {count} platba, {amount}.",
         "countPlural=few": "Tento týždeň splatné: {count} platby, {amount}.",

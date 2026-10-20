@@ -11,13 +11,8 @@
   "notify_due_title": "Holnap esedékes",
   "notify_due_more": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "és még {count}",
         "countPlural=other": "és még {count}"
@@ -30,13 +25,8 @@
   "notify_digest_top": "A legtöbb erre ment: {categories}.",
   "notify_digest_upcoming": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Ezen a héten esedékes: {count} fizetés, {amount}.",
         "countPlural=other": "Ezen a héten esedékes: {count} fizetés, {amount}."

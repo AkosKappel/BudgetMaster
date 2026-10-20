@@ -19,13 +19,8 @@
   "ov_prices_not_enough": "Még nincs elég előzmény: ehhez olyan partnerek kellenek, akiknek az elmúlt három hónapban és egy évvel korábban ugyanezekben a hónapokban is legalább kétszer fizettél.",
   "ov_prices_unchanged": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt nem változott.",
         "countPlural=other": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt nem változott."
@@ -34,13 +29,8 @@
   ],
   "ov_prices_rose": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt {percent} %-kal nőtt: ez a személyes inflációd.",
         "countPlural=other": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt {percent} %-kal nőtt: ez a személyes inflációd."
@@ -49,13 +39,8 @@
   ],
   "ov_prices_fell": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt {percent} %-kal csökkent: ez a személyes inflációd.",
         "countPlural=other": "Amit {count} rendszeres partnerednél fizetsz, egy év alatt {percent} %-kal csökkent: ez a személyes inflációd."

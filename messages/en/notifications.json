@@ -11,13 +11,8 @@
   "notify_due_title": "Due tomorrow",
   "notify_due_more": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "and {count} more",
         "countPlural=other": "and {count} more"
@@ -30,13 +25,8 @@
   "notify_digest_top": "Most of it went to {categories}.",
   "notify_digest_upcoming": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Due this week: {count} payment, {amount}.",
         "countPlural=other": "Due this week: {count} payments, {amount}."

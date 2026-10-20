@@ -19,13 +19,8 @@
   "ov_prices_not_enough": "Zatiaľ nie je dosť histórie: potrebuješ príjemcov, ktorým si platil aspoň dvakrát za posledné tri mesiace a dvakrát v tých istých mesiacoch pred rokom.",
   "ov_prices_unchanged": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, sa za rok nezmenilo.",
         "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, sa za rok nezmenilo.",
@@ -36,13 +31,8 @@
   ],
   "ov_prices_rose": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, za rok stúplo o {percent} %: to je tvoja osobná inflácia.",
         "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, za rok stúplo o {percent} %: to je tvoja osobná inflácia.",
@@ -53,13 +43,8 @@
   ],
   "ov_prices_fell": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, za rok kleslo o {percent} %: to je tvoja osobná inflácia.",
         "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, za rok kleslo o {percent} %: to je tvoja osobná inflácia.",
@@ -84,13 +69,8 @@
   "ov_cashflow_month_from": "mesiac od {day}. {month}",
   "ov_cashflow_summary_saved": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Za posledný {count} celý mesiac si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}.",
         "countPlural=few": "Za posledné {count} celé mesiace si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}.",
@@ -101,13 +81,8 @@
   ],
   "ov_cashflow_summary_overspent": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Za posledný {count} celý mesiac si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}.",
         "countPlural=few": "Za posledné {count} celé mesiace si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}.",
@@ -130,13 +105,8 @@
   "ov_breakdown_empty": "V tomto mesiaci žiadne výdavky.",
   "ov_calendar_quiet": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} deň bez výdavkov za posledných {weeks} týždňov.",
         "countPlural=few": "{count} dni bez výdavkov za posledných {weeks} týždňov.",
@@ -186,13 +156,8 @@
   "ov_home_spent": "Minuté",
   "ov_home_detail_no_budget": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Príjmy {income}. Zostáva {count} deň. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť.",
         "countPlural=few": "Príjmy {income}. Zostávajú {count} dni. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť.",
@@ -208,13 +173,8 @@
   "ov_home_detail_spent": "Minuté {spent} z {budget}.",
   "ov_home_days_until": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Zostáva {count} deň do {date}.",
         "countPlural=few": "Zostávajú {count} dni do {date}.",
@@ -289,13 +249,8 @@
   "ov_monthly_share": "Podiel",
   "ov_monthly_budgets_kept": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} rozpočet kategórie bol dodržaný.",
         "countPlural=few": "Všetky {count} rozpočty kategórií boli dodržané.",
@@ -306,13 +261,8 @@
   ],
   "ov_monthly_budgets_over": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Prekročené rozpočty kategórií: {over} z {count}: {names}.",
         "countPlural=few": "Prekročené rozpočty kategórií: {over} zo {count}: {names}.",
@@ -329,13 +279,8 @@
   "ov_year_meta_title": "Rok v skratke | BudgetMaster",
   "ov_year_share_no_spend": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} deň bez výdavkov",
         "countPlural=few": "{count} dni bez výdavkov",
@@ -353,13 +298,8 @@
   "ov_year_no_spend_days": "Dni bez výdavkov",
   "ov_year_of_days": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "z {count} dňa",
         "countPlural=few": "zo {count} dní",
@@ -370,13 +310,8 @@
   ],
   "ov_year_of_days_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "zatiaľ z {count} dňa",
         "countPlural=few": "zatiaľ zo {count} dní",
@@ -390,13 +325,8 @@
   "ov_year_paid_most_to": "Najviac si platil",
   "ov_year_payments": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{amount} v {count} platbe",
         "countPlural=few": "{amount} v {count} platbách",
@@ -414,13 +344,8 @@
   "ov_year_share_button": "Zdieľať",
   "ov_year_intro": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transakcia, v {currency}. Zdieľanie pošle vetu bez súm.",
         "countPlural=few": "{count} transakcie, v {currency}. Zdieľanie pošle vetu bez súm.",
@@ -431,13 +356,8 @@
   ],
   "ov_year_intro_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Tento rok zatiaľ {count} transakcia, v {currency}. Zdieľanie pošle vetu bez súm.",
         "countPlural=few": "Tento rok zatiaľ {count} transakcie, v {currency}. Zdieľanie pošle vetu bez súm.",

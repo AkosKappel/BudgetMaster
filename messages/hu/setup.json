@@ -46,13 +46,8 @@
   "setup_categories_usage_both": "{transactions} és {payments}",
   "setup_categories_usage_transactions": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tranzakció",
         "countPlural=other": "{count} tranzakció"
@@ -61,13 +56,8 @@
   ],
   "setup_categories_usage_payments": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} rendszeres fizetés",
         "countPlural=other": "{count} rendszeres fizetés"
@@ -133,13 +123,8 @@
   "setup_tags_empty": "Még nincs címkéd. Hozz létre egyet, és válaszd ki, amikor tranzakciót rögzítesz.",
   "setup_tags_uses": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tranzakció",
         "countPlural=other": "{count} tranzakció"
@@ -148,13 +133,8 @@
   ],
   "setup_tags_used_by": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tranzakcióban szerepel.",
         "countPlural=other": "{count} tranzakcióban szerepel."
@@ -180,13 +160,8 @@
   "setup_type_transfer": "Átvezetés",
   "setup_recurring_unit_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "naponta",
         "countPlural=other": "naponta"
@@ -195,13 +170,8 @@
   ],
   "setup_recurring_unit_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "hetente",
         "countPlural=other": "hetente"
@@ -210,13 +180,8 @@
   ],
   "setup_recurring_unit_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "havonta",
         "countPlural=other": "havonta"
@@ -225,13 +190,8 @@
   ],
   "setup_recurring_unit_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "évente",
         "countPlural=other": "évente"
@@ -294,9 +254,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{cadence}, {count} fizetés, utoljára {date}",
         "countPlural=other": "{cadence}, {count} fizetés, utoljára {date}"
@@ -338,13 +296,8 @@
   "setup_import_failed": "Nem sikerült importálni. Próbáld újra.",
   "setup_import_done": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tranzakció importálva",
         "countPlural=other": "{count} tranzakció importálva"
@@ -370,13 +323,8 @@
   "setup_import_unreadable_hint": ". Az érvényes dátum vagy összeg nélküli sorok (pl. összesítők) kimaradnak.",
   "setup_import_review_button": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} sor átnézése",
         "countPlural=other": "{count} sor átnézése"
@@ -385,13 +333,8 @@
   ],
   "setup_import_undone": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Importálás visszavonva, {count} tranzakció törölve",
         "countPlural=other": "Importálás visszavonva, {count} tranzakció törölve"
@@ -408,9 +351,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "ide: {wallet}, {count} tranzakcióból {remaining} maradt",
         "countPlural=other": "ide: {wallet}, {count} tranzakcióból {remaining} maradt"
@@ -427,9 +368,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Törli a(z) {wallet} számláról azt a(z) {count} tranzakciót, amelyet létrehozott, azokat is, amelyeket azóta szerkesztettél.",
         "countPlural=other": "Törli a(z) {wallet} számláról azt a(z) {count} tranzakciót, amelyet létrehozott, azokat is, amelyeket azóta szerkesztettél."
@@ -441,13 +380,8 @@
   "setup_import_step_review": "3. Átnézés",
   "setup_import_duplicates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} sor olyan tranzakciónak tűnik, amely már szerepel ezen a számlán, ezért kimarad. Pipáld be, ha mégis importálnád.",
         "countPlural=other": "{count} sor olyan tranzakcióknak tűnik, amelyek már szerepelnek ezen a számlán, ezért kimaradnak. Pipáld be őket, ha mégis importálnád."
@@ -461,13 +395,8 @@
   "setup_import_possible_duplicate": "Lehetséges ismétlődés",
   "setup_import_missing": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Válassz kategóriát még {count} sorhoz.",
         "countPlural=other": "Válassz kategóriát még {count} sorhoz."
@@ -476,13 +405,8 @@
   ],
   "setup_import_remember": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Jegyezd meg a kategóriát, amit ehhez a partnerhez választottam",
         "countPlural=other": "Jegyezd meg a kategóriákat, amiket ehhez a(z) {count} partnerhez választottam"
@@ -491,13 +415,8 @@
   ],
   "setup_import_confirm": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tranzakció importálása",
         "countPlural=other": "{count} tranzakció importálása"
@@ -506,13 +425,8 @@
   ],
   "setup_schedule_every_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Naponta",
         "countPlural=other": "{count} naponta"
@@ -521,13 +435,8 @@
   ],
   "setup_schedule_every_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Hetente",
         "countPlural=other": "{count} hetente"
@@ -536,13 +445,8 @@
   ],
   "setup_schedule_every_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Havonta",
         "countPlural=other": "{count} havonta"
@@ -551,13 +455,8 @@
   ],
   "setup_schedule_every_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Évente",
         "countPlural=other": "{count} évente"

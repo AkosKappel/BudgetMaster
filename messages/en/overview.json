@@ -19,13 +19,8 @@
   "ov_prices_not_enough": "Not enough history yet: this needs payees you paid at least twice in the last three months and twice in the same months a year ago.",
   "ov_prices_unchanged": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "What you pay at {count} regular payees has not changed in a year.",
         "countPlural=other": "What you pay at {count} regular payees has not changed in a year."
@@ -34,13 +29,8 @@
   ],
   "ov_prices_rose": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "What you pay at {count} regular payees rose by {percent} % in a year: your personal inflation rate.",
         "countPlural=other": "What you pay at {count} regular payees rose by {percent} % in a year: your personal inflation rate."
@@ -49,13 +39,8 @@
   ],
   "ov_prices_fell": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "What you pay at {count} regular payees fell by {percent} % in a year: your personal inflation rate.",
         "countPlural=other": "What you pay at {count} regular payees fell by {percent} % in a year: your personal inflation rate."
@@ -78,13 +63,8 @@
   "ov_cashflow_month_from": "the month from {day} {month}",
   "ov_cashflow_summary_saved": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "In the last {count} complete months you earned {income} and spent {spent}, saving {saved} ({rate} % of income). Best month: {best}; tightest: {worst}.",
         "countPlural=other": "In the last {count} complete months you earned {income} and spent {spent}, saving {saved} ({rate} % of income). Best month: {best}; tightest: {worst}."
@@ -93,13 +73,8 @@
   ],
   "ov_cashflow_summary_overspent": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "In the last {count} complete months you earned {income} and spent {spent}, spending {over} more than came in. Best month: {best}; tightest: {worst}.",
         "countPlural=other": "In the last {count} complete months you earned {income} and spent {spent}, spending {over} more than came in. Best month: {best}; tightest: {worst}."
@@ -120,13 +95,8 @@
   "ov_breakdown_empty": "No spending in this month.",
   "ov_calendar_quiet": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} days without spending in the last {weeks} weeks.",
         "countPlural=other": "{count} days without spending in the last {weeks} weeks."
@@ -174,13 +144,8 @@
   "ov_home_spent": "Spent",
   "ov_home_detail_no_budget": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Income {income}. {count} day left. Set a monthly budget to see what you can still spend.",
         "countPlural=other": "Income {income}. {count} days left. Set a monthly budget to see what you can still spend."
@@ -194,13 +159,8 @@
   "ov_home_detail_spent": "Spent {spent} of {budget}.",
   "ov_home_days_until": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} day left until {date}.",
         "countPlural=other": "{count} days left until {date}."
@@ -273,13 +233,8 @@
   "ov_monthly_share": "Share",
   "ov_monthly_budgets_kept": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "All {count} category budgets were kept.",
         "countPlural=other": "All {count} category budgets were kept."
@@ -288,13 +243,8 @@
   ],
   "ov_monthly_budgets_over": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{over} of {count} category budgets went over: {names}.",
         "countPlural=other": "{over} of {count} category budgets went over: {names}."
@@ -309,13 +259,8 @@
   "ov_year_meta_title": "Year in review | BudgetMaster",
   "ov_year_share_no_spend": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} days without spending",
         "countPlural=other": "{count} days without spending"
@@ -331,13 +276,8 @@
   "ov_year_no_spend_days": "Days without spending",
   "ov_year_of_days": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "of {count} days",
         "countPlural=other": "of {count} days"
@@ -346,13 +286,8 @@
   ],
   "ov_year_of_days_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "of {count} days so far",
         "countPlural=other": "of {count} days so far"
@@ -364,13 +299,8 @@
   "ov_year_paid_most_to": "Paid most to",
   "ov_year_payments": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{amount} in {count} payments",
         "countPlural=other": "{amount} in {count} payments"
@@ -386,13 +316,8 @@
   "ov_year_share_button": "Share",
   "ov_year_intro": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transactions, in {currency}. Sharing sends a sentence without amounts.",
         "countPlural=other": "{count} transactions, in {currency}. Sharing sends a sentence without amounts."
@@ -401,13 +326,8 @@
   ],
   "ov_year_intro_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transactions so far this year, in {currency}. Sharing sends a sentence without amounts.",
         "countPlural=other": "{count} transactions so far this year, in {currency}. Sharing sends a sentence without amounts."

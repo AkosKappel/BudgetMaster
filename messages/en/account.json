@@ -116,13 +116,8 @@
   "acct_spaces_personal_only_you": "Personal, only you",
   "acct_spaces_role_members": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{role}, {count} member",
         "countPlural=other": "{role}, {count} members"
@@ -142,9 +137,7 @@
         "input day",
         "local dayPlural = day: plural type=ordinal"
       ],
-      "selectors": [
-        "dayPlural"
-      ],
+      "selectors": ["dayPlural"],
       "match": {
         "dayPlural=one": "{day}st",
         "dayPlural=two": "{day}nd",

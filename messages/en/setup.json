@@ -46,13 +46,8 @@
   "setup_categories_usage_both": "{transactions} and {payments}",
   "setup_categories_usage_transactions": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transaction",
         "countPlural=other": "{count} transactions"
@@ -61,13 +56,8 @@
   ],
   "setup_categories_usage_payments": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} recurring payment",
         "countPlural=other": "{count} recurring payments"
@@ -133,13 +123,8 @@
   "setup_tags_empty": "No tags yet. Create one, then pick it when you add a transaction.",
   "setup_tags_uses": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transaction",
         "countPlural=other": "{count} transactions"
@@ -148,13 +133,8 @@
   ],
   "setup_tags_used_by": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Used by {count} transaction.",
         "countPlural=other": "Used by {count} transactions."
@@ -180,13 +160,8 @@
   "setup_type_transfer": "Transfer",
   "setup_recurring_unit_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "day",
         "countPlural=other": "days"
@@ -195,13 +170,8 @@
   ],
   "setup_recurring_unit_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "week",
         "countPlural=other": "weeks"
@@ -210,13 +180,8 @@
   ],
   "setup_recurring_unit_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "month",
         "countPlural=other": "months"
@@ -225,13 +190,8 @@
   ],
   "setup_recurring_unit_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "year",
         "countPlural=other": "years"
@@ -294,9 +254,7 @@
         "input date",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{cadence}, {count} payment, last {date}",
         "countPlural=other": "{cadence}, {count} payments, last {date}"
@@ -338,13 +296,8 @@
   "setup_import_failed": "Could not import. Try again.",
   "setup_import_done": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} transaction imported",
         "countPlural=other": "{count} transactions imported"
@@ -370,13 +323,8 @@
   "setup_import_unreadable_hint": ". Rows without a valid date or amount (like totals) are left out.",
   "setup_import_review_button": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Review {count} rows",
         "countPlural=other": "Review {count} rows"
@@ -385,13 +333,8 @@
   ],
   "setup_import_undone": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Import undone, {count} transaction removed",
         "countPlural=other": "Import undone, {count} transactions removed"
@@ -408,9 +351,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "into {wallet}, {remaining} of {count} transaction left",
         "countPlural=other": "into {wallet}, {remaining} of {count} transactions left"
@@ -427,9 +368,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Deletes the {count} transactions it created from {wallet}, including any you have edited since.",
         "countPlural=other": "Deletes the {count} transactions it created from {wallet}, including any you have edited since."
@@ -441,13 +380,8 @@
   "setup_import_step_review": "3. Review",
   "setup_import_duplicates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} row looks like a transaction already in this wallet and is left out; tick it to import anyway.",
         "countPlural=other": "{count} rows look like transactions already in this wallet and are left out; tick them to import anyway."
@@ -461,13 +395,8 @@
   "setup_import_possible_duplicate": "Possible duplicate",
   "setup_import_missing": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Choose a category for {count} more row.",
         "countPlural=other": "Choose a category for {count} more rows."
@@ -476,13 +405,8 @@
   ],
   "setup_import_remember": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Remember the category I chose for this payee",
         "countPlural=other": "Remember the categories I chose for these {count} payees"
@@ -491,13 +415,8 @@
   ],
   "setup_import_confirm": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Import {count} transaction",
         "countPlural=other": "Import {count} transactions"
@@ -506,13 +425,8 @@
   ],
   "setup_schedule_every_day": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Every day",
         "countPlural=other": "Every {count} days"
@@ -521,13 +435,8 @@
   ],
   "setup_schedule_every_week": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Every week",
         "countPlural=other": "Every {count} weeks"
@@ -536,13 +445,8 @@
   ],
   "setup_schedule_every_month": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Every month",
         "countPlural=other": "Every {count} months"
@@ -551,13 +455,8 @@
   ],
   "setup_schedule_every_year": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Every year",
         "countPlural=other": "Every {count} years"
