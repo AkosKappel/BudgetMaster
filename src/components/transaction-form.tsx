@@ -908,7 +908,10 @@ function PayeeSuggestions({
   type: TransactionType
   onPick: (suggestion: Suggestion) => void
 }) {
-  const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 200 })
+  const [debouncedQuery] = useDebouncedValue(query.trim(), {
+    wait: 200,
+    key: 'payee-suggestions',
+  })
   const { data = [] } = useQuery({
     ...payeesQuery(spaceId, debouncedQuery),
     placeholderData: keepPreviousData,

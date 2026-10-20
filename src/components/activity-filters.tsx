@@ -49,7 +49,10 @@ export function ActivityFilters({
       replace: true,
     })
   // Typed fields wait for a pause, so each keystroke is not a request.
-  const debouncer = useDebouncer(setFilter, { wait: 300 })
+  const debouncer = useDebouncer(setFilter, {
+    wait: 300,
+    key: 'activity-filters',
+  })
   const setFilterLater = debouncer.maybeExecute
 
   const clearAll = () => {

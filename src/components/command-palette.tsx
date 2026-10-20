@@ -85,7 +85,11 @@ export function CommandPalette() {
   const openEdit = useQuickAdd((s) => s.openEdit)
   const theme = useTheme()
   const [query, setQuery] = useState('')
-  const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 200 })
+  const [debouncedQuery] = useDebouncedValue(query.trim(), {
+    wait: 200,
+    // Names it in the Pacer devtools panel.
+    key: 'palette-search',
+  })
   // Prefetched by the app layout; only listed once something is typed.
   const { data: options } = useQuery({
     ...formOptionsQuery(space.id),
