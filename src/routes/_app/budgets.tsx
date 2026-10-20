@@ -189,6 +189,22 @@ function Budgets() {
             </Button>
           )}
         </div>
+        {data.categoryBudgets.length > 0 && data.income > 0 && (
+          <p className="text-muted-foreground text-sm">
+            {money(data.income)} came in, {money(data.assigned)} is in category
+            budgets.{' '}
+            {data.income >= data.assigned ? (
+              <span className="font-medium text-foreground">
+                {money(data.income - data.assigned)} has no job yet.
+              </span>
+            ) : (
+              <span className="font-medium text-destructive">
+                Budgets are {money(data.assigned - data.income)} more than came
+                in.
+              </span>
+            )}
+          </p>
+        )}
         {data.categoryBudgets.length === 0 ? (
           <EmptyState icon={Gauge}>
             Give a category a monthly limit, like 400 for groceries, to see how

@@ -186,6 +186,16 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       })
       .sort((a, b) => b.spent / b.amount - a.spent / a.amount)
 
+    // For zero-based budgeting: how much of this month's income the category budgets give
+    // a job. A child's budget is already part of its parent's when both have one.
+    const budgeted = new Set(categoryBudgets.map((b) => b.categoryId))
+    const assigned = categoryBudgets
+      .filter((b) => {
+        const parentId = categories.find((c) => c.id === b.categoryId)?.parentId
+        return !parentId || !budgeted.has(parentId)
+      })
+      .reduce((sum, b) => sum + b.monthlyAmount, 0)
+
     // Cumulative spending per day of the month, last month aligned by day number.
     const daily = new Map(byDay.map((r) => [r.date, r.total]))
     const length = daysInRange(period.start, period.end)
@@ -215,6 +225,7 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
       canWrite: space.role !== 'viewer',
       spent,
       income: incomeRow?.total ?? 0,
+      assigned,
       overall: overall && { id: overall.id, amount: overall.amount },
       categoryBudgets,
       breakdown,
