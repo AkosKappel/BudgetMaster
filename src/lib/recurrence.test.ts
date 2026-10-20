@@ -100,6 +100,7 @@ test('todayIn uses the time zone and falls back to UTC', () => {
   assert.equal(todayIn('Europe/Bratislava', now), '2027-01-01')
   assert.equal(todayIn('America/New_York', now), '2026-12-31')
   assert.equal(todayIn('Not/AZone', now), '2026-12-31')
+  assert.equal(todayIn(undefined, now), '2026-12-31')
 })
 
 test('describeSchedule reads like a sentence', () => {

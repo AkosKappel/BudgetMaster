@@ -87,7 +87,10 @@ export const todayIso = () => new Date().toISOString().slice(0, 10)
 // Today in an IANA time zone ("sv" formats as YYYY-MM-DD). An unknown zone falls back to UTC.
 export function todayIn(timeZone: string | undefined, now = new Date()) {
   try {
-    return new Intl.DateTimeFormat('sv', { timeZone }).format(now)
+    // Without a zone Intl would use the server's own clock, not UTC.
+    return new Intl.DateTimeFormat('sv', {
+      timeZone: timeZone ?? 'UTC',
+    }).format(now)
   } catch {
     return now.toISOString().slice(0, 10)
   }
