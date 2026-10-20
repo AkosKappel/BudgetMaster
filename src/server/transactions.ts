@@ -27,6 +27,7 @@ import {
   wallet,
 } from '@/db/schema'
 import { env } from '@/env'
+import { m } from '@/paraglide/messages.js'
 import { logActivity } from '@/server/activity-log'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -194,16 +195,13 @@ type ValidInput = z.output<typeof transactionInput>
 // Returns the row to store.
 async function prepare(userId: string, input: ValidInput) {
   const space = await requireMembership(userId, input.spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.txn_viewers_cannot_change())
 
   const split = input.splits.length > 0
   if (split) {
-    if (input.splits.length < 2)
-      throw new Error('A split needs at least two parts.')
+    if (input.splits.length < 2) throw new Error(m.txn_split_two_parts())
     const total = input.splits.reduce((sum, p) => sum + p.amount, 0)
-    if (total !== input.amount)
-      throw new Error('The parts must add up to the amount.')
+    if (total !== input.amount) throw new Error(m.txn_split_sum())
   }
   const splitCategoryIds = [...new Set(input.splits.map((p) => p.categoryId))]
   const paidBy = input.type === 'expense' ? input.paidBy : null
@@ -238,15 +236,18 @@ async function prepare(userId: string, input: ValidInput) {
           )
       : Promise.resolve([]),
   ])
-  if (paidBy && payer.length === 0)
-    throw new Error('The payer must be a member of the space.')
+  if (paidBy && payer.length === 0) throw new Error(m.txn_payer_not_member())
   if (tags.length !== new Set(input.tagIds).size)
-    throw new Error('Unknown tag.')
+    throw new Error(m.txn_unknown_tag())
   if (
     splitCategories.length !== splitCategoryIds.length ||
     splitCategories.some((c) => c.type !== input.type)
   )
-    throw new Error(`Choose ${input.type} categories for the parts.`)
+    throw new Error(
+      input.type === 'income'
+        ? m.txn_split_choose_income_categories()
+        : m.txn_split_choose_expense_categories(),
+    )
 
   return {
     space,
@@ -308,7 +309,7 @@ export const updateTransaction = createServerFn({ method: 'POST' })
     const { id, spaceId, ...changes } = row
     await db.transaction(async (tx) => {
       const previous = await snapshotOf(tx, spaceId, id)
-      if (!previous) throw new Error('Transaction not found.')
+      if (!previous) throw new Error(m.txn_not_found())
       await tx.update(transaction).set(changes).where(eq(transaction.id, id))
       await logActivity(tx, context.user.id, 'updated', row, {
         before: {
@@ -328,8 +329,7 @@ export const deleteTransaction = createServerFn({ method: 'POST' })
   .validator(spaceInput.extend({ id: z.uuid() }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change this space.')
+    if (space.role === 'viewer') throw new Error(m.txn_viewers_cannot_change())
     await db.transaction(async (tx) => {
       // Tags and splits go with the row (cascade), so the log keeps them for a restore.
       const snapshot = await snapshotOf(tx, space.id, data.id)
@@ -352,11 +352,10 @@ export const restoreTransaction = createServerFn({ method: 'POST' })
   .validator(spaceInput.extend({ eventId: z.uuid() }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change this space.')
+    if (space.role === 'viewer') throw new Error(m.txn_viewers_cannot_change())
     const event = await recentEvent(space.id, data.eventId, 'deleted')
     const snapshot = event?.details.snapshot
-    if (!event || !snapshot) throw new Error('This deletion cannot be undone.')
+    if (!event || !snapshot) throw new Error(m.txn_undo_delete_unavailable())
     // Older entries keep the core fields next to the snapshot.
     const { details } = event
     const { fields, tagIds, splits } = await revive(space.id, {
@@ -374,7 +373,7 @@ export const restoreTransaction = createServerFn({ method: 'POST' })
         .values(row)
         .onConflictDoNothing({ target: transaction.id })
         .returning({ id: transaction.id })
-      if (!inserted.length) throw new Error('It has been restored already.')
+      if (!inserted.length) throw new Error(m.txn_already_restored())
       await writeLinks(tx, space.id, row.id, tagIds, splits)
       await logActivity(tx, context.user.id, 'created', row)
     })
@@ -389,11 +388,10 @@ export const undoChange = createServerFn({ method: 'POST' })
   .validator(spaceInput.extend({ eventId: z.uuid() }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change this space.')
+    if (space.role === 'viewer') throw new Error(m.txn_viewers_cannot_change())
     const event = await recentEvent(space.id, data.eventId, 'updated')
     const previous = event?.details.previous
-    if (!event || !previous) throw new Error('This change cannot be undone.')
+    if (!event || !previous) throw new Error(m.txn_undo_change_unavailable())
     const { fields, tagIds, splits } = await revive(space.id, previous)
     const id = event.transactionId
     await db.transaction(async (tx) => {
@@ -403,12 +401,9 @@ export const undoChange = createServerFn({ method: 'POST' })
         .where(eq(activityEvent.transactionId, id))
         .orderBy(desc(activityEvent.createdAt), desc(activityEvent.id))
         .limit(1)
-      if (newest?.id !== event.id)
-        throw new Error(
-          'It has changed again since. Undo the newer change first.',
-        )
+      if (newest?.id !== event.id) throw new Error(m.txn_changed_since())
       const current = await snapshotOf(tx, space.id, id)
-      if (!current) throw new Error('Transaction not found.')
+      if (!current) throw new Error(m.txn_not_found())
       await tx.update(transaction).set(fields).where(eq(transaction.id, id))
       await writeLinks(tx, space.id, id, tagIds, splits)
       await logActivity(

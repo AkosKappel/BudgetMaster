@@ -14,6 +14,7 @@ import {
   type TransactionFilters,
 } from '@/lib/transaction-filters'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 
 const selectClass =
   'h-9 w-full rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm'
@@ -70,8 +71,8 @@ export function ActivityFilters({
           />
           <Input
             type="search"
-            aria-label="Search payee or note"
-            placeholder="Search payee or note"
+            aria-label={m.txn_filters_search()}
+            placeholder={m.txn_filters_search()}
             defaultValue={q ?? ''}
             maxLength={60}
             onChange={(e) => setFilterLater('q', e.target.value.trim())}
@@ -85,7 +86,7 @@ export function ActivityFilters({
           onClick={() => setOpen(!open)}
         >
           <SlidersHorizontal />
-          Filters
+          {m.txn_filters()}
           {panelCount > 0 && (
             <span className="rounded-full bg-primary px-1.5 text-primary-foreground text-xs tabular-nums">
               {panelCount}
@@ -101,8 +102,8 @@ export function ActivityFilters({
           !open && 'hidden',
         )}
       >
-        <legend className="sr-only">Filters</legend>
-        <Field label="Type" htmlFor={`${id}-type`}>
+        <legend className="sr-only">{m.txn_filters()}</legend>
+        <Field label={m.txn_form_type()} htmlFor={`${id}-type`}>
           <select
             id={`${id}-type`}
             className={selectClass}
@@ -114,24 +115,28 @@ export function ActivityFilters({
               )
             }
           >
-            <option value="">All</option>
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            <option value="transfer">Transfer</option>
+            <option value="">{m.txn_filters_all()}</option>
+            <option value="expense">{m.txn_type_expense()}</option>
+            <option value="income">{m.txn_type_income()}</option>
+            <option value="transfer">{m.txn_type_transfer()}</option>
           </select>
         </Field>
-        <Field label="Category" htmlFor={`${id}-category`}>
+        <Field label={m.txn_form_category()} htmlFor={`${id}-category`}>
           <select
             id={`${id}-category`}
             className={selectClass}
             value={filters.category ?? ''}
             onChange={(e) => setFilter('category', e.target.value)}
           >
-            <option value="">All</option>
+            <option value="">{m.txn_filters_all()}</option>
             {(['expense', 'income'] as const).map((type) => (
               <optgroup
                 key={type}
-                label={type === 'expense' ? 'Expense' : 'Income'}
+                label={
+                  type === 'expense'
+                    ? m.txn_type_expense()
+                    : m.txn_type_income()
+                }
               >
                 {categoryOrder(options?.categories ?? [], type).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -142,14 +147,14 @@ export function ActivityFilters({
             ))}
           </select>
         </Field>
-        <Field label="Wallet" htmlFor={`${id}-wallet`}>
+        <Field label={m.txn_form_wallet()} htmlFor={`${id}-wallet`}>
           <select
             id={`${id}-wallet`}
             className={selectClass}
             value={filters.wallet ?? ''}
             onChange={(e) => setFilter('wallet', e.target.value)}
           >
-            <option value="">All</option>
+            <option value="">{m.txn_filters_all()}</option>
             {options?.wallets.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.name}
@@ -157,14 +162,14 @@ export function ActivityFilters({
             ))}
           </select>
         </Field>
-        <Field label="Tag" htmlFor={`${id}-tag`}>
+        <Field label={m.txn_filters_tag()} htmlFor={`${id}-tag`}>
           <select
             id={`${id}-tag`}
             className={selectClass}
             value={filters.tag ?? ''}
             onChange={(e) => setFilter('tag', e.target.value)}
           >
-            <option value="">All</option>
+            <option value="">{m.txn_filters_all()}</option>
             {options?.tags.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -172,7 +177,7 @@ export function ActivityFilters({
             ))}
           </select>
         </Field>
-        <Field label="From" htmlFor={`${id}-from`}>
+        <Field label={m.txn_filters_from()} htmlFor={`${id}-from`}>
           <Input
             id={`${id}-from`}
             type="date"
@@ -181,7 +186,7 @@ export function ActivityFilters({
             onChange={(e) => setFilter('from', e.target.value)}
           />
         </Field>
-        <Field label="To" htmlFor={`${id}-to`}>
+        <Field label={m.txn_filters_to()} htmlFor={`${id}-to`}>
           <Input
             id={`${id}-to`}
             type="date"
@@ -190,7 +195,7 @@ export function ActivityFilters({
             onChange={(e) => setFilter('to', e.target.value)}
           />
         </Field>
-        <Field label="Min amount" htmlFor={`${id}-min`}>
+        <Field label={m.txn_filters_min()} htmlFor={`${id}-min`}>
           <Input
             id={`${id}-min`}
             type="number"
@@ -201,7 +206,7 @@ export function ActivityFilters({
             onChange={(e) => setFilterLater('min', parseNumber(e.target.value))}
           />
         </Field>
-        <Field label="Max amount" htmlFor={`${id}-max`}>
+        <Field label={m.txn_filters_max()} htmlFor={`${id}-max`}>
           <Input
             id={`${id}-max`}
             type="number"
@@ -219,7 +224,7 @@ export function ActivityFilters({
             onClick={clearAll}
             disabled={activeFilterCount(filters) === 0}
           >
-            Clear all
+            {m.txn_filters_clear_all()}
           </Button>
         </div>
       </fieldset>

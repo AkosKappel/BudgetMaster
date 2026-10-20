@@ -16,30 +16,81 @@ export interface QuickEntry {
   payee?: string
 }
 
+// Words are compared without accents (see `plain`), so "hétfő" and "hetfo" both match.
+// English, Hungarian and Slovak are all accepted, whatever the app language is.
 const WEEKDAYS = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
+  ['sunday', 'vasarnap', 'nedela'],
+  ['monday', 'hetfo', 'pondelok'],
+  ['tuesday', 'kedd', 'utorok'],
+  ['wednesday', 'szerda', 'streda'],
+  ['thursday', 'csutortok', 'stvrtok'],
+  ['friday', 'pentek', 'piatok'],
+  ['saturday', 'szombat', 'sobota'],
 ]
-const INCOME_WORDS = new Set(['income', 'received', 'got', 'earned'])
-const FILLER = new Set(['with', 'from', 'on', 'at', 'in', 'for', 'by', 'paid'])
+const TODAY = new Set(['today', 'ma', 'dnes'])
+const YESTERDAY = new Set(['yesterday', 'tegnap', 'vcera'])
+const TOMORROW = new Set(['tomorrow', 'holnap', 'zajtra'])
+const INCOME_WORDS = new Set([
+  'income',
+  'received',
+  'got',
+  'earned',
+  'bevetel',
+  'kaptam',
+  'kerestem',
+  'prijem',
+  'dostal',
+  'dostala',
+  'zarobil',
+  'zarobila',
+])
+const FILLER = new Set([
+  'with',
+  'from',
+  'on',
+  'at',
+  'in',
+  'for',
+  'by',
+  'paid',
+  'a',
+  'az',
+  'egy',
+  'fizettem',
+  's',
+  'so',
+  'z',
+  'zo',
+  'od',
+  'v',
+  'vo',
+  'na',
+  'u',
+  'pre',
+  'za',
+  'zaplatil',
+  'zaplatila',
+])
 const AMOUNT = /^([+-]?)[€$£]?(\d+(?:[.,]\d{1,2})?)(?:€|eur|usd|\$|£)?$/i
 
+// Lower case without accents: "Včera" becomes "vcera".
+const plain = (word: string) =>
+  word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+
 // A date word relative to today: "today", "yesterday", "tomorrow", a weekday (the latest
-// one up to today), or an ISO date.
+// one up to today), or an ISO date. Takes a word already passed through `plain`.
 function dateFor(word: string, today: string): string | undefined {
-  if (word === 'today') return today
-  if (word === 'yesterday') return addDays(today, -1)
-  if (word === 'tomorrow') return addDays(today, 1)
+  if (TODAY.has(word)) return today
+  if (YESTERDAY.has(word)) return addDays(today, -1)
+  if (TOMORROW.has(word)) return addDays(today, 1)
   if (/^\d{4}-\d{2}-\d{2}$/.test(word))
     return parseDate(word, 'YYYY-MM-DD') ?? undefined
-  // "fri", "friday"; at least three letters, so "sun" works but "s" is a payee.
+  // "fri", "friday", "pén", "pia"; at least three letters, so "sun" works but "s" is a
+  // payee. Slovak two-letter forms ("po", "so") are left out: they are common words.
   const weekday =
-    word.length >= 3 ? WEEKDAYS.findIndex((day) => day.startsWith(word)) : -1
+    word.length >= 3
+      ? WEEKDAYS.findIndex((names) => names.some((day) => day.startsWith(word)))
+      : -1
   if (weekday === -1) return undefined
   const current = new Date(`${today}T00:00:00Z`).getUTCDay()
   return addDays(today, -((current - weekday + 7) % 7))
@@ -63,11 +114,11 @@ export function parseQuickEntry(
       if (amount[1] === '+') entry.type = 'income'
       continue
     }
-    if (INCOME_WORDS.has(key)) {
+    if (INCOME_WORDS.has(plain(key))) {
       entry.type = 'income'
       continue
     }
-    const date = entry.date ? undefined : dateFor(key, today)
+    const date = entry.date ? undefined : dateFor(plain(key), today)
     if (date) {
       entry.date = date
       continue
@@ -98,7 +149,7 @@ export function parseQuickEntry(
     rest.push(word)
   }
 
-  const payee = rest.filter((word) => !FILLER.has(lower(word))).join(' ')
+  const payee = rest.filter((word) => !FILLER.has(plain(word))).join(' ')
   if (payee) entry.payee = payee.charAt(0).toUpperCase() + payee.slice(1)
   return entry
 }

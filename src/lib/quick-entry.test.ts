@@ -72,3 +72,25 @@ test('a date that does not exist stays in the payee', () => {
     payee: '2026-02-30 tesco',
   })
 })
+
+test('reads Hungarian date, weekday, income and filler words', () => {
+  assert.equal(parseQuickEntry('Tesco 5 tegnap', options).date, '2026-10-18')
+  assert.equal(parseQuickEntry('pén 5', options).date, '2026-10-16')
+  assert.equal(parseQuickEntry('hetfo 5', options).date, '2026-10-19')
+  assert.deepEqual(parseQuickEntry('kaptam 20 az anyától', options), {
+    type: 'income',
+    amount: '20',
+    payee: 'Anyától',
+  })
+})
+
+test('reads Slovak date, weekday, income and filler words', () => {
+  assert.equal(parseQuickEntry('Lidl 5 Včera', options).date, '2026-10-18')
+  assert.equal(parseQuickEntry('vcera 5', options).date, '2026-10-18')
+  assert.equal(parseQuickEntry('piatok 5', options).date, '2026-10-16')
+  assert.deepEqual(parseQuickEntry('dostal 20 od mamy', options), {
+    type: 'income',
+    amount: '20',
+    payee: 'Mamy',
+  })
+})

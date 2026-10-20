@@ -18,6 +18,7 @@ import {
   transactionFiltersSchema,
 } from '@/lib/transaction-filters'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import type { LedgerTransaction } from '@/server/ledger'
 import { useQuickAdd } from '@/stores/quick-add'
 
@@ -32,7 +33,9 @@ export const Route = createFileRoute('/_app/activity')({
         transactionFiltersSchema.parse(location.search),
       ),
     ),
-  head: () => ({ meta: [{ title: 'Activity | BudgetMaster' }] }),
+  head: () => ({
+    meta: [{ title: `${m.txn_activity_title()} | BudgetMaster` }],
+  }),
   component: Activity,
 })
 
@@ -89,7 +92,9 @@ function Activity() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">Activity</h1>
+      <h1 className="font-semibold text-2xl tracking-tight">
+        {m.txn_activity_title()}
+      </h1>
       <ActivityFilters
         key={clearCount}
         spaceId={space.id}
@@ -101,11 +106,11 @@ function Activity() {
           icon={SearchX}
           action={
             <Button size="sm" variant="outline" onClick={clearFilters}>
-              Clear filters
+              {m.txn_activity_clear_filters()}
             </Button>
           }
         >
-          No transactions match these filters.
+          {m.txn_activity_no_match()}
         </EmptyState>
       ) : items.length === 0 ? (
         <EmptyState
@@ -113,13 +118,12 @@ function Activity() {
           action={
             canWrite && (
               <Button size="sm" onClick={() => openNew()}>
-                <Plus /> Add transaction
+                <Plus /> {m.txn_activity_add()}
               </Button>
             )
           }
         >
-          Every income, expense and transfer shows up here, grouped by day.
-          Nothing recorded yet.
+          {m.txn_activity_empty()}
         </EmptyState>
       ) : (
         <div
@@ -182,11 +186,13 @@ function Activity() {
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
             >
-              {isFetchingNextPage ? 'Loading' : 'Show older'}
+              {isFetchingNextPage
+                ? m.txn_activity_loading()
+                : m.txn_activity_show_older()}
             </Button>
           ) : (
             <p className="text-center text-muted-foreground text-sm">
-              That is everything.
+              {m.txn_activity_end()}
             </p>
           )}
         </div>

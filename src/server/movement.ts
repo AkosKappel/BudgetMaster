@@ -2,6 +2,7 @@ import { and, eq, inArray } from 'drizzle-orm'
 
 import { db } from '@/db'
 import { category, wallet } from '@/db/schema'
+import { m } from '@/paraglide/messages.js'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles (an export next to server functions pulls the database driver into the browser).
@@ -26,7 +27,7 @@ export async function checkMovement(
   { split = false } = {},
 ) {
   const isTransfer = input.type === 'transfer'
-  if (split && isTransfer) throw new Error('Transfers cannot be split.')
+  if (split && isTransfer) throw new Error(m.txn_split_transfer())
   const walletIds = [input.walletId, input.toWalletId].filter(
     (id): id is string => id !== null,
   )
@@ -50,12 +51,15 @@ export async function checkMovement(
 
   const from = wallets.find((w) => w.id === input.walletId)
   const to = wallets.find((w) => w.id === input.toWalletId)
-  if (!from) throw new Error('Choose a wallet.')
+  if (!from) throw new Error(m.txn_form_choose_wallet())
   if (isTransfer) {
-    if (!to || to.id === from.id)
-      throw new Error('Choose a different target wallet.')
+    if (!to || to.id === from.id) throw new Error(m.txn_choose_target_wallet())
   } else if (!split && (!cat || cat.type !== input.type)) {
-    throw new Error(`Choose an ${input.type} category.`)
+    throw new Error(
+      input.type === 'income'
+        ? m.txn_choose_income_category()
+        : m.txn_choose_expense_category(),
+    )
   }
   const sameCurrency = !isTransfer || to?.currency === from.currency
 

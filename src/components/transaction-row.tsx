@@ -6,6 +6,7 @@ import { iconFor } from '@/lib/icons'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
 import { listItemTransition, snappySpring } from '@/lib/motion'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import type { LedgerTransaction } from '@/server/ledger'
 
 interface Props {
@@ -44,11 +45,12 @@ export function TransactionRow({
         .map((p) => p.category.name)
         .join(' + ')
     : t.category?.name
-  const title = t.payee ?? categoryName ?? 'Transfer'
+  const title = t.payee ?? categoryName ?? m.txn_type_transfer()
   const details = isTransfer
-    ? [`${t.wallet.name} to ${t.toWallet?.name}`]
+    ? [m.txn_row_transfer({ from: t.wallet.name, to: t.toWallet?.name ?? '' })]
     : [t.payee ? categoryName : null, t.wallet.name]
-  if (showAuthor && t.author) details.push(`by ${t.author.name.split(' ')[0]}`)
+  if (showAuthor && t.author)
+    details.push(m.txn_row_by({ name: t.author.name.split(' ')[0] }))
   const planned = t.date > today
   const currency = t.wallet.currency
 
@@ -74,18 +76,18 @@ export function TransactionRow({
           {t.recurringRuleId && (
             <Repeat
               className="size-3.5 shrink-0 text-muted-foreground"
-              aria-label="Recurring"
+              aria-label={m.txn_row_recurring()}
             />
           )}
           {t.receiptVersion !== null && (
             <Paperclip
               className="size-3.5 shrink-0 text-muted-foreground"
-              aria-label="Receipt photo"
+              aria-label={m.txn_row_receipt()}
             />
           )}
         </span>
         <span className="truncate text-muted-foreground text-sm">
-          {planned && 'Planned, '}
+          {planned && m.txn_row_planned()}
           {details.filter(Boolean).join(', ')}
         </span>
         {t.tags.length > 0 && (
@@ -147,7 +149,7 @@ export function TransactionRow({
           style={{ width: ACTION_WIDTH }}
         >
           <Trash2 className="size-4" />
-          Delete
+          {m.txn_row_delete()}
         </button>
       )}
       <motion.div

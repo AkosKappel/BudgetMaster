@@ -25,16 +25,23 @@ import { resizeImage } from '@/lib/resize-image'
 import { ruleFor } from '@/lib/rules'
 import { cn } from '@/lib/utils'
 import { uuidv7 } from '@/lib/uuid'
+import { m } from '@/paraglide/messages.js'
 import { readReceipt } from '@/server/ai'
 import type { LedgerTransaction } from '@/server/ledger'
 import { deleteReceipt, saveReceipt } from '@/server/receipts'
 import type { TransactionType } from '@/stores/quick-add'
 
-const TYPES: { value: TransactionType; label: string }[] = [
-  { value: 'expense', label: 'Expense' },
-  { value: 'income', label: 'Income' },
-  { value: 'transfer', label: 'Transfer' },
+const TYPES: { value: TransactionType; label: () => string }[] = [
+  { value: 'expense', label: m.txn_type_expense },
+  { value: 'income', label: m.txn_type_income },
+  { value: 'transfer', label: m.txn_type_transfer },
 ]
+
+const SAVE_LABELS: Record<TransactionType, () => string> = {
+  expense: m.txn_form_save_expense,
+  income: m.txn_form_save_income,
+  transfer: m.txn_form_save_transfer,
+}
 
 interface FormValues {
   type: TransactionType
@@ -55,7 +62,9 @@ interface FormValues {
 
 const amountField = z
   .string()
-  .refine((value) => (parseAmount(value) ?? 0) > 0, 'Enter an amount.')
+  .refine((value) => (parseAmount(value) ?? 0) > 0, {
+    error: () => m.txn_form_enter_amount(),
+  })
 
 // The server takes at most this many tags and split parts per transaction.
 const MAX_PARTS = 20
@@ -66,10 +75,10 @@ const formSchema = z
     amount: amountField,
     payee: z.string().max(120),
     categoryId: z.string(),
-    walletId: z.string().min(1, 'Choose a wallet.'),
+    walletId: z.string().min(1, { error: () => m.txn_form_choose_wallet() }),
     toWalletId: z.string(),
     toAmount: z.string(),
-    date: z.iso.date('Choose a date.'),
+    date: z.iso.date({ error: () => m.txn_form_choose_date() }),
     note: z.string().max(2000),
     tagIds: z.array(z.string()),
     paidBy: z.string(),
@@ -81,7 +90,7 @@ const formSchema = z
         ctx.addIssue({
           code: 'custom',
           path: ['toWalletId'],
-          message: 'Choose a different wallet to move the money to.',
+          message: m.txn_form_choose_to_wallet(),
         })
       }
       // Empty means the same amount as sent.
@@ -89,7 +98,7 @@ const formSchema = z
         ctx.addIssue({
           code: 'custom',
           path: ['toAmount'],
-          message: 'Enter the amount received, or leave it empty.',
+          message: m.txn_form_to_amount_invalid(),
         })
       }
     } else if (value.splits.length > 0) {
@@ -99,13 +108,13 @@ const formSchema = z
         ctx.addIssue({
           code: 'custom',
           path: ['splits'],
-          message: 'Give every part a category and an amount.',
+          message: m.txn_form_split_incomplete(),
         })
     } else if (!value.categoryId) {
       ctx.addIssue({
         code: 'custom',
         path: ['categoryId'],
-        message: 'Choose a category.',
+        message: m.txn_form_choose_category(),
       })
     }
   })
@@ -205,7 +214,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       if (split && splits.reduce((sum, p) => sum + p.amount, 0) !== amount) {
         form.setFieldMeta('splits', (meta) => ({
           ...meta,
-          errorMap: { onSubmit: 'The parts must add up to the amount.' },
+          errorMap: { onSubmit: m.txn_split_sum() },
         }))
         return
       }
@@ -326,21 +335,20 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
   if (!options.canWrite) {
     return (
       <p className="px-4 pb-6 text-muted-foreground">
-        You can view this space but not change it. Ask an owner to make you an
-        editor.
+        {m.txn_form_view_only()}
       </p>
     )
   }
   if (options.wallets.length === 0) {
     return (
       <p className="px-4 pb-6 text-muted-foreground">
-        Add a wallet first, so the app knows where the money goes.{' '}
+        {m.txn_form_no_wallet()}{' '}
         <Link
           to="/wallets"
           className="text-foreground underline"
           onClick={onDone}
         >
-          Add a wallet
+          {m.txn_form_add_wallet()}
         </Link>
       </p>
     )
@@ -373,7 +381,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       <form.Field name="type">
         {(field) => (
           <fieldset className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
-            <legend className="sr-only">Type</legend>
+            <legend className="sr-only">{m.txn_form_type()}</legend>
             {TYPES.map((t) => (
               <label
                 key={t.value}
@@ -396,7 +404,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                   }}
                   className="sr-only"
                 />
-                {t.label}
+                {t.label()}
               </label>
             ))}
           </fieldset>
@@ -409,7 +417,9 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             {(field) => (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="amount" className="sr-only">
-                  Amount in {walletById(walletId)?.currency}
+                  {m.txn_form_amount_in({
+                    currency: walletById(walletId)?.currency ?? '',
+                  })}
                 </Label>
                 <div className="flex items-baseline gap-2 border-input border-b-2 pb-1 focus-within:border-ring">
                   <span className="text-2xl text-muted-foreground">
@@ -448,7 +458,9 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                 <form.Field name="walletId">
                   {(field) => (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="from-wallet">From</Label>
+                      <Label htmlFor="from-wallet">
+                        {m.txn_form_from_wallet()}
+                      </Label>
                       <WalletSelect
                         id="from-wallet"
                         value={field.state.value}
@@ -461,7 +473,9 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                 <form.Field name="toWalletId">
                   {(field) => (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="to-wallet">To</Label>
+                      <Label htmlFor="to-wallet">
+                        {m.txn_form_to_wallet()}
+                      </Label>
                       <WalletSelect
                         id="to-wallet"
                         value={field.state.value}
@@ -487,12 +501,14 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                       {(field) => (
                         <div className="flex flex-col gap-2">
                           <Label htmlFor="to-amount">
-                            Amount received in {to.currency}
+                            {m.txn_form_amount_received({
+                              currency: to.currency,
+                            })}
                           </Label>
                           <Input
                             id="to-amount"
                             inputMode="decimal"
-                            placeholder="Same as sent"
+                            placeholder={m.txn_form_same_as_sent()}
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
                           />
@@ -510,15 +526,17 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                 {(field) => (
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="payee">
-                      {type === 'income' ? 'From' : 'Paid to'}
+                      {type === 'income'
+                        ? m.txn_form_payee_from()
+                        : m.txn_form_payee_to()}
                     </Label>
                     <Input
                       id="payee"
                       autoComplete="off"
                       placeholder={
                         type === 'income'
-                          ? 'Employer, client, person'
-                          : 'Shop, person, service'
+                          ? m.txn_form_payee_income_placeholder()
+                          : m.txn_form_payee_expense_placeholder()
                       }
                       value={field.state.value}
                       onChange={(e) => {
@@ -590,7 +608,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                       {(field) => (
                         <fieldset className="flex flex-col gap-2">
                           <legend className="mb-2 font-medium text-sm">
-                            Category
+                            {m.txn_form_category()}
                           </legend>
                           <div className="flex flex-wrap gap-2">
                             {categoryOrder(options.categories, type).map(
@@ -636,7 +654,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                             }
                           >
                             <Split />
-                            Split across categories
+                            {m.txn_form_split()}
                           </Button>
                         </fieldset>
                       )}
@@ -647,7 +665,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
               <form.Field name="walletId">
                 {(field) => (
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="wallet">Wallet</Label>
+                    <Label htmlFor="wallet">{m.txn_form_wallet()}</Label>
                     <WalletSelect
                       id="wallet"
                       value={field.state.value}
@@ -661,7 +679,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                 <form.Field name="paidBy">
                   {(field) => (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="paid-by">Paid by</Label>
+                      <Label htmlFor="paid-by">{m.txn_form_paid_by()}</Label>
                       <select
                         id="paid-by"
                         value={field.state.value}
@@ -669,10 +687,12 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                         aria-describedby="paid-by-hint"
                         className="h-10 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
                       >
-                        <option value="">Shared money</option>
-                        {options.members.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.id === user.id ? `${m.name} (you)` : m.name}
+                        <option value="">{m.txn_form_shared_money()}</option>
+                        {options.members.map((member) => (
+                          <option key={member.id} value={member.id}>
+                            {member.id === user.id
+                              ? m.txn_form_member_you({ name: member.name })
+                              : member.name}
                           </option>
                         ))}
                       </select>
@@ -680,8 +700,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                         id="paid-by-hint"
                         className="text-muted-foreground text-xs"
                       >
-                        Someone who paid from their own money gets it back from
-                        the others in equal shares.
+                        {m.txn_form_paid_by_hint()}
                       </p>
                     </div>
                   )}
@@ -697,7 +716,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
           const today = localTodayIso()
           return (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{m.txn_form_date()}</Label>
               <div className="flex gap-2">
                 <Input
                   id="date"
@@ -707,8 +726,8 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                   className="flex-1"
                 />
                 {[
-                  { label: 'Today', date: today },
-                  { label: 'Yesterday', date: addDays(today, -1) },
+                  { label: m.txn_form_today(), date: today },
+                  { label: m.txn_form_yesterday(), date: addDays(today, -1) },
                 ].map((quick) => (
                   <Button
                     key={quick.label}
@@ -736,7 +755,9 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             <form.Field name="tagIds">
               {(field) => (
                 <fieldset className="flex flex-col gap-2">
-                  <legend className="mb-2 font-medium text-sm">Tags</legend>
+                  <legend className="mb-2 font-medium text-sm">
+                    {m.txn_form_tags()}
+                  </legend>
                   <div className="flex flex-wrap gap-2">
                     {options.tags.map((t) => (
                       <label
@@ -777,13 +798,13 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
       <form.Field name="note">
         {(field) => (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="note">Note</Label>
+            <Label htmlFor="note">{m.txn_form_note()}</Label>
             <textarea
               id="note"
               rows={2}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
-              placeholder="Optional"
+              placeholder={m.txn_form_optional()}
               className="rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
             />
           </div>
@@ -819,7 +840,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             type="button"
             variant="outline"
             size="lg"
-            aria-label="Delete transaction"
+            aria-label={m.txn_form_delete()}
             onClick={() => {
               onDone()
               deleteWithUndo(transaction)
@@ -831,7 +852,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
         <form.Subscribe selector={(s) => s.values.type}>
           {(type) => (
             <Button type="submit" size="lg" className="flex-1">
-              {transaction ? 'Save changes' : `Save ${type}`}
+              {transaction ? m.txn_form_save_changes() : SAVE_LABELS[type]()}
             </Button>
           )}
         </form.Subscribe>
@@ -923,7 +944,10 @@ function PayeeSuggestions({
   if (suggestions.length === 0) return null
 
   return (
-    <ul className="flex flex-wrap gap-1.5" aria-label="Suggestions">
+    <ul
+      className="flex flex-wrap gap-1.5"
+      aria-label={m.txn_form_suggestions()}
+    >
       {suggestions.map((s) => (
         <li key={s.payee}>
           <button
@@ -945,7 +969,9 @@ function AmountSum({ value, currency }: { value: string; currency: string }) {
   const minor = parseAmount(value, currencyDigits(currency))
   return (
     <p className="text-muted-foreground text-sm" aria-live="polite">
-      {minor === null ? 'Not a valid sum' : `= ${formatMoney(minor, currency)}`}
+      {minor === null
+        ? m.txn_form_invalid_sum()
+        : `= ${formatMoney(minor, currency)}`}
     </p>
   )
 }
@@ -983,20 +1009,18 @@ function SplitEditor({
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-medium text-sm">
-        Split across categories
-      </legend>
+      <legend className="mb-2 font-medium text-sm">{m.txn_form_split()}</legend>
       <ul className="flex flex-col gap-2">
         {value.map((part, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: parts have no id until saved, and their order is stable
           <li key={i} className="flex gap-2">
             <select
-              aria-label={`Category of part ${i + 1}`}
+              aria-label={m.txn_split_part_category({ number: i + 1 })}
               className="h-9 min-w-0 flex-1 rounded-md border border-input bg-card px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
               value={part.categoryId}
               onChange={(e) => update(i, { categoryId: e.target.value })}
             >
-              <option value="">Category</option>
+              <option value="">{m.txn_form_category()}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.parentId ? `  ${c.name}` : c.name}
@@ -1004,7 +1028,7 @@ function SplitEditor({
               ))}
             </select>
             <Input
-              aria-label={`Amount of part ${i + 1}`}
+              aria-label={m.txn_split_part_amount({ number: i + 1 })}
               inputMode="decimal"
               autoComplete="off"
               placeholder="0.00"
@@ -1016,7 +1040,7 @@ function SplitEditor({
               type="button"
               variant="ghost"
               size="icon"
-              aria-label={`Remove part ${i + 1}`}
+              aria-label={m.txn_split_part_remove({ number: i + 1 })}
               onClick={() => remove(i)}
             >
               <X />
@@ -1042,17 +1066,17 @@ function SplitEditor({
           }
         >
           <Plus />
-          Add a part
+          {m.txn_split_add_part()}
         </Button>
         <p
           aria-live="polite"
           className={cn('text-sm', left !== 0 && 'text-muted-foreground')}
         >
           {left === 0
-            ? 'Adds up'
+            ? m.txn_split_adds_up()
             : left > 0
-              ? `${formatMoney(left, currency)} left to assign`
-              : `${formatMoney(-left, currency)} too much`}
+              ? m.txn_split_left({ amount: formatMoney(left, currency) })
+              : m.txn_split_too_much({ amount: formatMoney(-left, currency) })}
         </p>
       </div>
       <FieldError errors={errors} />
@@ -1063,7 +1087,7 @@ function SplitEditor({
         className="w-fit"
         onClick={() => onChange([])}
       >
-        Don't split
+        {m.txn_split_cancel()}
       </Button>
     </fieldset>
   )
@@ -1081,14 +1105,14 @@ function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor="quick-entry" className="text-muted-foreground text-xs">
-        Or type it
+        {m.txn_quick_label()}
       </Label>
       <div className="flex gap-2">
         <Input
           id="quick-entry"
           autoComplete="off"
           enterKeyHint="done"
-          placeholder="coffee 3.20 cash yesterday"
+          placeholder={m.txn_quick_placeholder()}
           aria-describedby="quick-entry-hint"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -1101,12 +1125,11 @@ function QuickEntryField({ onParse }: { onParse: (text: string) => void }) {
           }}
         />
         <Button type="button" variant="outline" onClick={apply}>
-          Fill in
+          {m.txn_quick_fill()}
         </Button>
       </div>
       <p id="quick-entry-hint" className="sr-only">
-        Amount, payee, category, wallet and a day like yesterday or Friday, in
-        any order. Fills the fields below.
+        {m.txn_quick_hint()}
       </p>
     </div>
   )
@@ -1129,7 +1152,7 @@ async function applyReceipt(
       })
   } catch (error) {
     toast.error(
-      error instanceof Error ? error.message : 'Could not save the receipt.',
+      error instanceof Error ? error.message : m.txn_receipt_save_failed(),
     )
   }
 }
@@ -1162,7 +1185,7 @@ function ReceiptField({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-medium text-sm">Receipt</span>
+      <span className="font-medium text-sm">{m.txn_receipt()}</span>
       {current ? (
         <div className="flex flex-wrap items-end gap-3">
           <a
@@ -1173,7 +1196,7 @@ function ReceiptField({
           >
             <img
               src={current}
-              alt="Receipt photo, opens full size"
+              alt={m.txn_receipt_alt()}
               className="h-24 w-auto rounded-md border object-cover"
             />
           </a>
@@ -1190,7 +1213,9 @@ function ReceiptField({
                   await read(change.image)
                 } catch (err) {
                   setError(
-                    err instanceof Error ? err.message : 'Could not read it.',
+                    err instanceof Error
+                      ? err.message
+                      : m.txn_receipt_read_failed(),
                   )
                 } finally {
                   setAnalysing(false)
@@ -1198,7 +1223,7 @@ function ReceiptField({
               }}
             >
               <Sparkles />
-              {analysing ? 'Reading' : 'Fill in from photo'}
+              {analysing ? m.txn_receipt_reading() : m.txn_receipt_fill()}
             </Button>
           )}
           <Button
@@ -1208,13 +1233,13 @@ function ReceiptField({
             // A just-picked photo goes back to the saved one (if any).
             onClick={() => onChange(change ? null : 'remove')}
           >
-            Remove photo
+            {m.txn_receipt_remove()}
           </Button>
         </div>
       ) : (
         <label className="flex h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-input bg-card px-3 text-sm shadow-xs has-focus-visible:ring-2 has-focus-visible:ring-ring">
           <Camera className="size-4" aria-hidden="true" />
-          {reading ? 'Reading photo' : 'Add a photo'}
+          {reading ? m.txn_receipt_reading_photo() : m.txn_receipt_add()}
           <input
             type="file"
             accept="image/*"
@@ -1230,7 +1255,9 @@ function ReceiptField({
                 onChange({ image: await resizeImage(file) })
               } catch (err) {
                 setError(
-                  err instanceof Error ? err.message : 'Could not read it.',
+                  err instanceof Error
+                    ? err.message
+                    : m.txn_receipt_read_failed(),
                 )
               } finally {
                 setReading(false)

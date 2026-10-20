@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js'
 import { formatLocale } from './locale.ts'
 import { formatMoney } from './money.ts'
 
@@ -23,20 +24,22 @@ export interface ActivityEntry {
 const label = (type: string, payee: string | null) =>
   payee ??
   (type === 'income'
-    ? 'an income'
+    ? m.txn_log_income()
     : type === 'transfer'
-      ? 'a transfer'
-      : 'an expense')
+      ? m.txn_log_transfer()
+      : m.txn_log_expense())
 
 // "added Tesco, €42.10", "changed Tesco: €42.10 → €24.10", "deleted Café Zoë, €3.20".
 export function describeActivity({ action, currency, details }: ActivityEntry) {
   const money = (minor: number) => formatMoney(minor, currency)
   const name = label(details.type, details.payee)
-  if (action === 'created') return `added ${name}, ${money(details.amount)}`
-  if (action === 'deleted') return `deleted ${name}, ${money(details.amount)}`
+  if (action === 'created')
+    return m.txn_log_added({ name, amount: money(details.amount) })
+  if (action === 'deleted')
+    return m.txn_log_deleted({ name, amount: money(details.amount) })
 
   const before = details.before
-  if (!before) return `changed ${name}`
+  if (!before) return m.txn_log_changed({ name })
   const changes = [
     before.amount !== details.amount &&
       `${money(before.amount)} → ${money(details.amount)}`,
@@ -46,6 +49,9 @@ export function describeActivity({ action, currency, details }: ActivityEntry) {
       `${shortDate(before.date)} → ${shortDate(details.date)}`,
   ].filter(Boolean)
   return changes.length
-    ? `changed ${label(details.type, before.payee)}: ${changes.join(', ')}`
-    : `edited ${name}`
+    ? m.txn_log_changed_details({
+        name: label(details.type, before.payee),
+        changes: changes.join(', '),
+      })
+    : m.txn_log_edited({ name })
 }

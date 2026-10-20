@@ -7,6 +7,7 @@ import { db } from '@/db'
 import { category } from '@/db/schema'
 import { env } from '@/env'
 import { decodeReceipt } from '@/lib/receipt-image'
+import { m } from '@/paraglide/messages.js'
 import { anthropic, countRead } from '@/server/anthropic'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
@@ -19,15 +20,12 @@ export const readReceipt = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(spaceInput.extend({ image: z.string().max(1_400_000) }))
   .handler(async ({ context, data }) => {
-    if (!env.ANTHROPIC_API_KEY)
-      throw new Error('AI features are not set up on this server.')
-    if (!context.user.aiEnabled)
-      throw new Error('Switch on AI features in Settings first.')
-    if (context.user.isAnonymous)
-      throw new Error('Create an account to use AI features.')
+    if (!env.ANTHROPIC_API_KEY) throw new Error(m.txn_ai_not_set_up())
+    if (!context.user.aiEnabled) throw new Error(m.txn_ai_switch_on())
+    if (context.user.isAnonymous) throw new Error(m.txn_ai_needs_account())
     const space = await requireMembership(context.user.id, data.spaceId)
     const image = decodeReceipt(data.image)
-    if (!image) throw new Error('Use a photo (JPEG or WebP) under 1 MB.')
+    if (!image) throw new Error(m.txn_receipt_invalid())
     countRead(context.user.id)
 
     const categories = await db
@@ -94,8 +92,8 @@ export const readReceipt = createServerFn({ method: 'POST' })
     })
     const result = response.parsed_output
     if (response.stop_reason === 'refusal' || !result)
-      throw new Error('Could not read this photo.')
-    if (!result.isReceipt) throw new Error('This does not look like a receipt.')
+      throw new Error(m.txn_photo_unreadable())
+    if (!result.isReceipt) throw new Error(m.txn_ai_not_receipt())
     return {
       amount:
         result.total && /^\d+(\.\d{1,3})?$/.test(result.total)

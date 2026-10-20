@@ -13,6 +13,7 @@ import {
   transactionTag,
   wallet,
 } from '@/db/schema'
+import { m } from '@/paraglide/messages.js'
 import { RESTORE_DAYS } from '@/server/activity-log'
 
 // Server-only: imported from server function handlers, never from modules the client
@@ -118,7 +119,7 @@ export async function revive(spaceId: string, snapshot: TransactionSnapshot) {
     wallets.length !== new Set(walletIds).size ||
     categories.length !== new Set(categoryIds).size
   )
-    throw new Error('Its wallet or category no longer exists.')
+    throw new Error(m.txn_restore_missing())
   return {
     fields: {
       type: snapshot.type,

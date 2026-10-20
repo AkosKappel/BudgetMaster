@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { receipt, transaction } from '@/db/schema'
 import { decodeReceipt } from '@/lib/receipt-image'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { requireMembership } from '@/server/membership'
 import { spaceInput } from '@/server/spaces'
@@ -17,8 +18,7 @@ const receiptInput = spaceInput.extend({ transactionId: z.uuid() })
 
 async function requireEditor(userId: string, spaceId: string) {
   const space = await requireMembership(userId, spaceId)
-  if (space.role === 'viewer')
-    throw new Error('Viewers cannot change this space.')
+  if (space.role === 'viewer') throw new Error(m.txn_viewers_cannot_change())
   return space
 }
 
@@ -29,7 +29,7 @@ export const saveReceipt = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }) => {
     const space = await requireEditor(context.user.id, data.spaceId)
     const image = decodeReceipt(data.image)
-    if (!image) throw new Error('Use a photo (JPEG or WebP) under 1 MB.')
+    if (!image) throw new Error(m.txn_receipt_invalid())
     const [[owned], [usage]] = await Promise.all([
       db
         .select({ id: transaction.id })
@@ -45,9 +45,9 @@ export const saveReceipt = createServerFn({ method: 'POST' })
         .from(receipt)
         .where(eq(receipt.spaceId, space.id)),
     ])
-    if (!owned) throw new Error('Transaction not found.')
+    if (!owned) throw new Error(m.txn_not_found())
     if ((usage?.total ?? 0) + image.bytes.length > SPACE_LIMIT_BYTES)
-      throw new Error('This space is out of room for receipts.')
+      throw new Error(m.txn_receipt_space_full())
     const values = {
       contentType: image.type,
       size: image.bytes.length,

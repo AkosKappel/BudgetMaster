@@ -1,3 +1,5 @@
+import { m } from '../paraglide/messages.js'
+
 // Browser only: shrinks a photo to at most `maxSide` pixels on its longer side and encodes
 // it as WebP (JPEG where the browser cannot encode WebP), as a data URL for upload.
 export async function resizeImage(file: File, maxSide = 1600, quality = 0.8) {
@@ -14,11 +16,11 @@ export async function resizeImage(file: File, maxSide = 1600, quality = 0.8) {
     new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality))
   let blob = await encode('image/webp')
   if (blob?.type !== 'image/webp') blob = await encode('image/jpeg')
-  if (!blob) throw new Error('Could not read this photo.')
+  if (!blob) throw new Error(m.txn_photo_unreadable())
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(new Error('Could not read this photo.'))
+    reader.onerror = () => reject(new Error(m.txn_photo_unreadable()))
     reader.readAsDataURL(blob)
   })
 }

@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 
 import { env } from '@/env'
+import { m } from '@/paraglide/messages.js'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles, so the SDK and this state stay out of the browser.
@@ -14,8 +15,7 @@ export function countRead(userId: string) {
   const day = new Date().toISOString().slice(0, 10)
   const entry = readsToday.get(userId)
   const count = entry?.day === day ? entry.count + 1 : 1
-  if (count > READS_PER_DAY)
-    throw new Error('That is enough receipts for today. Try again tomorrow.')
+  if (count > READS_PER_DAY) throw new Error(m.txn_ai_daily_limit())
   readsToday.set(userId, { day, count })
 }
 
