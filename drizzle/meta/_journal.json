@@ -127,6 +127,20 @@
       "when": 1792510856597,
       "tag": "0017_category_order",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792511621684,
+      "tag": "0018_transaction_order_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792511659114,
+      "tag": "0019_desc_index_nulls_first",
+      "breakpoints": true
     }
   ]
 }

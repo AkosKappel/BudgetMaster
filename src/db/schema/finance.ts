@@ -301,7 +301,10 @@ export const transaction = pgTable(
   (t) => [
     ...movementConstraints('transaction', t, { splittable: true }),
     idInSpace(t),
-    index().on(t.spaceId, t.date.desc()),
+    // Matches the Activity order and its keyset cursor, so a page is read straight from it.
+    // `nullsFirst` because that is what `order by ... desc` means; Drizzle's plain `desc()`
+    // makes a NULLS LAST index that Postgres cannot use for that order.
+    index().on(t.spaceId, t.date.desc().nullsFirst(), t.id.desc().nullsFirst()),
     index().on(t.walletId),
     index().on(t.toWalletId),
     index().on(t.categoryId),
@@ -431,7 +434,7 @@ export const activityEvent = pgTable(
     details: jsonb().$type<ActivityDetails>().notNull(),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [index().on(t.spaceId, t.createdAt.desc())],
+  (t) => [index().on(t.spaceId, t.createdAt.desc().nullsFirst())],
 )
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
@@ -481,7 +484,7 @@ export const settlement = pgTable(
   (t) => [
     check('settlement_amount_positive', sql`${t.amount} > 0`),
     check('settlement_two_members', sql`${t.fromUserId} <> ${t.toUserId}`),
-    index().on(t.spaceId, t.date.desc()),
+    index().on(t.spaceId, t.date.desc().nullsFirst()),
   ],
 )
 
@@ -500,7 +503,7 @@ export const importBatch = pgTable(
   },
   (t) => [
     idInSpace(t),
-    index().on(t.spaceId, t.createdAt.desc()),
+    index().on(t.spaceId, t.createdAt.desc().nullsFirst()),
     foreignKey({
       columns: [t.walletId, t.spaceId],
       foreignColumns: [wallet.id, wallet.spaceId],

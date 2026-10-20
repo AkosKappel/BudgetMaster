@@ -1,0 +1,2 @@
+DROP INDEX "transaction_space_id_date_index";--> statement-breakpoint
+CREATE INDEX "transaction_space_id_date_id_index" ON "transaction" USING btree ("space_id","date" DESC NULLS LAST,"id" DESC NULLS LAST);
