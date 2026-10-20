@@ -31,6 +31,8 @@ function Privacy() {
         <li>{m.pub_privacy_s_log()}</li>
         <li>{m.pub_privacy_s_social()}</li>
         <li>{m.pub_privacy_s_passkeys()}</li>
+        <li>{m.pub_privacy_s_push()}</li>
+        <li>{m.pub_privacy_s_email()}</li>
       </ul>
 
       <h2>{m.pub_privacy_cookies()}</h2>

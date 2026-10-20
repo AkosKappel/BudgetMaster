@@ -136,5 +136,7 @@
   "pub_security_report_before": "Please report security problems privately through",
   "pub_security_report_link": "a GitHub security advisory",
   "pub_security_report_after": "instead of a public issue. Include the steps to reproduce it. You will get an answer, and a fix before details are published. Please do not access other people's data or degrade the service while testing.",
-  "pub_security_contact": "Machine-readable contact details are in"
+  "pub_security_contact": "Machine-readable contact details are in",
+  "pub_privacy_s_push": "If you turn on reminders on a device: its push address and keys. The browser's push service (from Google, Mozilla or Apple) delivers the reminder; it sees the reminder text, not your data.",
+  "pub_privacy_s_email": "Emails (confirming your address, password reset, invites and the weekly summary if you turn it on) are sent through Resend."
 }

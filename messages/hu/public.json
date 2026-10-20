@@ -136,5 +136,7 @@
   "pub_security_report_before": "A biztonsági problémákat kérjük, privát módon jelezd egy",
   "pub_security_report_link": "GitHub security advisory",
   "pub_security_report_after": "segítségével, ne nyilvános hibajegyben. Írd le a reprodukálás lépéseit. Választ kapsz, és javítást, mielőtt a részletek nyilvánosak lesznek. Tesztelés közben kérjük, ne férj hozzá mások adataihoz, és ne rontsd a szolgáltatás működését.",
-  "pub_security_contact": "A gépileg olvasható kapcsolati adatok itt találhatók:"
+  "pub_security_contact": "A gépileg olvasható kapcsolati adatok itt találhatók:",
+  "pub_privacy_s_push": "Ha egy eszközön bekapcsolod az emlékeztetőket: annak push-címe és kulcsai. Az emlékeztetőt a böngésző push-szolgáltatása (a Google-é, a Mozilláé vagy az Apple-é) kézbesíti; az emlékeztető szövegét látja, az adataidat nem.",
+  "pub_privacy_s_email": "Az e-maileket (címmegerősítés, jelszó-visszaállítás, meghívók és a heti összefoglaló, ha bekapcsolod) a Resend küldi."
 }

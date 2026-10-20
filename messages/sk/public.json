@@ -136,5 +136,7 @@
   "pub_security_report_before": "Bezpečnostné problémy, prosím, nahlás súkromne cez",
   "pub_security_report_link": "GitHub security advisory",
   "pub_security_report_after": "namiesto verejného issue. Uveď kroky na zopakovanie. Dostaneš odpoveď a opravu skôr, než sa zverejnia podrobnosti. Pri testovaní, prosím, nepristupuj k údajom iných a nezhoršuj fungovanie služby.",
-  "pub_security_contact": "Strojovo čitateľné kontaktné údaje sú v"
+  "pub_security_contact": "Strojovo čitateľné kontaktné údaje sú v",
+  "pub_privacy_s_push": "Ak na zariadení zapneš pripomienky: jeho push adresa a kľúče. Pripomienku doručí push služba prehliadača (od Googlu, Mozilly alebo Apple); vidí text pripomienky, nie tvoje údaje.",
+  "pub_privacy_s_email": "E-maily (potvrdenie adresy, obnovenie hesla, pozvánky a týždenné zhrnutie, ak ho zapneš) posiela služba Resend."
 }
