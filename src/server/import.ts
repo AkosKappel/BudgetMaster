@@ -1,5 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, between, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import {
+  and,
+  between,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
@@ -92,16 +101,23 @@ export const reviewImport = createServerFn({ method: 'POST' })
     ]
 
     const [existing, history, rules] = await Promise.all([
+      // How each transaction moved this wallet's balance: transfers in count as money in.
       db
         .select({
           date: transaction.date,
-          type: transaction.type,
-          amount: transaction.amount,
+          signed: sql<number>`case
+            when ${transaction.toWalletId} = ${data.walletId} then coalesce(${transaction.toAmount}, ${transaction.amount})
+            when ${transaction.type} = 'income' then ${transaction.amount}
+            else -${transaction.amount}
+          end`.mapWith(Number),
         })
         .from(transaction)
         .where(
           and(
-            eq(transaction.walletId, data.walletId),
+            or(
+              eq(transaction.walletId, data.walletId),
+              eq(transaction.toWalletId, data.walletId),
+            ),
             between(
               transaction.date,
               addDays(dates[0], -2),
@@ -143,15 +159,13 @@ export const reviewImport = createServerFn({ method: 'POST' })
         .where(eq(categorizationRule.spaceId, space.id)),
     ])
 
-    const signed = (t: { type: string; amount: number }) =>
-      t.type === 'income' ? t.amount : -t.amount
     return data.rows.map((row) => {
       const type = row.amount > 0 ? 'income' : 'expense'
       const low = addDays(row.date, -2)
       const high = addDays(row.date, 2)
       return {
         duplicate: existing.some(
-          (t) => t.date >= low && t.date <= high && signed(t) === row.amount,
+          (t) => t.date >= low && t.date <= high && t.signed === row.amount,
         ),
         // A rule beats history: it is what the user asked for explicitly.
         categoryId:
