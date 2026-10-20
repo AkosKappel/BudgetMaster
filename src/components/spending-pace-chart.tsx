@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/chart'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { BudgetReport } from '@/server/budgets'
 
 const config = {
@@ -44,6 +45,10 @@ export function SpendingPaceChart({
     })
   const lastIndex = pace.findLastIndex((p) => p.current !== null)
   const latest = pace[lastIndex]
+  const labels = {
+    current: m.ov_pace_this_month(),
+    previous: m.ov_pace_last_month(),
+  }
   const summary = paceSummary(pace, lastIndex, budget, isCurrent, money)
 
   return (
@@ -60,13 +65,13 @@ export function SpendingPaceChart({
                 className="h-0.5 w-4 rounded-full"
                 style={{ backgroundColor: config[key].color }}
               />
-              {config[key].label}
+              {labels[key]}
             </li>
           ))}
           {budget !== null && (
             <li className="flex items-center gap-1.5">
               <span className="h-px w-4 bg-foreground/50" />
-              Budget
+              {m.ov_pace_budget()}
             </li>
           )}
         </ul>
@@ -100,7 +105,7 @@ export function SpendingPaceChart({
               strokeOpacity={0.5}
               strokeDasharray="4 4"
               label={{
-                value: `Budget ${compact(budget)}`,
+                value: m.ov_pace_budget_line({ amount: compact(budget) }),
                 position: 'insideTopLeft',
                 fill: 'var(--muted-foreground)',
                 fontSize: 12,
@@ -117,7 +122,10 @@ export function SpendingPaceChart({
               return (
                 <div className="grid min-w-40 gap-1.5 rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
                   <p className="font-medium">
-                    {formatShortDate(point.date)}, day {point.day}
+                    {m.ov_pace_tooltip_day({
+                      date: formatShortDate(point.date),
+                      day: point.day,
+                    })}
                   </p>
                   {(['current', 'previous'] as const).map((key) =>
                     point[key] === null ? null : (
@@ -127,7 +135,7 @@ export function SpendingPaceChart({
                           style={{ backgroundColor: config[key].color }}
                         />
                         <span className="text-muted-foreground">
-                          {config[key].label}
+                          {labels[key]}
                         </span>
                         <span className="ml-auto font-medium">
                           {money(point[key] ?? 0)}
@@ -175,14 +183,14 @@ export function SpendingPaceChart({
 
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">
-          Show as table
+          {m.ov_chart_show_table()}
         </summary>
         <table className="mt-2 w-full text-left">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="py-1 font-normal">Day</th>
-              <th className="py-1 text-right font-normal">This month</th>
-              <th className="py-1 text-right font-normal">Last month</th>
+              <th className="py-1 font-normal">{m.ov_chart_day()}</th>
+              <th className="py-1 text-right font-normal">{labels.current}</th>
+              <th className="py-1 text-right font-normal">{labels.previous}</th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
@@ -199,9 +207,7 @@ export function SpendingPaceChart({
         </table>
       </details>
       {latest === undefined && (
-        <p className="text-muted-foreground text-sm">
-          No spending yet this month.
-        </p>
+        <p className="text-muted-foreground text-sm">{m.ov_pace_empty()}</p>
       )}
     </figure>
   )
@@ -215,14 +221,16 @@ function paceSummary(
   money: (minor: number) => string,
 ) {
   const latest = pace[lastIndex]
-  if (!latest || latest.current === null) return 'Nothing spent yet.'
+  if (!latest || latest.current === null) return m.ov_pace_nothing_spent()
   const difference = latest.current - latest.previous
-  const comparison =
-    difference === 0
-      ? 'the same as last month at this point'
-      : `${money(Math.abs(difference))} ${difference > 0 ? 'more' : 'less'} than last month at this point`
+  const values = {
+    spent: money(latest.current),
+    difference: money(Math.abs(difference)),
+  }
   if (!isCurrent) {
-    return `Spent ${money(latest.current)} this month, ${money(Math.abs(difference))} ${difference >= 0 ? 'more' : 'less'} than the month before.`
+    return difference >= 0
+      ? m.ov_pace_past_more(values)
+      : m.ov_pace_past_less(values)
   }
   let projection = ''
   // Recurring payments land on the same days each month, so the rest of last month is a
@@ -230,13 +238,20 @@ function paceSummary(
   if (latest.day >= 5 && latest.day < pace.length) {
     const lastMonthRest = (pace.at(-1)?.previous ?? 0) - latest.previous
     const projected = latest.current + lastMonthRest
-    const ending = 'If the rest of the month goes like last month,'
-    projection =
+    projection = ` ${
       budget === null
-        ? ` ${ending} you end at ${money(projected)}.`
+        ? m.ov_pace_projection_end({ amount: money(projected) })
         : projected > budget
-          ? ` ${ending} you end ${money(projected - budget)} over budget.`
-          : ` ${ending} you stay ${money(budget - projected)} under budget.`
+          ? m.ov_pace_projection_over({ amount: money(projected - budget) })
+          : m.ov_pace_projection_under({ amount: money(budget - projected) })
+    }`
   }
-  return `${money(latest.current)} spent by day ${latest.day}, ${comparison}.${projection}`
+  const sofar = { spent: values.spent, day: latest.day }
+  const comparison =
+    difference === 0
+      ? m.ov_pace_current_same(sofar)
+      : difference > 0
+        ? m.ov_pace_current_more({ ...sofar, difference: values.difference })
+        : m.ov_pace_current_less({ ...sofar, difference: values.difference })
+  return `${comparison}${projection}`
 }

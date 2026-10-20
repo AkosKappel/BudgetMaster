@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { budget, category, transaction, wallet } from '@/db/schema'
 import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { categoryLines } from '@/server/category-lines'
 import { requireMembership } from '@/server/membership'
@@ -144,7 +145,7 @@ export const getBudgetReport = createServerFn({ method: 'GET' })
             ? [
                 {
                   id: c.id,
-                  name: `${c.name}, not split`,
+                  name: m.ov_budgets_not_split({ name: c.name }),
                   total: own.get(c.id) ?? 0,
                 },
               ]
@@ -250,8 +251,7 @@ export const setBudget = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change budgets.')
+    if (space.role === 'viewer') throw new Error(m.ov_budgets_viewer_error())
     if (data.categoryId) {
       const [cat] = await db
         .select({ type: category.type })
@@ -259,8 +259,7 @@ export const setBudget = createServerFn({ method: 'POST' })
         .where(
           and(eq(category.id, data.categoryId), eq(category.spaceId, space.id)),
         )
-      if (cat?.type !== 'expense')
-        throw new Error('Budgets need an expense category.')
+      if (cat?.type !== 'expense') throw new Error(m.ov_budgets_need_expense())
     }
     // One budget per category (or overall): update it if it exists.
     await db
@@ -286,8 +285,7 @@ export const deleteBudget = createServerFn({ method: 'POST' })
   .validator(spaceInput.extend({ categoryId: z.uuid().nullable() }))
   .handler(async ({ context, data }) => {
     const space = await requireMembership(context.user.id, data.spaceId)
-    if (space.role === 'viewer')
-      throw new Error('Viewers cannot change budgets.')
+    if (space.role === 'viewer') throw new Error(m.ov_budgets_viewer_error())
     await db
       .delete(budget)
       .where(

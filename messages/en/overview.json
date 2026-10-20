@@ -1,0 +1,422 @@
+{
+  "ov_insights_title": "Worth a look",
+  "ov_insights_duplicate": "{payee} twice for {amount}, on {first} and {second}. Charged twice?",
+  "ov_insights_check": "Check",
+  "ov_insights_price_rise": "{payee} went up from {before} to {after} (+{percent} %).",
+  "ov_recurring_link": "Recurring",
+  "ov_insights_category_up": "{category} is up {change} % on the same days last month: {now} against {before}.",
+  "ov_insights_category_up_weekend": "{category} is up {change} % on the same days last month: {now} against {before}, {share} % of it on weekends.",
+  "ov_insights_category_up_weekend_all": "{category} is up {change} % on the same days last month: {now} against {before}, all of it on weekends.",
+  "ov_insights_recurring_payment": "A recurring payment",
+  "ov_meter_label": "Budget used",
+  "ov_meter_value": "{spent} of {limit}",
+  "ov_meter_over": "{amount} over",
+  "ov_meter_close": "Close to the limit, {amount} left",
+  "ov_meter_left": "{amount} left",
+  "ov_meter_of": "of {limit}",
+  "ov_meter_of_daily": "of {limit}, {daily} a day",
+  "ov_prices_no_change": "no change",
+  "ov_prices_not_enough": "Not enough history yet: this needs payees you paid at least twice in the last three months and twice in the same months a year ago.",
+  "ov_prices_unchanged": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "What you pay at {count} regular payees has not changed in a year.",
+        "countPlural=other": "What you pay at {count} regular payees has not changed in a year."
+      }
+    }
+  ],
+  "ov_prices_rose": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "What you pay at {count} regular payees rose by {percent} % in a year: your personal inflation rate.",
+        "countPlural=other": "What you pay at {count} regular payees rose by {percent} % in a year: your personal inflation rate."
+      }
+    }
+  ],
+  "ov_prices_fell": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "What you pay at {count} regular payees fell by {percent} % in a year: your personal inflation rate.",
+        "countPlural=other": "What you pay at {count} regular payees fell by {percent} % in a year: your personal inflation rate."
+      }
+    }
+  ],
+  "ov_trends_empty": "No spending yet.",
+  "ov_trends_new": "new",
+  "ov_trends_as_usual": "as usual",
+  "ov_trends_vs_usual": "{change} % vs usual",
+  "ov_chart_income": "Income",
+  "ov_chart_spending": "Spending",
+  "ov_chart_saved": "Saved",
+  "ov_chart_show_table": "Show as table",
+  "ov_chart_month": "Month",
+  "ov_chart_date": "Date",
+  "ov_chart_day": "Day",
+  "ov_chart_amount": "Amount",
+  "ov_cashflow_not_enough": "Not enough history yet for a yearly view.",
+  "ov_cashflow_month_from": "the month from {day} {month}",
+  "ov_cashflow_summary_saved": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "In the last {count} complete months you earned {income} and spent {spent}, saving {saved} ({rate} % of income). Best month: {best}; tightest: {worst}.",
+        "countPlural=other": "In the last {count} complete months you earned {income} and spent {spent}, saving {saved} ({rate} % of income). Best month: {best}; tightest: {worst}."
+      }
+    }
+  ],
+  "ov_cashflow_summary_overspent": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "In the last {count} complete months you earned {income} and spent {spent}, spending {over} more than came in. Best month: {best}; tightest: {worst}.",
+        "countPlural=other": "In the last {count} complete months you earned {income} and spent {spent}, spending {over} more than came in. Best month: {best}; tightest: {worst}."
+      }
+    }
+  ],
+  "ov_forecast_no_wallets": "No wallets yet.",
+  "ov_forecast_no_payments": "No recurring or planned payments in the next 90 days, so the balance stays at {balance}.",
+  "ov_forecast_below_zero": "Below zero from {date}, at {lowest}. Ends at {end} on {endDate}.",
+  "ov_forecast_never_lower": "Never lower than today's {balance}. Ends at {end} on {endDate}.",
+  "ov_forecast_tightest": "Tightest on {date}, at {lowest}. Ends at {end} on {endDate}.",
+  "ov_forecast_show_payments": "Show payments",
+  "ov_forecast_payment": "Payment",
+  "ov_forecast_balance": "Balance",
+  "ov_networth_summary": "{balance} today, {change} since {date}.",
+  "ov_networth_empty": "No balances yet.",
+  "ov_networth_title": "Net worth",
+  "ov_breakdown_empty": "No spending in this month.",
+  "ov_calendar_quiet": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} days without spending in the last {weeks} weeks.",
+        "countPlural=other": "{count} days without spending in the last {weeks} weeks."
+      }
+    }
+  ],
+  "ov_calendar_biggest": "The biggest day was {date} with {amount}.",
+  "ov_calendar_less": "Less",
+  "ov_calendar_more": "More",
+  "ov_calendar_biggest_days": "Biggest spending days",
+  "ov_calendar_spent": "Spent",
+  "ov_pace_this_month": "This month",
+  "ov_pace_last_month": "Last month",
+  "ov_pace_budget": "Budget",
+  "ov_pace_budget_line": "Budget {amount}",
+  "ov_pace_tooltip_day": "{date}, day {day}",
+  "ov_pace_empty": "No spending yet this month.",
+  "ov_pace_nothing_spent": "Nothing spent yet.",
+  "ov_pace_past_more": "Spent {spent} this month, {difference} more than the month before.",
+  "ov_pace_past_less": "Spent {spent} this month, {difference} less than the month before.",
+  "ov_pace_projection_end": "If the rest of the month goes like last month, you end at {amount}.",
+  "ov_pace_projection_over": "If the rest of the month goes like last month, you end {amount} over budget.",
+  "ov_pace_projection_under": "If the rest of the month goes like last month, you stay {amount} under budget.",
+  "ov_pace_current_same": "{spent} spent by day {day}, the same as last month at this point.",
+  "ov_pace_current_more": "{spent} spent by day {day}, {difference} more than last month at this point.",
+  "ov_pace_current_less": "{spent} spent by day {day}, {difference} less than last month at this point.",
+  "ov_flow_no_month": "No complete month yet.",
+  "ov_flow_budget": "Budget",
+  "ov_flow_from_savings": "From savings",
+  "ov_flow_nothing": "nothing",
+  "ov_flow_summary_saved": "{from} to {to}: {earned} came in and {spent} went out, {saved} saved. The biggest outflow was {biggest}.",
+  "ov_flow_summary_overspent": "{from} to {to}: {earned} came in and {spent} went out, {over} more than came in. The biggest outflow was {biggest}.",
+  "ov_flow_from": "From",
+  "ov_flow_to": "To",
+  "ov_home_coming_up": "Coming up",
+  "ov_home_transfer_to": "Transfer to {wallet}",
+  "ov_home_wallets": "Wallets",
+  "ov_home_add_wallet": "Add wallet",
+  "ov_home_wallets_empty": "Add a wallet for each account, card or cash you want to track.",
+  "ov_home_recent": "Recent",
+  "ov_home_see_all": "See all",
+  "ov_home_add_transaction": "Add transaction",
+  "ov_home_recent_empty": "No transactions yet. Add your first one to see where your money goes.",
+  "ov_home_spent_since": "Spent since {date}",
+  "ov_home_spent": "Spent",
+  "ov_home_detail_no_budget": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Income {income}. {count} day left. Set a monthly budget to see what you can still spend.",
+        "countPlural=other": "Income {income}. {count} days left. Set a monthly budget to see what you can still spend."
+      }
+    }
+  ],
+  "ov_home_detail_income": "Income {income}.",
+  "ov_home_over_by": "Over budget by",
+  "ov_home_left_until": "Left to spend until {date}",
+  "ov_home_under_by": "Under budget by",
+  "ov_home_detail_spent": "Spent {spent} of {budget}.",
+  "ov_home_days_until": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} day left until {date}.",
+        "countPlural=other": "{count} days left until {date}."
+      }
+    }
+  ],
+  "ov_home_budget_month": "Budget month",
+  "ov_home_previous_month": "Previous month",
+  "ov_home_next_month": "Next month",
+  "ov_home_range": "{from} to {to}",
+  "ov_home_needs_attention": "Needs attention",
+  "ov_home_all_budgets": "All budgets",
+  "ov_home_spending_pace": "Spending pace",
+  "ov_home_budgets": "Budgets",
+  "ov_budgets_meta_title": "Budgets | BudgetMaster",
+  "ov_budgets_period": "{from} – {to}",
+  "ov_budgets_this_month_period": "This month, {period}",
+  "ov_budgets_all_spending": "All spending",
+  "ov_budgets_edit": "Edit",
+  "ov_budgets_set_limit": "Set a limit",
+  "ov_budgets_no_overall": "No overall limit. Set one to see how much is left each day.",
+  "ov_budgets_category_budgets": "Category budgets",
+  "ov_budgets_add": "Add budget",
+  "ov_budgets_assigned": "{income} came in, {assigned} is in category budgets.",
+  "ov_budgets_no_job": "{amount} has no job yet.",
+  "ov_budgets_over_assigned": "Budgets are {amount} more than came in.",
+  "ov_budgets_empty": "Give a category a monthly limit, like 400 for groceries, to see how much is left before you go over.",
+  "ov_budgets_incl_subcategories": "incl. subcategories",
+  "ov_budgets_carried": "Includes {amount} left over from last month",
+  "ov_budgets_edit_budget": "Edit budget",
+  "ov_budgets_where_it_went": "Where it went",
+  "ov_budgets_saved": "Budget saved",
+  "ov_budgets_removed": "Budget removed",
+  "ov_budgets_enter_limit": "Enter a monthly limit.",
+  "ov_budgets_new": "New budget",
+  "ov_budgets_sheet_description": "A monthly limit in {currency}. A group's limit includes its subcategories.",
+  "ov_budgets_category": "Category",
+  "ov_budgets_monthly_limit": "Monthly limit",
+  "ov_budgets_rollover": "Carry over what is left",
+  "ov_budgets_rollover_hint": "Money not spent this month is added to next month's limit.",
+  "ov_budgets_remove_limit": "Remove limit",
+  "ov_budgets_save": "Save budget",
+  "ov_reports_meta_title": "Reports | BudgetMaster",
+  "ov_reports_more": "More",
+  "ov_reports_title": "Reports",
+  "ov_reports_cash_flow": "Income and spending",
+  "ov_reports_money_flow": "Last month's money flow",
+  "ov_reports_trends": "Spending by category",
+  "ov_reports_trends_hint": "The last five complete months; the amount is last month's.",
+  "ov_reports_forecast": "Next 90 days",
+  "ov_reports_forecast_hint": "Today's balance with recurring and planned payments. Everyday spending comes on top.",
+  "ov_reports_prices": "Prices you pay",
+  "ov_reports_prices_hint": "The usual amount per payee in the last three months against the same months a year ago.",
+  "ov_reports_calendar": "Spending calendar",
+  "ov_monthly_title": "Monthly report",
+  "ov_monthly_meta_title": "Monthly report | BudgetMaster",
+  "ov_monthly_report_month": "Report month",
+  "ov_monthly_print": "Print",
+  "ov_monthly_so_far": "{space}, month so far",
+  "ov_monthly_heading": "Monthly report, {period}",
+  "ov_monthly_totals": "Totals",
+  "ov_monthly_overspent": "Overspent",
+  "ov_monthly_kept": "You kept {percent} % of your income.",
+  "ov_monthly_no_income": "No income this month.",
+  "ov_monthly_spending_change": "Spending was {change} against the month before ({before}).",
+  "ov_monthly_overall_exceeded": "The overall budget of {budget} was exceeded by {amount}.",
+  "ov_monthly_overall_kept": "The overall budget of {budget} was kept with {amount} left.",
+  "ov_monthly_top_categories": "Top categories",
+  "ov_monthly_no_spending": "No spending.",
+  "ov_monthly_share": "Share",
+  "ov_monthly_budgets_kept": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "All {count} category budgets were kept.",
+        "countPlural=other": "All {count} category budgets were kept."
+      }
+    }
+  ],
+  "ov_monthly_budgets_over": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{over} of {count} category budgets went over: {names}.",
+        "countPlural=other": "{over} of {count} category budgets went over: {names}."
+      }
+    }
+  ],
+  "ov_monthly_limit": "Limit",
+  "ov_monthly_result": "Result",
+  "ov_monthly_biggest_changes": "Biggest changes",
+  "ov_monthly_no_changes": "Spending looked the same as the month before.",
+  "ov_year_title": "Year in review",
+  "ov_year_meta_title": "Year in review | BudgetMaster",
+  "ov_year_share_no_spend": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} days without spending",
+        "countPlural=other": "{count} days without spending"
+      }
+    }
+  ],
+  "ov_year_share_saved": "{rate} % of my income saved",
+  "ov_year_share_top": "most of it went to {category}",
+  "ov_year_share": "My {year} in BudgetMaster: {parts}.",
+  "ov_year_spent_more": "Spent more than earned",
+  "ov_year_saving_rate": "{rate} % of {income} income",
+  "ov_year_no_income": "No income recorded",
+  "ov_year_no_spend_days": "Days without spending",
+  "ov_year_of_days": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "of {count} days",
+        "countPlural=other": "of {count} days"
+      }
+    }
+  ],
+  "ov_year_of_days_so_far": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "of {count} days so far",
+        "countPlural=other": "of {count} days so far"
+      }
+    }
+  ],
+  "ov_year_most_went_to": "Most went to",
+  "ov_year_category_share": "{amount}, {percent} % of spending",
+  "ov_year_paid_most_to": "Paid most to",
+  "ov_year_payments": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{amount} in {count} payments",
+        "countPlural=other": "{amount} in {count} payments"
+      }
+    }
+  ],
+  "ov_year_priciest_month": "Most expensive month",
+  "ov_year_biggest": "Biggest single expense",
+  "ov_year_an_expense": "An expense",
+  "ov_year_copied": "Copied to share",
+  "ov_year_heading": "{year} in money",
+  "ov_year_year": "Year",
+  "ov_year_share_button": "Share",
+  "ov_year_intro": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} transactions, in {currency}. Sharing sends a sentence without amounts.",
+        "countPlural=other": "{count} transactions, in {currency}. Sharing sends a sentence without amounts."
+      }
+    }
+  ],
+  "ov_year_intro_so_far": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} transactions so far this year, in {currency}. Sharing sends a sentence without amounts.",
+        "countPlural=other": "{count} transactions so far this year, in {currency}. Sharing sends a sentence without amounts."
+      }
+    }
+  ],
+  "ov_year_empty": "Nothing recorded in {year}.",
+  "ov_forecast_transfer": "Transfer",
+  "ov_budgets_not_split": "{name}, not split",
+  "ov_budgets_viewer_error": "Viewers cannot change budgets.",
+  "ov_budgets_need_expense": "Budgets need an expense category."
+}

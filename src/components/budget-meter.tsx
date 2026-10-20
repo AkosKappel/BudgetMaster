@@ -2,6 +2,7 @@ import { CircleAlert, TriangleAlert } from 'lucide-react'
 
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 
 // From this share of the limit on, a budget counts as close.
 const WARNING_AT = 0.8
@@ -35,11 +36,14 @@ export function BudgetMeter({
     <div className="flex flex-col gap-1.5">
       <div
         role="progressbar"
-        aria-label="Budget used"
+        aria-label={m.ov_meter_label()}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round((spent / limit) * 100)}
-        aria-valuetext={`${money(spent)} of ${money(limit)}`}
+        aria-valuetext={m.ov_meter_value({
+          spent: money(spent),
+          limit: money(limit),
+        })}
         className={cn(
           'h-2 overflow-hidden rounded-full',
           status === 'ok' && 'bg-note/15',
@@ -66,16 +70,18 @@ export function BudgetMeter({
         )}
         <span className={cn(status !== 'ok' && 'font-medium text-foreground')}>
           {status === 'over'
-            ? `${money(-left)} over`
+            ? m.ov_meter_over({ amount: money(-left) })
             : status === 'close'
-              ? `Close to the limit, ${money(left)} left`
-              : `${money(left)} left`}
+              ? m.ov_meter_close({ amount: money(left) })
+              : m.ov_meter_left({ amount: money(left) })}
         </span>
         <span>
-          of {money(limit)}
           {daysLeft && left > 0
-            ? `, ${money(Math.floor(left / daysLeft))} a day`
-            : ''}
+            ? m.ov_meter_of_daily({
+                limit: money(limit),
+                daily: money(Math.floor(left / daysLeft)),
+              })
+            : m.ov_meter_of({ limit: money(limit) })}
         </span>
       </p>
     </div>

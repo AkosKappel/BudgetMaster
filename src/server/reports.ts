@@ -30,6 +30,7 @@ import { priceChanges } from '@/lib/price-changes'
 import { addDays, addMonths, budgetPeriod } from '@/lib/recurrence'
 import { currentDay } from '@/lib/today'
 import { yearReview } from '@/lib/year-review'
+import { m } from '@/paraglide/messages.js'
 import { authMiddleware } from '@/server/auth'
 import { categoryLines } from '@/server/category-lines'
 import { requireMembership } from '@/server/membership'
@@ -318,10 +319,10 @@ export const getForecast = createServerFn({ method: 'GET' })
     ])
     const inBase = wallets.filter((w) => w.currency === space.baseCurrency)
     const ids = new Set(inBase.map((w) => w.id))
-    const label = (m: {
+    const label = (item: {
       payee: string | null
       category: { name: string } | null
-    }) => m.payee ?? m.category?.name ?? 'Transfer'
+    }) => item.payee ?? item.category?.name ?? m.ov_forecast_transfer()
 
     const events: ForecastEvent[] = [
       ...rules.flatMap((rule) =>

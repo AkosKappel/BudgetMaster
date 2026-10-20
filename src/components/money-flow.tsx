@@ -2,6 +2,7 @@ import { Layer, Rectangle, ResponsiveContainer, Sankey } from 'recharts'
 
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { CategoryTrends } from '@/server/reports'
 
 interface FlowNode {
@@ -26,12 +27,12 @@ export function MoneyFlow({ periods, categories, currency }: CategoryTrends) {
   const spent = expenses.reduce((s, c) => s + amountOf(c), 0)
   if (!period || earned + spent === 0)
     return (
-      <p className="text-muted-foreground text-sm">No complete month yet.</p>
+      <p className="text-muted-foreground text-sm">{m.ov_flow_no_month()}</p>
     )
 
   const nodes: FlowNode[] = [
     ...incomes.map((c) => ({ name: c.name, color: 'var(--income)' })),
-    { name: 'Budget', color: 'var(--note)' },
+    { name: m.ov_flow_budget(), color: 'var(--note)' },
     ...expenses.map((c) => ({ name: c.name, color: c.color })),
   ]
   const pool = incomes.length
@@ -45,25 +46,28 @@ export function MoneyFlow({ periods, categories, currency }: CategoryTrends) {
   ]
   const saved = earned - spent
   if (saved > 0) {
-    nodes.push({ name: 'Saved', color: 'var(--income)' })
+    nodes.push({ name: m.ov_chart_saved(), color: 'var(--income)' })
     links.push({ source: pool, target: nodes.length - 1, value: saved })
   } else if (saved < 0) {
-    nodes.push({ name: 'From savings', color: 'var(--destructive)' })
+    nodes.push({ name: m.ov_flow_from_savings(), color: 'var(--destructive)' })
     links.push({ source: nodes.length - 1, target: pool, value: -saved })
   }
-  const label = `${formatShortDate(period.start)} to ${formatShortDate(period.end)}`
+  const values = {
+    from: formatShortDate(period.start),
+    to: formatShortDate(period.end),
+    earned: money(earned),
+    spent: money(spent),
+    biggest:
+      [...expenses].sort((a, b) => amountOf(b) - amountOf(a))[0]?.name ??
+      m.ov_flow_nothing(),
+  }
 
   return (
     <figure className="flex flex-col gap-3">
       <figcaption className="max-w-prose text-sm">
-        {label}: {money(earned)} came in and {money(spent)} went out
         {saved >= 0
-          ? `, ${money(saved)} saved.`
-          : `, ${money(-saved)} more than came in.`}{' '}
-        The biggest outflow was{' '}
-        {[...expenses].sort((a, b) => amountOf(b) - amountOf(a))[0]?.name ??
-          'nothing'}
-        .
+          ? m.ov_flow_summary_saved({ ...values, saved: money(saved) })
+          : m.ov_flow_summary_overspent({ ...values, over: money(-saved) })}
       </figcaption>
       <div className="h-96 w-full" aria-hidden="true">
         <ResponsiveContainer>
@@ -102,14 +106,16 @@ export function MoneyFlow({ periods, categories, currency }: CategoryTrends) {
       </div>
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">
-          Show as table
+          {m.ov_chart_show_table()}
         </summary>
         <table className="mt-2 w-full text-left">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="py-1 font-normal">From</th>
-              <th className="py-1 font-normal">To</th>
-              <th className="py-1 text-right font-normal">Amount</th>
+              <th className="py-1 font-normal">{m.ov_flow_from()}</th>
+              <th className="py-1 font-normal">{m.ov_flow_to()}</th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_chart_amount()}
+              </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">

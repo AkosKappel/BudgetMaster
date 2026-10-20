@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/chart'
 import { formatLocale } from '@/lib/locale'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { CashFlow } from '@/server/reports'
 
 const config = {
@@ -63,7 +64,7 @@ export function CashFlowChart({ months, currency }: CashFlow) {
                 className="size-2.5 rounded-sm"
                 style={{ backgroundColor: config[key].color }}
               />
-              {config[key].label}
+              {key === 'income' ? m.ov_chart_income() : m.ov_chart_spending()}
             </li>
           ))}
         </ul>
@@ -102,16 +103,18 @@ export function CashFlowChart({ months, currency }: CashFlow) {
                   <p className="font-medium">{month.label}</p>
                   <Row
                     color={config.income.color}
-                    label="Income"
+                    label={m.ov_chart_income()}
                     value={money(month.income)}
                   />
                   <Row
                     color={config.expense.color}
-                    label="Spending"
+                    label={m.ov_chart_spending()}
                     value={money(month.expense)}
                   />
                   <p className="flex justify-between gap-2 border-t pt-1.5">
-                    <span className="text-muted-foreground">Saved</span>
+                    <span className="text-muted-foreground">
+                      {m.ov_chart_saved()}
+                    </span>
                     <span className="font-medium">
                       {formatSignedMoney(month.net, currency)}
                     </span>
@@ -144,15 +147,21 @@ export function CashFlowChart({ months, currency }: CashFlow) {
 
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">
-          Show as table
+          {m.ov_chart_show_table()}
         </summary>
         <table className="mt-2 w-full text-left">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="py-1 font-normal">Month</th>
-              <th className="py-1 text-right font-normal">Income</th>
-              <th className="py-1 text-right font-normal">Spending</th>
-              <th className="py-1 text-right font-normal">Saved</th>
+              <th className="py-1 font-normal">{m.ov_chart_month()}</th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_chart_income()}
+              </th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_chart_spending()}
+              </th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_chart_saved()}
+              </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
@@ -202,27 +211,32 @@ function Row({
 function summary(months: CashFlow['months'], money: (minor: number) => string) {
   // The current month is still running, so the year is judged on complete months.
   const complete = months.slice(0, -1).filter((m) => m.income || m.expense)
-  if (complete.length === 0) return 'Not enough history yet for a yearly view.'
+  if (complete.length === 0) return m.ov_cashflow_not_enough()
   const income = complete.reduce((s, m) => s + m.income, 0)
   const expense = complete.reduce((s, m) => s + m.expense, 0)
   const saved = income - expense
   const rate = income > 0 ? Math.round((saved / income) * 100) : 0
   const best = complete.reduce((a, b) => (b.net > a.net ? b : a))
   const worst = complete.reduce((a, b) => (b.net < a.net ? b : a))
-  const name = (m: { start: string }) => {
-    const date = new Date(`${m.start}T00:00:00Z`)
+  const name = (row: { start: string }) => {
+    const date = new Date(`${row.start}T00:00:00Z`)
     const month = date.toLocaleDateString(formatLocale(), {
       month: 'long',
       timeZone: 'UTC',
     })
     // Budget months that start mid-month are named by their first day.
-    return m.start.endsWith('-01')
+    return row.start.endsWith('-01')
       ? month
-      : `the month from ${date.getUTCDate()} ${month}`
+      : m.ov_cashflow_month_from({ day: date.getUTCDate(), month })
   }
-  const savedText =
-    saved >= 0
-      ? `saving ${money(saved)} (${rate} % of income)`
-      : `spending ${money(-saved)} more than came in`
-  return `In the last ${complete.length} complete months you earned ${money(income)} and spent ${money(expense)}, ${savedText}. Best month: ${name(best)}; tightest: ${name(worst)}.`
+  const values = {
+    count: complete.length,
+    income: money(income),
+    spent: money(expense),
+    best: name(best),
+    worst: name(worst),
+  }
+  return saved >= 0
+    ? m.ov_cashflow_summary_saved({ ...values, saved: money(saved), rate })
+    : m.ov_cashflow_summary_overspent({ ...values, over: money(-saved) })
 }

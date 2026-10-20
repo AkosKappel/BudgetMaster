@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/chart'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { Forecast } from '@/server/reports'
 
 const config = {
@@ -27,15 +28,26 @@ function summary(
 ) {
   const first = points[0]
   const last = points.at(-1)
-  if (!first || !last) return 'No wallets yet.'
+  if (!first || !last) return m.ov_forecast_no_wallets()
   if (events.length === 0)
-    return `No recurring or planned payments in the next 90 days, so the balance stays at ${money(first.balance)}.`
-  const end = `${money(last.balance)} on ${formatShortDate(last.date)}`
+    return m.ov_forecast_no_payments({ balance: money(first.balance) })
+  const end = {
+    end: money(last.balance),
+    endDate: formatShortDate(last.date),
+  }
   if (lowest.balance < 0)
-    return `Below zero from ${formatShortDate(lowest.date)}, at ${money(lowest.balance)}. Ends at ${end}.`
+    return m.ov_forecast_below_zero({
+      date: formatShortDate(lowest.date),
+      lowest: money(lowest.balance),
+      ...end,
+    })
   if (lowest.date === first.date)
-    return `Never lower than today's ${money(first.balance)}. Ends at ${end}.`
-  return `Tightest on ${formatShortDate(lowest.date)}, at ${money(lowest.balance)}. Ends at ${end}.`
+    return m.ov_forecast_never_lower({ balance: money(first.balance), ...end })
+  return m.ov_forecast_tightest({
+    date: formatShortDate(lowest.date),
+    lowest: money(lowest.balance),
+    ...end,
+  })
 }
 
 // Today's balance carried forward with the payments that are already known.
@@ -135,15 +147,19 @@ export function ForecastChart(props: Forecast) {
       {rows.length > 0 && (
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">
-            Show payments
+            {m.ov_forecast_show_payments()}
           </summary>
           <table className="mt-2 w-full text-left">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="py-1 font-normal">Date</th>
-                <th className="py-1 font-normal">Payment</th>
-                <th className="py-1 text-right font-normal">Amount</th>
-                <th className="py-1 text-right font-normal">Balance</th>
+                <th className="py-1 font-normal">{m.ov_chart_date()}</th>
+                <th className="py-1 font-normal">{m.ov_forecast_payment()}</th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_chart_amount()}
+                </th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_forecast_balance()}
+                </th>
               </tr>
             </thead>
             <tbody>

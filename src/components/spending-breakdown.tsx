@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { iconFor } from '@/lib/icons'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import type { BudgetReport } from '@/server/budgets'
 
 // One series, so one colour: bar length is the only encoding, the value sits at the tip.
@@ -21,9 +22,7 @@ export function SpendingBreakdown({
   const max = breakdown[0]?.total ?? 0
   if (breakdown.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No spending in this month.
-      </p>
+      <p className="text-muted-foreground text-sm">{m.ov_breakdown_empty()}</p>
     )
   }
   const share = (value: number) =>

@@ -26,6 +26,7 @@ import {
   useCanWrite,
 } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import { useQuickAdd } from '@/stores/quick-add'
 
 export const Route = createFileRoute('/_app/')({
@@ -83,13 +84,13 @@ function Home() {
         <section aria-labelledby="upcoming" className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between">
             <h2 id="upcoming" className="font-semibold text-lg">
-              Coming up
+              {m.ov_home_coming_up()}
             </h2>
             <Link
               to="/recurring"
               className="text-muted-foreground text-sm underline"
             >
-              Recurring
+              {m.ov_recurring_link()}
             </Link>
           </div>
           <ul className="divide-y rounded-lg border bg-card">
@@ -105,7 +106,9 @@ function Home() {
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">
                       {r.type === 'transfer'
-                        ? `Transfer to ${r.toWallet?.name}`
+                        ? m.ov_home_transfer_to({
+                            wallet: r.toWallet?.name ?? '',
+                          })
                         : (r.payee ?? r.category?.name)}
                     </span>
                     <span className="text-muted-foreground text-xs">
@@ -130,7 +133,7 @@ function Home() {
 
       <section aria-labelledby="wallets" className="flex flex-col gap-3">
         <h2 id="wallets" className="font-semibold text-lg">
-          Wallets
+          {m.ov_home_wallets()}
         </h2>
         {data.wallets.length === 0 ? (
           <EmptyState
@@ -138,12 +141,12 @@ function Home() {
             action={
               <Button size="sm" asChild>
                 <Link to="/wallets">
-                  <Plus /> Add wallet
+                  <Plus /> {m.ov_home_add_wallet()}
                 </Link>
               </Button>
             }
           >
-            Add a wallet for each account, card or cash you want to track.
+            {m.ov_home_wallets_empty()}
           </EmptyState>
         ) : (
           <ul className="divide-y rounded-lg border bg-card">
@@ -172,14 +175,14 @@ function Home() {
       <section aria-labelledby="recent" className="flex flex-col gap-1">
         <div className="flex items-baseline justify-between">
           <h2 id="recent" className="font-semibold text-lg">
-            Recent
+            {m.ov_home_recent()}
           </h2>
           {data.recent.length > 0 && (
             <Link
               to="/activity"
               className="text-muted-foreground text-sm underline"
             >
-              See all
+              {m.ov_home_see_all()}
             </Link>
           )}
         </div>
@@ -189,13 +192,12 @@ function Home() {
             action={
               canWrite && (
                 <Button size="sm" onClick={() => openNew()}>
-                  <Plus /> Add transaction
+                  <Plus /> {m.ov_home_add_transaction()}
                 </Button>
               )
             }
           >
-            No transactions yet. Add your first one to see where your money
-            goes.
+            {m.ov_home_recent_empty()}
           </EmptyState>
         ) : (
           <ul className="divide-y">
@@ -233,7 +235,6 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
   const left = budget === null ? null : budget - data.spent
   const over = left !== null && left < 0
   const until = formatShortDate(data.period.end)
-  const days = `${data.daysLeft} ${data.daysLeft === 1 ? 'day' : 'days'} left`
   const goTo = (next: number) =>
     next <= 0 &&
     navigate({
@@ -245,18 +246,26 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
   let detail: string
   if (left === null) {
     label = data.isCurrent
-      ? `Spent since ${formatShortDate(data.period.start)}`
-      : 'Spent'
+      ? m.ov_home_spent_since({ date: formatShortDate(data.period.start) })
+      : m.ov_home_spent()
     detail = data.isCurrent
-      ? `Income ${money(data.income)}. ${days}. Set a monthly budget to see what you can still spend.`
-      : `Income ${money(data.income)}.`
+      ? m.ov_home_detail_no_budget({
+          income: money(data.income),
+          count: data.daysLeft,
+        })
+      : m.ov_home_detail_income({ income: money(data.income) })
   } else {
     label = over
-      ? 'Over budget by'
+      ? m.ov_home_over_by()
       : data.isCurrent
-        ? `Left to spend until ${until}`
-        : 'Under budget by'
-    detail = `Spent ${money(data.spent)} of ${money(budget ?? 0)}.${data.isCurrent ? ` ${days} until ${until}.` : ''}`
+        ? m.ov_home_left_until({ date: until })
+        : m.ov_home_under_by()
+    detail = m.ov_home_detail_spent({
+      spent: money(data.spent),
+      budget: money(budget ?? 0),
+    })
+    if (data.isCurrent)
+      detail += ` ${m.ov_home_days_until({ count: data.daysLeft, date: until })}`
   }
   const used = budget ? Math.min(100, (data.spent / budget) * 100) : 0
 
@@ -277,13 +286,13 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
     >
       <Guilloche className="mask-l-from-55% mask-l-to-90% absolute -top-16 -right-20 -z-10 size-72 text-note/45" />
       <nav
-        aria-label="Budget month"
+        aria-label={m.ov_home_budget_month()}
         className="-mx-3 mb-3 flex items-center gap-1 text-muted-foreground text-sm"
       >
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Previous month"
+          aria-label={m.ov_home_previous_month()}
           disabled={month <= -36}
           onClick={() => goTo(month - 1)}
         >
@@ -291,13 +300,16 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
         </Button>
         <p className="min-w-0 flex-1 text-center" aria-live="polite">
           {data.isCurrent
-            ? 'This month'
-            : `${formatShortDate(data.period.start)} to ${until}`}
+            ? m.ov_pace_this_month()
+            : m.ov_home_range({
+                from: formatShortDate(data.period.start),
+                to: until,
+              })}
         </p>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Next month"
+          aria-label={m.ov_home_next_month()}
           disabled={month >= 0}
           onClick={() => goTo(month + 1)}
         >
@@ -318,7 +330,7 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
       {budget !== null && (
         <div
           role="progressbar"
-          aria-label="Budget used"
+          aria-label={m.ov_meter_label()}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(used)}
@@ -350,13 +362,13 @@ function BudgetWarnings({ spaceId }: { spaceId: string }) {
     <section aria-labelledby="warnings" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between">
         <h2 id="warnings" className="font-semibold text-lg">
-          Needs attention
+          {m.ov_home_needs_attention()}
         </h2>
         <Link
           to="/budgets"
           className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
         >
-          All budgets
+          {m.ov_home_all_budgets()}
         </Link>
       </div>
       <ul className="divide-y rounded-lg border bg-card">
@@ -408,14 +420,14 @@ function PaceSection({ spaceId, month }: { spaceId: string; month: number }) {
     <section aria-labelledby="pace" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between">
         <h2 id="pace" className="font-semibold text-lg">
-          Spending pace
+          {m.ov_home_spending_pace()}
         </h2>
         <Link
           to="/budgets"
           search={{ month }}
           className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
         >
-          Budgets
+          {m.ov_home_budgets()}
         </Link>
       </div>
       <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>

@@ -1,4 +1,5 @@
 import { formatMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { CategoryTrends as Trends } from '@/server/reports'
 
 function Sparkline({ values, color }: { values: number[]; color: string }) {
@@ -46,7 +47,9 @@ export function CategoryTrends({ categories, currency }: Trends) {
     })
 
   if (rows.length === 0)
-    return <p className="text-muted-foreground text-sm">No spending yet.</p>
+    return (
+      <p className="text-muted-foreground text-sm">{m.ov_trends_empty()}</p>
+    )
 
   return (
     <ul className="divide-y rounded-lg border bg-card">
@@ -58,10 +61,12 @@ export function CategoryTrends({ categories, currency }: Trends) {
             <span className="font-medium tabular-nums">{money(c.last)}</span>
             <span className="text-muted-foreground text-xs">
               {c.change === null
-                ? 'new'
+                ? m.ov_trends_new()
                 : c.change === 0
-                  ? 'as usual'
-                  : `${c.change > 0 ? '+' : '−'}${Math.abs(c.change)} % vs usual`}
+                  ? m.ov_trends_as_usual()
+                  : m.ov_trends_vs_usual({
+                      change: `${c.change > 0 ? '+' : '−'}${Math.abs(c.change)}`,
+                    })}
             </span>
           </span>
         </li>

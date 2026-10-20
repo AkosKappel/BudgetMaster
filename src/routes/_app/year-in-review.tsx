@@ -11,6 +11,7 @@ import { formatMoney } from '@/lib/money'
 import { useActiveSpace, yearReviewQuery } from '@/lib/queries'
 import { currentDay } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import type { YearReviewData } from '@/server/reports'
 
 // "Your year in money" (I-14): a few cards about one calendar year, defaulting to this year
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/_app/year-in-review')({
         deps.year ?? Number(currentDay().slice(0, 4)),
       ),
     ),
-  head: () => ({ meta: [{ title: 'Year in review | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.ov_year_meta_title() }] }),
   component: YearInReview,
 })
 
@@ -39,13 +40,15 @@ const monthName = (month: string) =>
 
 function shareText(r: YearReviewData) {
   const parts = [
-    `${r.noSpendDays} days without spending`,
+    m.ov_year_share_no_spend({ count: r.noSpendDays }),
     r.savingRate !== null && r.savingRate > 0
-      ? `${r.savingRate} % of my income saved`
+      ? m.ov_year_share_saved({ rate: r.savingRate })
       : null,
-    r.topCategory ? `most of it went to ${r.topCategory.name}` : null,
+    r.topCategory
+      ? m.ov_year_share_top({ category: r.topCategory.name })
+      : null,
   ].filter(Boolean)
-  return `My ${r.year} in BudgetMaster: ${parts.join(', ')}.`
+  return m.ov_year_share({ year: r.year, parts: parts.join(', ') })
 }
 
 function YearInReview() {
@@ -62,40 +65,51 @@ function YearInReview() {
 
   const cards: { label: string; value: string; detail?: string }[] = [
     {
-      label: r.saved >= 0 ? 'Saved' : 'Spent more than earned',
+      label: r.saved >= 0 ? m.ov_chart_saved() : m.ov_year_spent_more(),
       value: money(Math.abs(r.saved)),
       detail:
         r.savingRate !== null
-          ? `${r.savingRate} % of ${money(r.income)} income`
-          : 'No income recorded',
+          ? m.ov_year_saving_rate({
+              rate: r.savingRate,
+              income: money(r.income),
+            })
+          : m.ov_year_no_income(),
     },
     {
-      label: 'Days without spending',
+      label: m.ov_year_no_spend_days(),
       value: String(r.noSpendDays),
-      detail: `of ${r.days} days${r.complete ? '' : ' so far'}`,
+      detail: (r.complete ? m.ov_year_of_days : m.ov_year_of_days_so_far)({
+        count: r.days,
+      }),
     },
     ...(r.topCategory
       ? [
           {
-            label: 'Most went to',
+            label: m.ov_year_most_went_to(),
             value: r.topCategory.name,
-            detail: `${money(r.topCategory.total)}, ${Math.round((r.topCategory.total / r.spent) * 100)} % of spending`,
+            detail: m.ov_year_category_share({
+              amount: money(r.topCategory.total),
+              percent: Math.round((r.topCategory.total / r.spent) * 100),
+            }),
           },
         ]
       : []),
     ...(r.topPayee
       ? [
           {
-            label: 'Paid most to',
+            label: m.ov_year_paid_most_to(),
             value: r.topPayee.name,
-            detail: `${money(r.topPayee.total)} in ${r.topPayee.count} payments`,
+            detail: m.ov_year_payments({
+              amount: money(r.topPayee.total),
+              count: r.topPayee.count,
+            }),
           },
         ]
       : []),
     ...(r.priciestMonth
       ? [
           {
-            label: 'Most expensive month',
+            label: m.ov_year_priciest_month(),
             value: monthName(r.priciestMonth.month),
             detail: money(r.priciestMonth.total),
           },
@@ -104,9 +118,9 @@ function YearInReview() {
     ...(r.biggest
       ? [
           {
-            label: 'Biggest single expense',
+            label: m.ov_year_biggest(),
             value: money(r.biggest.amount),
-            detail: `${r.biggest.payee ?? 'An expense'}, ${formatShortDate(r.biggest.date)}`,
+            detail: `${r.biggest.payee ?? m.ov_year_an_expense()}, ${formatShortDate(r.biggest.date)}`,
           },
         ]
       : []),
@@ -119,7 +133,7 @@ function YearInReview() {
       return
     }
     await navigator.clipboard.writeText(text)
-    toast.success('Copied to share')
+    toast.success(m.ov_year_copied())
   }
 
   return (
@@ -129,15 +143,15 @@ function YearInReview() {
         className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Reports
+        {m.ov_reports_title()}
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-semibold text-2xl tracking-tight">
-          {r.year} in money
+          {m.ov_year_heading({ year: r.year })}
         </h1>
         <div className="flex items-center gap-2">
           <label className="sr-only" htmlFor="review-year">
-            Year
+            {m.ov_year_year()}
           </label>
           <select
             id="review-year"
@@ -158,18 +172,21 @@ function YearInReview() {
           </select>
           <Button variant="outline" onClick={share}>
             <Share2 />
-            Share
+            {m.ov_year_share_button()}
           </Button>
         </div>
       </div>
       <p className="text-muted-foreground text-sm">
-        {r.transactions} transactions
-        {r.complete ? '' : ' so far this year'}, in {r.currency}. Sharing sends
-        a sentence without amounts.
+        {(r.complete ? m.ov_year_intro : m.ov_year_intro_so_far)({
+          count: r.transactions,
+          currency: r.currency,
+        })}
       </p>
 
       {r.transactions === 0 ? (
-        <p className="text-muted-foreground">Nothing recorded in {r.year}.</p>
+        <p className="text-muted-foreground">
+          {m.ov_year_empty({ year: r.year })}
+        </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {cards.map((c, i) => (

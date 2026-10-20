@@ -29,6 +29,7 @@ import { iconFor } from '@/lib/icons'
 import { currencyDigits, formatMoney, parseAmount } from '@/lib/money'
 import { budgetReportQuery, useActiveSpace } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { m } from '@/paraglide/messages.js'
 import { type BudgetReport, deleteBudget, setBudget } from '@/server/budgets'
 
 export const Route = createFileRoute('/_app/budgets')({
@@ -41,7 +42,7 @@ export const Route = createFileRoute('/_app/budgets')({
     context.queryClient.ensureQueryData(
       budgetReportQuery(context.activeSpaceId, deps.month),
     ),
-  head: () => ({ meta: [{ title: 'Budgets | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.ov_budgets_meta_title() }] }),
   component: Budgets,
 })
 
@@ -68,7 +69,10 @@ function Budgets() {
   if (!data) return null
 
   const money = (minor: number) => formatMoney(minor, data.currency)
-  const periodLabel = `${formatShortDate(data.period.start)} – ${formatShortDate(data.period.end)}`
+  const periodLabel = m.ov_budgets_period({
+    from: formatShortDate(data.period.start),
+    to: formatShortDate(data.period.end),
+  })
 
   return (
     <div
@@ -78,13 +82,18 @@ function Budgets() {
       )}
     >
       <div className="flex flex-col gap-3">
-        <h1 className="font-semibold text-2xl tracking-tight">Budgets</h1>
-        <nav aria-label="Budget month" className="flex items-center gap-1">
+        <h1 className="font-semibold text-2xl tracking-tight">
+          {m.ov_home_budgets()}
+        </h1>
+        <nav
+          aria-label={m.ov_home_budget_month()}
+          className="flex items-center gap-1"
+        >
           <Button variant="ghost" size="icon" asChild>
             <Link
               to="/budgets"
               search={{ month: month - 1 }}
-              aria-label="Previous month"
+              aria-label={m.ov_home_previous_month()}
             >
               <ChevronLeft />
             </Link>
@@ -93,15 +102,16 @@ function Budgets() {
             className="min-w-0 flex-1 text-center font-medium"
             aria-live="polite"
           >
-            {data.isCurrent ? 'This month, ' : ''}
-            {periodLabel}
+            {data.isCurrent
+              ? m.ov_budgets_this_month_period({ period: periodLabel })
+              : periodLabel}
           </p>
           <Button
             variant="ghost"
             size="icon"
             asChild={month < 0}
             disabled={month >= 0}
-            aria-label="Next month"
+            aria-label={m.ov_home_next_month()}
           >
             {month < 0 ? (
               <Link to="/budgets" search={{ month: month + 1 }}>
@@ -120,7 +130,7 @@ function Budgets() {
       >
         <div className="flex items-baseline justify-between gap-3">
           <h2 id="overall" className="text-muted-foreground text-sm">
-            All spending
+            {m.ov_budgets_all_spending()}
           </h2>
           {data.canWrite && (
             <Button
@@ -131,13 +141,13 @@ function Budgets() {
                 setEditing({
                   mode: 'edit',
                   categoryId: null,
-                  name: 'All spending',
+                  name: m.ov_budgets_all_spending(),
                   amount: data.overall?.amount ?? 0,
                   rollover: false,
                 })
               }
             >
-              {data.overall ? 'Edit' : 'Set a limit'}
+              {data.overall ? m.ov_budgets_edit() : m.ov_budgets_set_limit()}
             </Button>
           )}
         </div>
@@ -153,14 +163,14 @@ function Budgets() {
           />
         ) : (
           <p className="text-muted-foreground text-sm">
-            No overall limit. Set one to see how much is left each day.
+            {m.ov_budgets_no_overall()}
           </p>
         )}
       </section>
 
       <section aria-labelledby="pace" className="flex flex-col gap-3">
         <h2 id="pace" className="font-semibold text-lg">
-          Spending pace
+          {m.ov_home_spending_pace()}
         </h2>
         <SpendingPaceChart
           pace={data.pace}
@@ -176,7 +186,7 @@ function Budgets() {
       >
         <div className="flex items-center justify-between gap-3">
           <h2 id="category-budgets" className="font-semibold text-lg">
-            Category budgets
+            {m.ov_budgets_category_budgets()}
           </h2>
           {data.canWrite && data.unbudgeted.length > 0 && (
             <Button
@@ -185,31 +195,33 @@ function Budgets() {
               onClick={() => setEditing({ mode: 'new' })}
             >
               <Plus />
-              Add budget
+              {m.ov_budgets_add()}
             </Button>
           )}
         </div>
         {data.categoryBudgets.length > 0 && data.income > 0 && (
           <p className="text-muted-foreground text-sm">
-            {money(data.income)} came in, {money(data.assigned)} is in category
-            budgets.{' '}
+            {m.ov_budgets_assigned({
+              income: money(data.income),
+              assigned: money(data.assigned),
+            })}{' '}
             {data.income >= data.assigned ? (
               <span className="font-medium text-foreground">
-                {money(data.income - data.assigned)} has no job yet.
+                {m.ov_budgets_no_job({
+                  amount: money(data.income - data.assigned),
+                })}
               </span>
             ) : (
               <span className="font-medium text-destructive">
-                Budgets are {money(data.assigned - data.income)} more than came
-                in.
+                {m.ov_budgets_over_assigned({
+                  amount: money(data.assigned - data.income),
+                })}
               </span>
             )}
           </p>
         )}
         {data.categoryBudgets.length === 0 ? (
-          <EmptyState icon={Gauge}>
-            Give a category a monthly limit, like 400 for groceries, to see how
-            much is left before you go over.
-          </EmptyState>
+          <EmptyState icon={Gauge}>{m.ov_budgets_empty()}</EmptyState>
         ) : (
           <ul className="divide-y rounded-lg border bg-card">
             {data.categoryBudgets.map((b) => {
@@ -227,7 +239,7 @@ function Budgets() {
                     </span>
                     {b.isParent && (
                       <span className="text-muted-foreground text-xs">
-                        incl. subcategories
+                        {m.ov_budgets_incl_subcategories()}
                       </span>
                     )}
                     <span className="text-sm">{money(b.spent)}</span>
@@ -240,7 +252,7 @@ function Budgets() {
                   />
                   {b.carried > 0 && (
                     <span className="text-muted-foreground text-xs">
-                      Includes {money(b.carried)} left over from last month
+                      {m.ov_budgets_carried({ amount: money(b.carried) })}
                     </span>
                   )}
                 </>
@@ -263,7 +275,9 @@ function Budgets() {
                     >
                       {body}
                       {/* Keeps the visible text first in the name (WCAG 2.5.3). */}
-                      <span className="sr-only">Edit budget</span>
+                      <span className="sr-only">
+                        {m.ov_budgets_edit_budget()}
+                      </span>
                     </button>
                   ) : (
                     <div className="flex flex-col gap-2 px-4 py-3">{body}</div>
@@ -277,7 +291,7 @@ function Budgets() {
 
       <section aria-labelledby="breakdown" className="flex flex-col gap-3">
         <h2 id="breakdown" className="font-semibold text-lg">
-          Where it went
+          {m.ov_budgets_where_it_went()}
         </h2>
         <SpendingBreakdown
           breakdown={data.breakdown}
@@ -322,7 +336,7 @@ function BudgetSheet({
     mutationFn: setBudget,
     onSuccess: async () => {
       await refresh()
-      toast.success('Budget saved')
+      toast.success(m.ov_budgets_saved())
       onClose()
     },
     onError: (e) => setError(e.message),
@@ -331,7 +345,7 @@ function BudgetSheet({
     mutationFn: deleteBudget,
     onSuccess: async () => {
       await refresh()
-      toast.success('Budget removed')
+      toast.success(m.ov_budgets_removed())
       onClose()
     },
     onError: (e) => setError(e.message),
@@ -364,7 +378,7 @@ function BudgetSheet({
             const form = new FormData(event.currentTarget)
             const amount = parseAmount(String(form.get('amount')), digits)
             if (!amount) {
-              setError('Enter a monthly limit.')
+              setError(m.ov_budgets_enter_limit())
               return
             }
             const categoryId = isEdit
@@ -381,15 +395,16 @@ function BudgetSheet({
           }}
         >
           <DrawerHeader className="px-0 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
-            <DrawerTitle>{isEdit ? editing.name : 'New budget'}</DrawerTitle>
+            <DrawerTitle>
+              {isEdit ? editing.name : m.ov_budgets_new()}
+            </DrawerTitle>
             <DrawerDescription>
-              A monthly limit in {report.currency}. A group's limit includes its
-              subcategories.
+              {m.ov_budgets_sheet_description({ currency: report.currency })}
             </DrawerDescription>
           </DrawerHeader>
           {!isEdit && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="budget-category">Category</Label>
+              <Label htmlFor="budget-category">{m.ov_budgets_category()}</Label>
               <select
                 id="budget-category"
                 name="category"
@@ -421,7 +436,9 @@ function BudgetSheet({
             </div>
           )}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="budget-amount">Monthly limit</Label>
+            <Label htmlFor="budget-amount">
+              {m.ov_budgets_monthly_limit()}
+            </Label>
             <div className="flex items-baseline gap-2 border-input border-b-2 pb-1 focus-within:border-ring">
               <span className="text-muted-foreground text-xl">
                 {report.currency}
@@ -450,9 +467,9 @@ function BudgetSheet({
                 className="mt-0.5"
               />
               <span>
-                Carry over what is left
+                {m.ov_budgets_rollover()}
                 <span className="block text-muted-foreground">
-                  Money not spent this month is added to next month's limit.
+                  {m.ov_budgets_rollover_hint()}
                 </span>
               </span>
             </label>
@@ -470,11 +487,11 @@ function BudgetSheet({
                   })
                 }
               >
-                Remove limit
+                {m.ov_budgets_remove_limit()}
               </Button>
             )}
             <Button type="submit" className="flex-1" disabled={save.isPending}>
-              Save budget
+              {m.ov_budgets_save()}
             </Button>
           </div>
         </form>

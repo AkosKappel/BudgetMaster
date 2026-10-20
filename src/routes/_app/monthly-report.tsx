@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
 import { budgetReportQuery, useActiveSpace } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 import type { BudgetReport } from '@/server/budgets'
 
 // One budget month on one page, to read or print (PDF via the browser's print dialog).
@@ -26,7 +27,7 @@ export const Route = createFileRoute('/_app/monthly-report')({
         budgetReportQuery(context.activeSpaceId, deps.month - 1),
       ),
     ]),
-  head: () => ({ meta: [{ title: 'Monthly report | BudgetMaster' }] }),
+  head: () => ({ meta: [{ title: m.ov_monthly_meta_title() }] }),
   component: MonthlyReport,
 })
 
@@ -65,7 +66,10 @@ function MonthlyReport() {
   )
   const money = (minor: number) => formatMoney(minor, report.currency)
   const saved = report.income - report.spent
-  const period = `${formatShortDate(report.period.start)} – ${formatShortDate(report.period.end)}`
+  const period = m.ov_budgets_period({
+    from: formatShortDate(report.period.start),
+    to: formatShortDate(report.period.end),
+  })
   const top = report.breakdown.slice(0, 5)
   const changes = biggestChanges(report, before)
   const overBudget = report.categoryBudgets.filter((b) => b.spent > b.amount)
@@ -78,15 +82,18 @@ function MonthlyReport() {
           className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
-          Reports
+          {m.ov_reports_title()}
         </Link>
-        <nav aria-label="Report month" className="flex items-center gap-1">
+        <nav
+          aria-label={m.ov_monthly_report_month()}
+          className="flex items-center gap-1"
+        >
           <Button variant="ghost" size="icon" asChild={month > -35}>
             {month > -35 ? (
               <Link
                 to="/monthly-report"
                 search={{ month: month - 1 }}
-                aria-label="Previous month"
+                aria-label={m.ov_home_previous_month()}
               >
                 <ChevronLeft />
               </Link>
@@ -100,7 +107,7 @@ function MonthlyReport() {
             size="icon"
             asChild={month < 0}
             disabled={month >= 0}
-            aria-label="Next month"
+            aria-label={m.ov_home_next_month()}
           >
             {month < 0 ? (
               <Link to="/monthly-report" search={{ month: month + 1 }}>
@@ -112,70 +119,86 @@ function MonthlyReport() {
           </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer />
-            Print
+            {m.ov_monthly_print()}
           </Button>
         </nav>
       </div>
 
       <header>
         <p className="text-muted-foreground text-sm">
-          {space.name}
-          {report.isCurrent ? ', month so far' : ''}
+          {report.isCurrent
+            ? m.ov_monthly_so_far({ space: space.name })
+            : space.name}
         </p>
         <h1 className="font-semibold text-2xl tracking-tight">
-          Monthly report, {period}
+          {m.ov_monthly_heading({ period })}
         </h1>
       </header>
 
       <section aria-labelledby="totals" className="flex flex-col gap-3">
         <h2 id="totals" className="font-semibold text-lg">
-          Totals
+          {m.ov_monthly_totals()}
         </h2>
         <dl className="grid grid-cols-3 gap-3 rounded-lg border bg-card p-4 print:break-inside-avoid">
           <div>
-            <dt className="text-muted-foreground text-sm">Income</dt>
+            <dt className="text-muted-foreground text-sm">
+              {m.ov_chart_income()}
+            </dt>
             <dd className="font-semibold text-lg">{money(report.income)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Spent</dt>
+            <dt className="text-muted-foreground text-sm">
+              {m.ov_home_spent()}
+            </dt>
             <dd className="font-semibold text-lg">{money(report.spent)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground text-sm">
-              {saved >= 0 ? 'Saved' : 'Overspent'}
+              {saved >= 0 ? m.ov_chart_saved() : m.ov_monthly_overspent()}
             </dt>
             <dd className="font-semibold text-lg">{money(Math.abs(saved))}</dd>
           </div>
         </dl>
         <p className="text-sm">
           {report.income > 0
-            ? `You kept ${percent(saved, report.income)} % of your income.`
-            : 'No income this month.'}{' '}
-          Spending was{' '}
-          {formatSignedMoney(report.spent - before.spent, report.currency)}{' '}
-          against the month before ({money(before.spent)}).
+            ? m.ov_monthly_kept({ percent: percent(saved, report.income) })
+            : m.ov_monthly_no_income()}{' '}
+          {m.ov_monthly_spending_change({
+            change: formatSignedMoney(
+              report.spent - before.spent,
+              report.currency,
+            ),
+            before: money(before.spent),
+          })}
           {report.overall &&
-            ` The overall budget of ${money(report.overall.amount)} was ${
-              report.spent > report.overall.amount
-                ? `exceeded by ${money(report.spent - report.overall.amount)}`
-                : `kept with ${money(report.overall.amount - report.spent)} left`
-            }.`}
+            ` ${(report.spent > report.overall.amount
+              ? m.ov_monthly_overall_exceeded
+              : m.ov_monthly_overall_kept)({
+              budget: money(report.overall.amount),
+              amount: money(Math.abs(report.spent - report.overall.amount)),
+            })}`}
         </p>
       </section>
 
       <section aria-labelledby="top" className="flex flex-col gap-3">
         <h2 id="top" className="font-semibold text-lg">
-          Top categories
+          {m.ov_monthly_top_categories()}
         </h2>
         {top.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No spending.</p>
+          <p className="text-muted-foreground text-sm">
+            {m.ov_monthly_no_spending()}
+          </p>
         ) : (
           <table className="w-full text-left text-sm print:break-inside-avoid">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="py-1 font-normal">Category</th>
-                <th className="py-1 text-right font-normal">Spent</th>
-                <th className="py-1 text-right font-normal">Share</th>
+                <th className="py-1 font-normal">{m.ov_budgets_category()}</th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_home_spent()}
+                </th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_monthly_share()}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -196,20 +219,32 @@ function MonthlyReport() {
       {report.categoryBudgets.length > 0 && (
         <section aria-labelledby="budgets" className="flex flex-col gap-3">
           <h2 id="budgets" className="font-semibold text-lg">
-            Budgets
+            {m.ov_home_budgets()}
           </h2>
           <p className="text-sm">
             {overBudget.length === 0
-              ? `All ${report.categoryBudgets.length} category budgets were kept.`
-              : `${overBudget.length} of ${report.categoryBudgets.length} category budgets went over: ${overBudget.map((b) => b.name).join(', ')}.`}
+              ? m.ov_monthly_budgets_kept({
+                  count: report.categoryBudgets.length,
+                })
+              : m.ov_monthly_budgets_over({
+                  over: overBudget.length,
+                  count: report.categoryBudgets.length,
+                  names: overBudget.map((b) => b.name).join(', '),
+                })}
           </p>
           <table className="w-full text-left text-sm print:break-inside-avoid">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="py-1 font-normal">Category</th>
-                <th className="py-1 text-right font-normal">Limit</th>
-                <th className="py-1 text-right font-normal">Spent</th>
-                <th className="py-1 text-right font-normal">Result</th>
+                <th className="py-1 font-normal">{m.ov_budgets_category()}</th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_monthly_limit()}
+                </th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_home_spent()}
+                </th>
+                <th className="py-1 text-right font-normal">
+                  {m.ov_monthly_result()}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -226,8 +261,8 @@ function MonthlyReport() {
                     }
                   >
                     {b.spent > b.amount
-                      ? `${money(b.spent - b.amount)} over`
-                      : `${money(b.amount - b.spent)} left`}
+                      ? m.ov_meter_over({ amount: money(b.spent - b.amount) })
+                      : m.ov_meter_left({ amount: money(b.amount - b.spent) })}
                   </td>
                 </tr>
               ))}
@@ -238,11 +273,11 @@ function MonthlyReport() {
 
       <section aria-labelledby="changes" className="flex flex-col gap-3">
         <h2 id="changes" className="font-semibold text-lg">
-          Biggest changes
+          {m.ov_monthly_biggest_changes()}
         </h2>
         {changes.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            Spending looked the same as the month before.
+            {m.ov_monthly_no_changes()}
           </p>
         ) : (
           <ul className="flex flex-col gap-1 text-sm">

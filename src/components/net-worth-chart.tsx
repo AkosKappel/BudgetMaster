@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/chart'
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney, formatSignedMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { NetWorth } from '@/server/reports'
 
 const config = {
@@ -25,8 +26,12 @@ export function NetWorthChart({ points, currency }: NetWorth) {
   const last = points.at(-1)
   const change = last && first ? last.balance - first.balance : 0
   const summary = last
-    ? `${money(last.balance)} today, ${formatSignedMoney(change, currency)} since ${formatShortDate(first.date)}.`
-    : 'No balances yet.'
+    ? m.ov_networth_summary({
+        balance: money(last.balance),
+        change: formatSignedMoney(change, currency),
+        date: formatShortDate(first.date),
+      })
+    : m.ov_networth_empty()
 
   return (
     <figure className="flex flex-col gap-3">
@@ -80,13 +85,15 @@ export function NetWorthChart({ points, currency }: NetWorth) {
       </ChartContainer>
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">
-          Show as table
+          {m.ov_chart_show_table()}
         </summary>
         <table className="mt-2 w-full text-left">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="py-1 font-normal">Date</th>
-              <th className="py-1 text-right font-normal">Net worth</th>
+              <th className="py-1 font-normal">{m.ov_chart_date()}</th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_networth_title()}
+              </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">

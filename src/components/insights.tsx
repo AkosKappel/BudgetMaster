@@ -6,6 +6,7 @@ import { formatShortDate } from '@/lib/format-date'
 import type { Insight } from '@/lib/insights'
 import { formatMoney } from '@/lib/money'
 import { insightsQuery } from '@/lib/queries'
+import { m } from '@/paraglide/messages.js'
 
 // "Worth a look" on Home: plain sentences, each with a way to check it. Hidden when there
 // is nothing to say.
@@ -17,7 +18,7 @@ export function Insights({ spaceId }: { spaceId: string }) {
   return (
     <section aria-labelledby="insights" className="flex flex-col gap-3">
       <h2 id="insights" className="font-semibold text-lg">
-        Worth a look
+        {m.ov_insights_title()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">
         {data.insights.map((insight) => (
@@ -56,40 +57,51 @@ function InsightText({
     case 'duplicate':
       return (
         <p>
-          {insight.payee} twice for {money(insight.amount)}, on{' '}
-          {formatShortDate(insight.dates[0])} and{' '}
-          {formatShortDate(insight.dates[1])}. Charged twice?{' '}
+          {m.ov_insights_duplicate({
+            payee: insight.payee,
+            amount: money(insight.amount),
+            first: formatShortDate(insight.dates[0]),
+            second: formatShortDate(insight.dates[1]),
+          })}{' '}
           <Link
             to="/activity"
             search={{ q: insight.payee }}
             className={linkClass}
           >
-            Check
+            {m.ov_insights_check()}
           </Link>
         </p>
       )
     case 'price-rise':
       return (
         <p>
-          {insight.payee} went up from {money(insight.before)} to{' '}
-          {money(insight.after)} (+
-          {Math.round(
-            ((insight.after - insight.before) / insight.before) * 100,
-          )}{' '}
-          %).{' '}
+          {m.ov_insights_price_rise({
+            payee: insight.payee,
+            before: money(insight.before),
+            after: money(insight.after),
+            percent: Math.round(
+              ((insight.after - insight.before) / insight.before) * 100,
+            ),
+          })}{' '}
           <Link to="/recurring" className={linkClass}>
-            Recurring
+            {m.ov_recurring_link()}
           </Link>
         </p>
       )
     case 'category-up':
       return (
         <p>
-          {insight.category} is up {insight.change} % on the same days last
-          month: {money(insight.now)} against {money(insight.before)}
-          {insight.weekendShare >= 60
-            ? `, ${insight.weekendShare === 100 ? 'all' : `${insight.weekendShare} %`} of it on weekends.`
-            : '.'}
+          {(insight.weekendShare === 100
+            ? m.ov_insights_category_up_weekend_all
+            : insight.weekendShare >= 60
+              ? m.ov_insights_category_up_weekend
+              : m.ov_insights_category_up)({
+            category: insight.category,
+            change: insight.change,
+            now: money(insight.now),
+            before: money(insight.before),
+            share: insight.weekendShare,
+          })}
         </p>
       )
   }

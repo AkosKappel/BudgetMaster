@@ -1,0 +1,454 @@
+{
+  "ov_insights_title": "Stojí za pozornosť",
+  "ov_insights_duplicate": "{payee} dvakrát za {amount}, {first} a {second}. Strhli ti to dvakrát?",
+  "ov_insights_check": "Skontrolovať",
+  "ov_insights_price_rise": "{payee} podražilo z {before} na {after} (+{percent} %).",
+  "ov_recurring_link": "Pravidelné platby",
+  "ov_insights_category_up": "{category} je o {change} % vyššie než v rovnaké dni minulý mesiac: {now} oproti {before}.",
+  "ov_insights_category_up_weekend": "{category} je o {change} % vyššie než v rovnaké dni minulý mesiac: {now} oproti {before}, z toho {share} % cez víkendy.",
+  "ov_insights_category_up_weekend_all": "{category} je o {change} % vyššie než v rovnaké dni minulý mesiac: {now} oproti {before}, všetko cez víkendy.",
+  "ov_insights_recurring_payment": "Pravidelná platba",
+  "ov_meter_label": "Využitý rozpočet",
+  "ov_meter_value": "{spent} z {limit}",
+  "ov_meter_over": "o {amount} viac",
+  "ov_meter_close": "Blízko limitu, zostáva {amount}",
+  "ov_meter_left": "zostáva {amount}",
+  "ov_meter_of": "z {limit}",
+  "ov_meter_of_daily": "z {limit}, {daily} na deň",
+  "ov_prices_no_change": "bez zmeny",
+  "ov_prices_not_enough": "Zatiaľ nie je dosť histórie: potrebuješ príjemcov, ktorým si platil aspoň dvakrát za posledné tri mesiace a dvakrát v tých istých mesiacoch pred rokom.",
+  "ov_prices_unchanged": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, sa za rok nezmenilo.",
+        "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, sa za rok nezmenilo.",
+        "countPlural=many": "To, čo platíš {count} pravidelným príjemcom, sa za rok nezmenilo.",
+        "countPlural=other": "To, čo platíš {count} pravidelným príjemcom, sa za rok nezmenilo."
+      }
+    }
+  ],
+  "ov_prices_rose": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, za rok stúplo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, za rok stúplo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=many": "To, čo platíš {count} pravidelným príjemcom, za rok stúplo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=other": "To, čo platíš {count} pravidelným príjemcom, za rok stúplo o {percent} %: to je tvoja osobná inflácia."
+      }
+    }
+  ],
+  "ov_prices_fell": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "To, čo platíš {count} pravidelnému príjemcovi, za rok kleslo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=few": "To, čo platíš {count} pravidelným príjemcom, za rok kleslo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=many": "To, čo platíš {count} pravidelným príjemcom, za rok kleslo o {percent} %: to je tvoja osobná inflácia.",
+        "countPlural=other": "To, čo platíš {count} pravidelným príjemcom, za rok kleslo o {percent} %: to je tvoja osobná inflácia."
+      }
+    }
+  ],
+  "ov_trends_empty": "Zatiaľ žiadne výdavky.",
+  "ov_trends_new": "nové",
+  "ov_trends_as_usual": "ako zvyčajne",
+  "ov_trends_vs_usual": "{change} % oproti bežnému",
+  "ov_chart_income": "Príjmy",
+  "ov_chart_spending": "Výdavky",
+  "ov_chart_saved": "Ušetrené",
+  "ov_chart_show_table": "Zobraziť ako tabuľku",
+  "ov_chart_month": "Mesiac",
+  "ov_chart_date": "Dátum",
+  "ov_chart_day": "Deň",
+  "ov_chart_amount": "Suma",
+  "ov_cashflow_not_enough": "Zatiaľ nie je dosť histórie na ročný prehľad.",
+  "ov_cashflow_month_from": "mesiac od {day}. {month}",
+  "ov_cashflow_summary_saved": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Za posledný {count} celý mesiac si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=few": "Za posledné {count} celé mesiace si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=many": "Za posledných {count} celých mesiacov si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=other": "Za posledných {count} celých mesiacov si zarobil {income} a minul {spent}, ušetril si {saved} ({rate} % príjmov). Najlepší mesiac: {best}; najtesnejší: {worst}."
+      }
+    }
+  ],
+  "ov_cashflow_summary_overspent": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Za posledný {count} celý mesiac si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=few": "Za posledné {count} celé mesiace si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=many": "Za posledných {count} celých mesiacov si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}.",
+        "countPlural=other": "Za posledných {count} celých mesiacov si zarobil {income} a minul {spent}, teda o {over} viac, než prišlo. Najlepší mesiac: {best}; najtesnejší: {worst}."
+      }
+    }
+  ],
+  "ov_forecast_no_wallets": "Zatiaľ nemáš žiadne účty.",
+  "ov_forecast_no_payments": "V najbližších 90 dňoch nie sú žiadne pravidelné ani plánované platby, takže zostatok ostane {balance}.",
+  "ov_forecast_below_zero": "Od {date} pod nulou, na {lowest}. Na konci {end} ({endDate}).",
+  "ov_forecast_never_lower": "Nikdy nebude nižší než dnešných {balance}. Na konci {end} ({endDate}).",
+  "ov_forecast_tightest": "Najtesnejšie {date}, na {lowest}. Na konci {end} ({endDate}).",
+  "ov_forecast_show_payments": "Zobraziť platby",
+  "ov_forecast_payment": "Platba",
+  "ov_forecast_balance": "Zostatok",
+  "ov_networth_summary": "Dnes {balance}, od {date} {change}.",
+  "ov_networth_empty": "Zatiaľ žiadne zostatky.",
+  "ov_networth_title": "Čistý majetok",
+  "ov_breakdown_empty": "V tomto mesiaci žiadne výdavky.",
+  "ov_calendar_quiet": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} deň bez výdavkov za posledných {weeks} týždňov.",
+        "countPlural=few": "{count} dni bez výdavkov za posledných {weeks} týždňov.",
+        "countPlural=many": "{count} dní bez výdavkov za posledných {weeks} týždňov.",
+        "countPlural=other": "{count} dní bez výdavkov za posledných {weeks} týždňov."
+      }
+    }
+  ],
+  "ov_calendar_biggest": "Najdrahší deň bol {date} so sumou {amount}.",
+  "ov_calendar_less": "Menej",
+  "ov_calendar_more": "Viac",
+  "ov_calendar_biggest_days": "Dni s najväčšími výdavkami",
+  "ov_calendar_spent": "Minuté",
+  "ov_pace_this_month": "Tento mesiac",
+  "ov_pace_last_month": "Minulý mesiac",
+  "ov_pace_budget": "Rozpočet",
+  "ov_pace_budget_line": "Rozpočet {amount}",
+  "ov_pace_tooltip_day": "{date}, {day}. deň",
+  "ov_pace_empty": "Tento mesiac zatiaľ žiadne výdavky.",
+  "ov_pace_nothing_spent": "Zatiaľ si nič neminul.",
+  "ov_pace_past_more": "Tento mesiac si minul {spent}, o {difference} viac než mesiac predtým.",
+  "ov_pace_past_less": "Tento mesiac si minul {spent}, o {difference} menej než mesiac predtým.",
+  "ov_pace_projection_end": "Ak zvyšok mesiaca pôjde ako minulý mesiac, skončíš na {amount}.",
+  "ov_pace_projection_over": "Ak zvyšok mesiaca pôjde ako minulý mesiac, prekročíš rozpočet o {amount}.",
+  "ov_pace_projection_under": "Ak zvyšok mesiaca pôjde ako minulý mesiac, ostaneš {amount} pod rozpočtom.",
+  "ov_pace_current_same": "Do {day}. dňa minuté {spent}, rovnako ako minulý mesiac v tomto bode.",
+  "ov_pace_current_more": "Do {day}. dňa minuté {spent}, o {difference} viac než minulý mesiac v tomto bode.",
+  "ov_pace_current_less": "Do {day}. dňa minuté {spent}, o {difference} menej než minulý mesiac v tomto bode.",
+  "ov_flow_no_month": "Zatiaľ žiadny celý mesiac.",
+  "ov_flow_budget": "Rozpočet",
+  "ov_flow_from_savings": "Z úspor",
+  "ov_flow_nothing": "nič",
+  "ov_flow_summary_saved": "{from} až {to}: prišlo {earned} a odišlo {spent}, ušetrené {saved}. Najväčší výdavok: {biggest}.",
+  "ov_flow_summary_overspent": "{from} až {to}: prišlo {earned} a odišlo {spent}, o {over} viac, než prišlo. Najväčší výdavok: {biggest}.",
+  "ov_flow_from": "Odkiaľ",
+  "ov_flow_to": "Kam",
+  "ov_home_coming_up": "Čoskoro",
+  "ov_home_transfer_to": "Prevod na {wallet}",
+  "ov_home_wallets": "Účty",
+  "ov_home_add_wallet": "Pridať účet",
+  "ov_home_wallets_empty": "Pridaj si účet pre každý bankový účet, kartu alebo hotovosť, ktoré chceš sledovať.",
+  "ov_home_recent": "Nedávne",
+  "ov_home_see_all": "Zobraziť všetko",
+  "ov_home_add_transaction": "Pridať transakciu",
+  "ov_home_recent_empty": "Zatiaľ žiadne transakcie. Pridaj prvú a uvidíš, kam ti idú peniaze.",
+  "ov_home_spent_since": "Minuté od {date}",
+  "ov_home_spent": "Minuté",
+  "ov_home_detail_no_budget": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Príjmy {income}. Zostáva {count} deň. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť.",
+        "countPlural=few": "Príjmy {income}. Zostávajú {count} dni. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť.",
+        "countPlural=many": "Príjmy {income}. Zostáva {count} dní. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť.",
+        "countPlural=other": "Príjmy {income}. Zostáva {count} dní. Nastav si mesačný rozpočet a uvidíš, koľko ešte môžeš minúť."
+      }
+    }
+  ],
+  "ov_home_detail_income": "Príjmy {income}.",
+  "ov_home_over_by": "Prekročenie rozpočtu o",
+  "ov_home_left_until": "Zostáva minúť do {date}",
+  "ov_home_under_by": "Pod rozpočtom o",
+  "ov_home_detail_spent": "Minuté {spent} z {budget}.",
+  "ov_home_days_until": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Zostáva {count} deň do {date}.",
+        "countPlural=few": "Zostávajú {count} dni do {date}.",
+        "countPlural=many": "Zostáva {count} dní do {date}.",
+        "countPlural=other": "Zostáva {count} dní do {date}."
+      }
+    }
+  ],
+  "ov_home_budget_month": "Rozpočtový mesiac",
+  "ov_home_previous_month": "Predchádzajúci mesiac",
+  "ov_home_next_month": "Nasledujúci mesiac",
+  "ov_home_range": "{from} až {to}",
+  "ov_home_needs_attention": "Vyžaduje pozornosť",
+  "ov_home_all_budgets": "Všetky rozpočty",
+  "ov_home_spending_pace": "Tempo výdavkov",
+  "ov_home_budgets": "Rozpočty",
+  "ov_budgets_meta_title": "Rozpočty | BudgetMaster",
+  "ov_budgets_period": "{from} – {to}",
+  "ov_budgets_this_month_period": "Tento mesiac, {period}",
+  "ov_budgets_all_spending": "Všetky výdavky",
+  "ov_budgets_edit": "Upraviť",
+  "ov_budgets_set_limit": "Nastaviť limit",
+  "ov_budgets_no_overall": "Žiadny celkový limit. Nastav si ho a uvidíš, koľko ti zostáva na každý deň.",
+  "ov_budgets_category_budgets": "Rozpočty kategórií",
+  "ov_budgets_add": "Pridať rozpočet",
+  "ov_budgets_assigned": "Prišlo {income}, v rozpočtoch kategórií je {assigned}.",
+  "ov_budgets_no_job": "{amount} ešte nemá určenie.",
+  "ov_budgets_over_assigned": "Rozpočty sú o {amount} vyššie, než prišlo.",
+  "ov_budgets_empty": "Daj kategórii mesačný limit, napríklad 400 na potraviny, a uvidíš, koľko ti zostáva, kým ho prekročíš.",
+  "ov_budgets_incl_subcategories": "vrátane podkategórií",
+  "ov_budgets_carried": "Vrátane {amount}, ktoré zostali z minulého mesiaca",
+  "ov_budgets_edit_budget": "Upraviť rozpočet",
+  "ov_budgets_where_it_went": "Kam to išlo",
+  "ov_budgets_saved": "Rozpočet uložený",
+  "ov_budgets_removed": "Rozpočet odstránený",
+  "ov_budgets_enter_limit": "Zadaj mesačný limit.",
+  "ov_budgets_new": "Nový rozpočet",
+  "ov_budgets_sheet_description": "Mesačný limit v {currency}. Limit skupiny zahŕňa aj jej podkategórie.",
+  "ov_budgets_category": "Kategória",
+  "ov_budgets_monthly_limit": "Mesačný limit",
+  "ov_budgets_rollover": "Preniesť, čo zostane",
+  "ov_budgets_rollover_hint": "Peniaze, ktoré tento mesiac neminieš, sa pridajú k limitu na budúci mesiac.",
+  "ov_budgets_remove_limit": "Odstrániť limit",
+  "ov_budgets_save": "Uložiť rozpočet",
+  "ov_reports_meta_title": "Prehľady | BudgetMaster",
+  "ov_reports_more": "Viac",
+  "ov_reports_title": "Prehľady",
+  "ov_reports_cash_flow": "Príjmy a výdavky",
+  "ov_reports_money_flow": "Tok peňazí za minulý mesiac",
+  "ov_reports_trends": "Výdavky podľa kategórií",
+  "ov_reports_trends_hint": "Posledných päť celých mesiacov; suma je za minulý mesiac.",
+  "ov_reports_forecast": "Najbližších 90 dní",
+  "ov_reports_forecast_hint": "Dnešný zostatok s pravidelnými a plánovanými platbami. Bežné výdavky prídu navyše.",
+  "ov_reports_prices": "Ceny, ktoré platíš",
+  "ov_reports_prices_hint": "Bežná suma na príjemcu za posledné tri mesiace oproti tým istým mesiacom pred rokom.",
+  "ov_reports_calendar": "Kalendár výdavkov",
+  "ov_monthly_title": "Mesačný prehľad",
+  "ov_monthly_meta_title": "Mesačný prehľad | BudgetMaster",
+  "ov_monthly_report_month": "Mesiac prehľadu",
+  "ov_monthly_print": "Tlačiť",
+  "ov_monthly_so_far": "{space}, mesiac zatiaľ",
+  "ov_monthly_heading": "Mesačný prehľad, {period}",
+  "ov_monthly_totals": "Súhrn",
+  "ov_monthly_overspent": "Prečerpané",
+  "ov_monthly_kept": "Ponechal si si {percent} % príjmov.",
+  "ov_monthly_no_income": "Tento mesiac žiadne príjmy.",
+  "ov_monthly_spending_change": "Výdavky boli {change} oproti predchádzajúcemu mesiacu ({before}).",
+  "ov_monthly_overall_exceeded": "Celkový rozpočet {budget} si prekročil o {amount}.",
+  "ov_monthly_overall_kept": "Celkový rozpočet {budget} si dodržal, zostalo {amount}.",
+  "ov_monthly_top_categories": "Top kategórie",
+  "ov_monthly_no_spending": "Žiadne výdavky.",
+  "ov_monthly_share": "Podiel",
+  "ov_monthly_budgets_kept": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} rozpočet kategórie bol dodržaný.",
+        "countPlural=few": "Všetky {count} rozpočty kategórií boli dodržané.",
+        "countPlural=many": "Všetkých {count} rozpočtov kategórií bolo dodržaných.",
+        "countPlural=other": "Všetkých {count} rozpočtov kategórií bolo dodržaných."
+      }
+    }
+  ],
+  "ov_monthly_budgets_over": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Prekročené rozpočty kategórií: {over} z {count}: {names}.",
+        "countPlural=few": "Prekročené rozpočty kategórií: {over} zo {count}: {names}.",
+        "countPlural=many": "Prekročené rozpočty kategórií: {over} z {count}: {names}.",
+        "countPlural=other": "Prekročené rozpočty kategórií: {over} z {count}: {names}."
+      }
+    }
+  ],
+  "ov_monthly_limit": "Limit",
+  "ov_monthly_result": "Výsledok",
+  "ov_monthly_biggest_changes": "Najväčšie zmeny",
+  "ov_monthly_no_changes": "Výdavky vyzerali rovnako ako v predchádzajúcom mesiaci.",
+  "ov_year_title": "Rok v skratke",
+  "ov_year_meta_title": "Rok v skratke | BudgetMaster",
+  "ov_year_share_no_spend": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} deň bez výdavkov",
+        "countPlural=few": "{count} dni bez výdavkov",
+        "countPlural=many": "{count} dní bez výdavkov",
+        "countPlural=other": "{count} dní bez výdavkov"
+      }
+    }
+  ],
+  "ov_year_share_saved": "ušetril som {rate} % príjmov",
+  "ov_year_share_top": "najviac išlo na {category}",
+  "ov_year_share": "Môj rok {year} v BudgetMaster: {parts}.",
+  "ov_year_spent_more": "Minul si viac, než si zarobil",
+  "ov_year_saving_rate": "{rate} % z príjmov {income}",
+  "ov_year_no_income": "Žiadne zaznamenané príjmy",
+  "ov_year_no_spend_days": "Dni bez výdavkov",
+  "ov_year_of_days": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "z {count} dňa",
+        "countPlural=few": "zo {count} dní",
+        "countPlural=many": "z {count} dní",
+        "countPlural=other": "z {count} dní"
+      }
+    }
+  ],
+  "ov_year_of_days_so_far": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "zatiaľ z {count} dňa",
+        "countPlural=few": "zatiaľ zo {count} dní",
+        "countPlural=many": "zatiaľ z {count} dní",
+        "countPlural=other": "zatiaľ z {count} dní"
+      }
+    }
+  ],
+  "ov_year_most_went_to": "Najviac išlo na",
+  "ov_year_category_share": "{amount}, {percent} % výdavkov",
+  "ov_year_paid_most_to": "Najviac si platil",
+  "ov_year_payments": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{amount} v {count} platbe",
+        "countPlural=few": "{amount} v {count} platbách",
+        "countPlural=many": "{amount} v {count} platbách",
+        "countPlural=other": "{amount} v {count} platbách"
+      }
+    }
+  ],
+  "ov_year_priciest_month": "Najdrahší mesiac",
+  "ov_year_biggest": "Najväčší jednorazový výdavok",
+  "ov_year_an_expense": "Výdavok",
+  "ov_year_copied": "Skopírované na zdieľanie",
+  "ov_year_heading": "Rok {year} v peniazoch",
+  "ov_year_year": "Rok",
+  "ov_year_share_button": "Zdieľať",
+  "ov_year_intro": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} transakcia, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=few": "{count} transakcie, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=many": "{count} transakcií, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=other": "{count} transakcií, v {currency}. Zdieľanie pošle vetu bez súm."
+      }
+    }
+  ],
+  "ov_year_intro_so_far": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Tento rok zatiaľ {count} transakcia, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=few": "Tento rok zatiaľ {count} transakcie, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=many": "Tento rok zatiaľ {count} transakcií, v {currency}. Zdieľanie pošle vetu bez súm.",
+        "countPlural=other": "Tento rok zatiaľ {count} transakcií, v {currency}. Zdieľanie pošle vetu bez súm."
+      }
+    }
+  ],
+  "ov_year_empty": "V roku {year} nie je nič zaznamenané.",
+  "ov_forecast_transfer": "Prevod",
+  "ov_budgets_not_split": "{name}, nerozdelené",
+  "ov_budgets_viewer_error": "Ako čitateľ nemôžeš meniť rozpočty.",
+  "ov_budgets_need_expense": "Rozpočet potrebuje kategóriu výdavkov."
+}

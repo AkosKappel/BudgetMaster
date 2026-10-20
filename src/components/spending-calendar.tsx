@@ -1,5 +1,6 @@
 import { formatShortDate } from '@/lib/format-date'
 import { formatMoney } from '@/lib/money'
+import { m } from '@/paraglide/messages.js'
 import type { SpendingCalendar as Calendar } from '@/server/reports'
 
 // Five steps of the accent from no spending to the busiest days. Quartiles of the days
@@ -30,9 +31,9 @@ export function SpendingCalendar({ days, currency }: Calendar) {
   return (
     <figure className="flex flex-col gap-3">
       <figcaption className="max-w-prose text-sm">
-        {quiet} days without spending in the last {weeks} weeks.
+        {m.ov_calendar_quiet({ count: quiet, weeks })}
         {top[0]?.total
-          ? ` The biggest day was ${formatShortDate(top[0].date)} with ${money(top[0].total)}.`
+          ? ` ${m.ov_calendar_biggest({ date: formatShortDate(top[0].date), amount: money(top[0].total) })}`
           : ''}
       </figcaption>
       <div
@@ -52,21 +53,23 @@ export function SpendingCalendar({ days, currency }: Calendar) {
         className="flex items-center gap-1 text-muted-foreground text-xs"
         aria-hidden="true"
       >
-        Less
+        {m.ov_calendar_less()}
         {LEVELS.map((level) => (
           <span key={level} className={`size-2.5 rounded-[2px] ${level}`} />
         ))}
-        More
+        {m.ov_calendar_more()}
       </div>
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">
-          Biggest spending days
+          {m.ov_calendar_biggest_days()}
         </summary>
         <table className="mt-2 w-full text-left">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="py-1 font-normal">Day</th>
-              <th className="py-1 text-right font-normal">Spent</th>
+              <th className="py-1 font-normal">{m.ov_chart_day()}</th>
+              <th className="py-1 text-right font-normal">
+                {m.ov_calendar_spent()}
+              </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">

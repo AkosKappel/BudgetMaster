@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js'
 import { addDays } from './recurrence.ts'
 
 export interface Expense {
@@ -104,7 +105,7 @@ export function findPriceRises(expenses: Expense[], today: string) {
     )
       found.push({
         kind: 'price-rise',
-        payee: last.payee ?? 'A recurring payment',
+        payee: last.payee ?? m.ov_insights_recurring_payment(),
         before: previous.amount,
         after: last.amount,
       })
