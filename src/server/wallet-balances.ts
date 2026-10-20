@@ -1,7 +1,7 @@
 import { and, asc, eq, isNull, lte, or, sql } from 'drizzle-orm'
 
 import { db } from '@/db'
-import { transaction, wallet } from '@/db/schema'
+import { recurringRule, transaction, wallet } from '@/db/schema'
 
 // Server-only: imported from server function handlers, never from modules the client
 // bundles (an export next to server functions pulls the database driver into the browser).
@@ -30,7 +30,7 @@ export async function walletBalances(
       initialBalance: wallet.initialBalance,
       archived: sql<boolean>`${wallet.archivedAt} is not null`,
       // Its amounts are stored in its currency, so the currency is fixed once it has any.
-      used: sql<boolean>`count(${transaction.id}) > 0`,
+      used: sql<boolean>`count(${transaction.id}) > 0 or exists (select 1 from ${recurringRule} where ${recurringRule.walletId} = ${wallet.id} or ${recurringRule.toWalletId} = ${wallet.id})`,
       balance:
         sql`${wallet.initialBalance} + coalesce(sum(${change}), 0)`.mapWith(
           Number,

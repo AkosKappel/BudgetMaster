@@ -3,7 +3,7 @@ import { and, eq, ne, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { db } from '@/db'
-import { transaction, wallet, walletType } from '@/db/schema'
+import { recurringRule, transaction, wallet, walletType } from '@/db/schema'
 import { CURRENCIES } from '@/lib/currencies'
 import { ICONS } from '@/lib/icons'
 
@@ -70,16 +70,25 @@ export const saveWallet = createServerFn({ method: 'POST' })
         .from(wallet)
         .where(inSpace(data.id))
       if (!existing) throw new Error('Wallet not found.')
-      const used = await db.$count(
-        transaction,
-        or(
-          eq(transaction.walletId, data.id),
-          eq(transaction.toWalletId, data.id),
-        ),
-      )
+      // Recurring rules hold amounts in its currency too, even before their first payment.
+      const used =
+        (await db.$count(
+          transaction,
+          or(
+            eq(transaction.walletId, data.id),
+            eq(transaction.toWalletId, data.id),
+          ),
+        )) +
+        (await db.$count(
+          recurringRule,
+          or(
+            eq(recurringRule.walletId, data.id),
+            eq(recurringRule.toWalletId, data.id),
+          ),
+        ))
       if (used > 0 && existing.currency !== data.currency)
         throw new Error(
-          'This wallet has transactions in its currency, so the currency cannot change.',
+          'This wallet has transactions or recurring payments in its currency, so the currency cannot change.',
         )
     }
 
