@@ -271,7 +271,7 @@ function WalletRow({
       </span>
     </>
   )
-  const rowClass = 'flex w-full items-center gap-3 px-4 py-3 text-left'
+  const rowClass = 'flex w-full min-w-0 items-center gap-3 px-4 py-3 text-left'
   return (
     <li className="flex items-center">
       {onSelect ? (

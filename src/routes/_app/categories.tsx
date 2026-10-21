@@ -350,7 +350,7 @@ function CategoryRow({
     </>
   )
   const rowClass = cn(
-    'flex w-full items-center gap-3 px-4 py-2.5 text-left',
+    'flex w-full min-w-0 items-center gap-3 px-4 py-2.5 text-left',
     nested && 'pl-10',
   )
   return (

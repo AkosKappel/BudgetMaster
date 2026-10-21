@@ -34,6 +34,7 @@ test('app pages have no axe violations', async ({ page }) => {
     ['/spaces', 'Spaces'],
     ['/more', 'More'],
     ['/settings', 'Settings'],
+    ['/ask', 'Ask your money'],
   ] as const) {
     await page.goto(path)
     await expect(
@@ -135,6 +136,33 @@ test('public pages have no axe violations', async ({ page }) => {
   expect(sitemap).toContain('/about</loc>')
   const securityTxt = await page.request.get('/.well-known/security.txt')
   expect(await securityTxt.text()).toContain('Contact: https://')
+})
+
+test('the language picker switches the public pages to Hungarian and Slovak', async ({
+  page,
+}) => {
+  await page.goto('/start')
+  // The picker only works once the page is hydrated, which also enables this button.
+  await expect(
+    page.getByRole('button', { name: 'Try the demo' }).first(),
+  ).toBeEnabled()
+  await page.getByLabel('Language').selectOption('hu')
+  await expect(
+    page.getByRole('heading', { level: 1, name: /Tudd, mennyit költhetsz/ }),
+  ).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+  await expectNoAxeViolations(page)
+
+  await expect(
+    page.getByRole('button', { name: 'Demó kipróbálása' }).first(),
+  ).toBeEnabled()
+  await page.getByLabel('Nyelv').selectOption('sk')
+  await page.goto('/faq')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Často kladené otázky' }),
+  ).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'sk')
+  await expectNoAxeViolations(page)
 })
 
 test('? opens the keyboard shortcuts help', async ({ page, isMobile }) => {
