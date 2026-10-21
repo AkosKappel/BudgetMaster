@@ -10,6 +10,8 @@ export function formatMoney(
   const format = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    // Hungarian formats would spell out "EUR"; people write "€" there too.
+    currencyDisplay: locale.startsWith('hu') ? 'narrowSymbol' : 'symbol',
     ...options,
   })
   return format.format(minor / 10 ** currencyDigits(currency))

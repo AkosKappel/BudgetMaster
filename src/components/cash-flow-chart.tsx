@@ -87,7 +87,7 @@ export function CashFlowChart({ months, currency }: CashFlow) {
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={52}
+            width={60}
             tickFormatter={(value: number) => compact(Math.abs(value))}
           />
           <ReferenceLine y={0} stroke="var(--muted-foreground)" />

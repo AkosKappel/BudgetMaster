@@ -87,7 +87,7 @@ export function ForecastChart(props: Forecast) {
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={52}
+            width={60}
             tickFormatter={compact}
             domain={['auto', 'auto']}
           />

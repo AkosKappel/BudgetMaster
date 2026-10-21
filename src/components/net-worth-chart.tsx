@@ -53,7 +53,7 @@ export function NetWorthChart({ points, currency }: NetWorth) {
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={52}
+            width={60}
             tickFormatter={compact}
             domain={['auto', 'auto']}
           />

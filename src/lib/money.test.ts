@@ -53,3 +53,7 @@ test('parseAmount adds up sums typed into the field', () => {
   assert.equal(parseAmount('+12'), null)
   assert.equal(parseAmount('12++3'), null)
 })
+
+test('formatMoney uses the euro sign in Hungarian too', () => {
+  assert.equal(formatMoney(29028, 'EUR', 'hu-HU'), '290,28 €')
+})

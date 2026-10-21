@@ -94,7 +94,7 @@ export function SpendingPaceChart({
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={52}
+            width={60}
             tickFormatter={compact}
             domain={[0, (max: number) => Math.max(max, budget ?? 0)]}
           />
