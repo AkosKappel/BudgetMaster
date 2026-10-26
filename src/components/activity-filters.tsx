@@ -88,7 +88,7 @@ export function ActivityFilters({
           <SlidersHorizontal />
           {m.txn_filters()}
           {panelCount > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-primary-foreground text-xs tabular-nums">
+            <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground tabular-nums">
               {panelCount}
             </span>
           )}

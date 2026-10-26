@@ -29,10 +29,10 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
 
   return (
     <section aria-labelledby="balances" className="flex flex-col gap-3">
-      <h2 id="balances" className="font-semibold text-lg">
+      <h2 id="balances" className="text-lg font-semibold">
         {m.acct_balances_title()}
       </h2>
-      <p className="max-w-prose text-muted-foreground text-sm">
+      <p className="max-w-prose text-sm text-muted-foreground">
         {m.acct_balances_intro()}
       </p>
       <ul className="divide-y rounded-lg border bg-card text-sm">
@@ -97,7 +97,7 @@ export function MemberBalances({ spaceId }: { spaceId: string }) {
         </ul>
       )}
       {data.recentSettlements.length > 0 && (
-        <div className="flex flex-col gap-1 text-muted-foreground text-sm">
+        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
           <h3 className="font-medium text-foreground">
             {m.acct_balances_paid_back()}
           </h3>

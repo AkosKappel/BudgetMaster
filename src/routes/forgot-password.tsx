@@ -47,7 +47,7 @@ function ForgotPassword() {
             else setSent(true)
           }}
         >
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.acct_forgot_intro()}
           </p>
           <div className="flex flex-col gap-2">
@@ -66,7 +66,7 @@ function ForgotPassword() {
           </Button>
         </form>
       )}
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         <Link to="/sign-in" className="text-foreground underline">
           {m.acct_auth_back_to_sign_in()}
         </Link>

@@ -97,7 +97,7 @@ export function NotificationSettings() {
 
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-2 font-semibold text-lg">
+      <legend className="mb-2 text-lg font-semibold">
         {m.notify_heading()}
       </legend>
       {data.publicKey && push !== null && (

@@ -71,12 +71,12 @@ function Rules() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         {m.setup_rules_title()}
       </h1>
       <p className="max-w-prose text-muted-foreground">

@@ -235,7 +235,7 @@ export function RecurringForm({
       </Field>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium text-sm">
+        <legend className="mb-2 text-sm font-medium">
           {m.setup_recurring_form_repeats()}
         </legend>
         <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export function RecurringForm({
             ))}
           </select>
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {describeSchedule({ startDate, frequency: frequencyValue, interval })}
           {endDate ? m.setup_recurring_form_until({ date: endDate }) : ''}
         </p>
@@ -292,7 +292,7 @@ export function RecurringForm({
         </Field>
       </div>
       {!rule && startDate < today && (
-        <p className="-mt-3 text-muted-foreground text-sm">
+        <p className="-mt-3 text-sm text-muted-foreground">
           {m.setup_recurring_form_backfill_hint()}
         </p>
       )}

@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!src/routeTree.gen.ts", "!drizzle"]
+    "includes": [
+      "**",
+      "!src/routeTree.gen.ts",
+      "!drizzle",
+      "!pnpm-lock.yaml",
+      "!pnpm-workspace.yaml"
+    ]
   },
   "formatter": {
     "indentStyle": "space"
@@ -23,16 +29,17 @@
       "tailwindDirectives": true
     }
   },
+  "tailwind": {
+    "stylesheet": "./src/styles.css",
+    "mergeFunctions": ["cn", "cva"]
+  },
   "linter": {
     "rules": {
       "preset": "recommended",
       "nursery": {
-        "useSortedClasses": {
+        "useTailwindSortedClasses": {
           "level": "warn",
-          "fix": "safe",
-          "options": {
-            "functions": ["cn", "cva"]
-          }
+          "fix": "safe"
         }
       }
     }
@@ -54,6 +61,16 @@
           },
           "suspicious": {
             "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["e2e/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "useDomNodeTextContent": "off"
           }
         }
       }

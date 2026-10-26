@@ -128,7 +128,7 @@ const errorText = (errors: unknown[]) =>
 
 function FieldError({ errors }: { errors: unknown[] }) {
   const message = errorText(errors)
-  return message ? <p className="text-destructive text-sm">{message}</p> : null
+  return message ? <p className="text-sm text-destructive">{message}</p> : null
 }
 
 const toInputAmount = (minor: number, currency: string) => {
@@ -391,7 +391,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             {TYPES.map((t) => (
               <label
                 key={t.value}
-                className="flex h-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground text-sm has-checked:bg-card has-checked:font-medium has-checked:text-foreground has-checked:shadow-xs has-focus-visible:ring-2 has-focus-visible:ring-ring"
+                className="flex h-9 cursor-pointer items-center justify-center rounded-md text-sm text-muted-foreground has-checked:bg-card has-checked:font-medium has-checked:text-foreground has-checked:shadow-xs has-focus-visible:ring-2 has-focus-visible:ring-ring"
               >
                 <input
                   type="radio"
@@ -427,7 +427,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                     currency: walletById(walletId)?.currency ?? '',
                   })}
                 </Label>
-                <div className="flex items-baseline gap-2 border-input border-b-2 pb-1 focus-within:border-ring">
+                <div className="flex items-baseline gap-2 border-b-2 border-input pb-1 focus-within:border-ring">
                   <span className="text-2xl text-muted-foreground">
                     {walletById(walletId)?.currency}
                   </span>
@@ -442,7 +442,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     aria-invalid={field.state.meta.errors.length > 0}
-                    className="min-w-0 flex-1 bg-transparent font-semibold text-4xl tracking-tight outline-none placeholder:text-muted-foreground/50"
+                    className="min-w-0 flex-1 bg-transparent text-4xl font-semibold tracking-tight outline-none placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <AmountSum
@@ -613,7 +613,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                     <form.Field name="categoryId">
                       {(field) => (
                         <fieldset className="flex flex-col gap-2">
-                          <legend className="mb-2 font-medium text-sm">
+                          <legend className="mb-2 text-sm font-medium">
                             {m.txn_form_category()}
                           </legend>
                           <div className="flex flex-wrap gap-2">
@@ -730,7 +730,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
                       </select>
                       <p
                         id="paid-by-hint"
-                        className="text-muted-foreground text-xs"
+                        className="text-xs text-muted-foreground"
                       >
                         {m.txn_form_paid_by_hint()}
                       </p>
@@ -787,7 +787,7 @@ export function TransactionForm({ transaction, initialType, onDone }: Props) {
             <form.Field name="tagIds">
               {(field) => (
                 <fieldset className="flex flex-col gap-2">
-                  <legend className="mb-2 font-medium text-sm">
+                  <legend className="mb-2 text-sm font-medium">
                     {m.txn_form_tags()}
                   </legend>
                   <div className="flex flex-wrap gap-2">
@@ -1000,7 +1000,7 @@ function AmountSum({ value, currency }: { value: string; currency: string }) {
   if (!/\d\s*[+\-−*×/÷]\s*\d/.test(value)) return null
   const minor = parseAmount(value, currencyDigits(currency))
   return (
-    <p className="text-muted-foreground text-sm" aria-live="polite">
+    <p className="text-sm text-muted-foreground" aria-live="polite">
       {minor === null
         ? m.txn_form_invalid_sum()
         : `= ${formatMoney(minor, currency)}`}
@@ -1041,7 +1041,7 @@ function SplitEditor({
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-medium text-sm">{m.txn_form_split()}</legend>
+      <legend className="mb-2 text-sm font-medium">{m.txn_form_split()}</legend>
       <ul className="flex flex-col gap-2">
         {value.map((part, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: parts have no id until saved, and their order is stable
@@ -1158,7 +1158,7 @@ function QuickEntryField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor="quick-entry" className="text-muted-foreground text-xs">
+      <Label htmlFor="quick-entry" className="text-xs text-muted-foreground">
         {m.txn_quick_label()}
       </Label>
       <div className="flex gap-2">
@@ -1197,7 +1197,7 @@ function QuickEntryField({
         {m.txn_quick_hint()}
       </p>
       {onAsk && (
-        <p className="text-muted-foreground text-xs">{m.txn_ai_ask_hint()}</p>
+        <p className="text-xs text-muted-foreground">{m.txn_ai_ask_hint()}</p>
       )}
     </div>
   )
@@ -1253,7 +1253,7 @@ function ReceiptField({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-medium text-sm">{m.txn_receipt()}</span>
+      <span className="text-sm font-medium">{m.txn_receipt()}</span>
       {current ? (
         <div className="flex flex-wrap items-end gap-3">
           <a
@@ -1335,7 +1335,7 @@ function ReceiptField({
         </label>
       )}
       {error && (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}

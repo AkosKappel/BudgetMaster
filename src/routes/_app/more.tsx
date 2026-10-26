@@ -31,7 +31,7 @@ function More() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         {m.shell_nav_more()}
       </h1>
       <section
@@ -40,7 +40,7 @@ function More() {
       >
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{user.name}</p>
-          <p className="truncate text-muted-foreground text-sm">
+          <p className="truncate text-sm text-muted-foreground">
             {accountLabel(user)}
           </p>
         </div>
@@ -58,7 +58,7 @@ function More() {
             <Settings className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_nav_settings()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_settings_hint()}
               </span>
             </span>
@@ -73,7 +73,7 @@ function More() {
             <Users className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_palette_spaces()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_spaces_hint()}
               </span>
             </span>
@@ -88,7 +88,7 @@ function More() {
             <WalletCards className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_wallets()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_wallets_hint()}
               </span>
             </span>
@@ -103,7 +103,7 @@ function More() {
             <Goal className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_goals()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_goals_hint()}
               </span>
             </span>
@@ -118,7 +118,7 @@ function More() {
             <FileUp className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_import()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_import_hint()}
               </span>
             </span>
@@ -133,7 +133,7 @@ function More() {
             <Sparkles className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.ask_title()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.ask_hint()}
               </span>
             </span>
@@ -148,7 +148,7 @@ function More() {
             <ChartColumn className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_palette_reports()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_reports_hint()}
               </span>
             </span>
@@ -163,7 +163,7 @@ function More() {
             <Repeat className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_recurring()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_recurring_hint()}
               </span>
             </span>
@@ -178,7 +178,7 @@ function More() {
             <Shapes className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_categories()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_categories_hint()}
               </span>
             </span>
@@ -193,7 +193,7 @@ function More() {
             <Wand className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_rules()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_rules_hint()}
               </span>
             </span>
@@ -208,7 +208,7 @@ function More() {
             <Tag className="size-5 text-muted-foreground" />
             <span className="flex flex-1 flex-col">
               <span className="font-medium">{m.shell_more_tags()}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {m.shell_more_tags_hint()}
               </span>
             </span>

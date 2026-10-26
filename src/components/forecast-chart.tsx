@@ -165,14 +165,14 @@ export function ForecastChart(props: Forecast) {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-t">
-                  <td className="whitespace-nowrap py-1 pr-2">
+                  <td className="py-1 pr-2 whitespace-nowrap">
                     {formatShortDate(r.date)}
                   </td>
                   <td className="py-1 pr-2">{r.label}</td>
-                  <td className="whitespace-nowrap py-1 text-right">
+                  <td className="py-1 text-right whitespace-nowrap">
                     {formatSignedMoney(r.change, currency)}
                   </td>
-                  <td className="whitespace-nowrap py-1 text-right">
+                  <td className="py-1 text-right whitespace-nowrap">
                     {money(r.balance)}
                   </td>
                 </tr>

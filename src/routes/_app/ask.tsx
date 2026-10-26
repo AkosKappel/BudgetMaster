@@ -42,12 +42,12 @@ function Ask() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.shell_nav_more()}
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">{m.ask_title()}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{m.ask_title()}</h1>
       <p className="max-w-prose text-muted-foreground">{m.ask_intro()}</p>
 
       {options && !options.canReadReceipts ? (
@@ -68,7 +68,7 @@ function Ask() {
                     <span className="sr-only">{m.ask_you()}: </span>
                     {turn.question}
                   </p>
-                  <p className="max-w-prose whitespace-pre-line leading-relaxed">
+                  <p className="max-w-prose leading-relaxed whitespace-pre-line">
                     <Sparkles
                       className="mr-1.5 inline size-4 text-note"
                       aria-label="Claude"
@@ -104,11 +104,11 @@ function Ask() {
               </Button>
             </div>
             {ask.isError && (
-              <p role="alert" className="text-destructive text-sm">
+              <p role="alert" className="text-sm text-destructive">
                 {ask.error.message || m.ask_failed()}
               </p>
             )}
-            <p id="ask-privacy" className="text-muted-foreground text-xs">
+            <p id="ask-privacy" className="text-xs text-muted-foreground">
               {m.ask_privacy()}
             </p>
           </form>
@@ -118,7 +118,7 @@ function Ask() {
               aria-labelledby="ask-examples"
               className="flex flex-col gap-2"
             >
-              <h2 id="ask-examples" className="text-muted-foreground text-sm">
+              <h2 id="ask-examples" className="text-sm text-muted-foreground">
                 {m.ask_examples()}
               </h2>
               <div className="flex flex-wrap gap-2">

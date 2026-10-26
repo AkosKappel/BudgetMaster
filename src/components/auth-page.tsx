@@ -31,10 +31,10 @@ export function AuthPage({
 }) {
   return (
     <main className="relative isolate mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 overflow-hidden px-4 py-10">
-      <Guilloche className="mask-b-from-40% absolute -top-24 -right-32 -z-10 size-96 text-note/30" />
+      <Guilloche className="absolute -top-24 -right-32 -z-10 size-96 mask-b-from-40% text-note/30" />
       <div>
         <Logo />
-        <h1 className="mt-6 font-semibold text-3xl tracking-tight">{title}</h1>
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight">{title}</h1>
       </div>
       {children}
       <PublicFooter />
@@ -83,7 +83,7 @@ export function useAuthSubmit(redirectTo = '/') {
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null
   return (
-    <p role="alert" className="text-destructive text-sm">
+    <p role="alert" className="text-sm text-destructive">
       {message}
     </p>
   )

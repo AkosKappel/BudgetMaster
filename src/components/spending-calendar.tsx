@@ -50,7 +50,7 @@ export function SpendingCalendar({ days, currency }: Calendar) {
         ))}
       </div>
       <div
-        className="flex items-center gap-1 text-muted-foreground text-xs"
+        className="flex items-center gap-1 text-xs text-muted-foreground"
         aria-hidden="true"
       >
         {m.ov_calendar_less()}

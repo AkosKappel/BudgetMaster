@@ -3,12 +3,12 @@
 The live app runs from its own folder, not from this repository, so the development
 checkout can change branches, rebuild and reset its database without touching it.
 
-| | Development | Production |
-| --- | --- | --- |
-| Folder | `~/projects/BudgetMaster` | `~/deploy/budgetmaster` |
-| Compose project | `budgetmaster` | `budgetmaster-prod` |
-| App | `pnpm dev` on port 3000 | image from GHCR behind nginx on `127.0.0.1:8085`, public via Tailscale Funnel |
-| Database | `budgetmaster-db` on `127.0.0.1:5436` | `budgetmaster-prod-db`, no host port |
+|                 | Development                           | Production                                                                    |
+| --------------- | ------------------------------------- | ----------------------------------------------------------------------------- |
+| Folder          | `~/projects/BudgetMaster`             | `~/deploy/budgetmaster`                                                       |
+| Compose project | `budgetmaster`                        | `budgetmaster-prod`                                                           |
+| App             | `pnpm dev` on port 3000               | image from GHCR behind nginx on `127.0.0.1:8085`, public via Tailscale Funnel |
+| Database        | `budgetmaster-db` on `127.0.0.1:5436` | `budgetmaster-prod-db`, no host port                                          |
 
 ## First setup
 
@@ -16,6 +16,7 @@ checkout can change branches, rebuild and reset its database without touching it
    2026-10-18 with an anonymous pull token), so the server pulls it without logging in. See
    [Registry access](#registry-access) if it is ever made private.
 2. Create the folder and copy the files from this directory:
+
    ```bash
    mkdir -p ~/deploy/budgetmaster/tailscale ~/deploy/budgetmaster/maintenance ~/deploy/budgetmaster/nginx ~/logs/budgetmaster
    cp deploy/compose.yaml deploy/compose.tailscale.yaml ~/deploy/budgetmaster/
@@ -95,7 +96,6 @@ The package is public, like the ambulance images. To check from any machine:
 
 If it is made private (GitHub, your profile, Packages, `budgetmaster`, Package settings,
 Change visibility), the server needs a read-only login once:
-
 1. GitHub, Settings, Developer settings, Personal access tokens, Tokens (classic), Generate
    new token: only the `read:packages` scope, an expiry you will remember.
 2. On the server: `docker login ghcr.io -u AkosKappel` and paste the token as the password.

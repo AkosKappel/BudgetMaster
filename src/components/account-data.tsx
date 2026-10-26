@@ -70,10 +70,10 @@ export function AccountData() {
 
   return (
     <section aria-labelledby="your-data" className="flex flex-col gap-3">
-      <h2 id="your-data" className="font-semibold text-lg">
+      <h2 id="your-data" className="text-lg font-semibold">
         {m.acct_data_title()}
       </h2>
-      <p className="max-w-prose text-muted-foreground text-sm">
+      <p className="max-w-prose text-sm text-muted-foreground">
         {m.acct_data_intro()}
       </p>
       <div className="flex flex-wrap gap-2">

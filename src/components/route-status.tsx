@@ -21,7 +21,7 @@ function StatusPage({
   return (
     <div className="mx-auto flex max-w-md flex-col items-start gap-4 px-4 py-16">
       <Icon className="size-8 text-muted-foreground" strokeWidth={1.5} />
-      <h1 className="font-semibold text-2xl tracking-tight">{title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       {children}
     </div>
   )
@@ -34,7 +34,7 @@ export function RouteError({ error }: ErrorComponentProps) {
 
   return (
     <StatusPage icon={CircleAlert} title={m.shell_error_title()}>
-      <p className="text-muted-foreground text-sm">{m.shell_error_body()}</p>
+      <p className="text-sm text-muted-foreground">{m.shell_error_body()}</p>
       <div className="flex gap-2">
         <Button
           onClick={() => {
@@ -56,7 +56,7 @@ export function RouteError({ error }: ErrorComponentProps) {
 export function NotFound() {
   return (
     <StatusPage icon={SearchX} title={m.shell_not_found_title()}>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         {m.shell_not_found_body()}
       </p>
       <Button asChild>

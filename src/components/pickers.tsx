@@ -52,7 +52,7 @@ export function IconPicker({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 font-medium text-sm">
+      <legend className="mb-2 text-sm font-medium">
         {m.shell_picker_icon()}
       </legend>
       <div className="flex flex-wrap gap-1">
@@ -84,7 +84,7 @@ export function ColorPicker({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 font-medium text-sm">
+      <legend className="mb-2 text-sm font-medium">
         {m.shell_picker_colour()}
       </legend>
       <div className="flex flex-wrap gap-1">

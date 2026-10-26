@@ -17,7 +17,7 @@ export function Insights({ spaceId }: { spaceId: string }) {
 
   return (
     <section aria-labelledby="insights" className="flex flex-col gap-3">
-      <h2 id="insights" className="font-semibold text-lg">
+      <h2 id="insights" className="text-lg font-semibold">
         {m.ov_insights_title()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">

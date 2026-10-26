@@ -92,7 +92,7 @@ function Activity() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         {m.txn_activity_title()}
       </h1>
       <ActivityFilters
@@ -153,11 +153,11 @@ function Activity() {
                 aria-label={formatDayHeading(group.date, today)}
               >
                 <div className="sticky top-0 z-10 -mx-4 flex items-baseline justify-between border-b bg-background/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
-                  <h2 className="font-medium text-sm">
+                  <h2 className="text-sm font-medium">
                     {formatDayHeading(group.date, today)}
                   </h2>
                   {net !== 0 && (
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-sm text-muted-foreground">
                       {formatSignedMoney(net, space.baseCurrency)}
                     </span>
                   )}
@@ -191,7 +191,7 @@ function Activity() {
                 : m.txn_activity_show_older()}
             </Button>
           ) : (
-            <p className="text-center text-muted-foreground text-sm">
+            <p className="text-center text-sm text-muted-foreground">
               {m.txn_activity_end()}
             </p>
           )}

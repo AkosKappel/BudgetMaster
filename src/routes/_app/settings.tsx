@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_app/settings')({
 function Settings() {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         {m.shell_nav_settings()}
       </h1>
       <ThemeSwitch />
@@ -43,7 +43,7 @@ function Language() {
   const current = getLocale()
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">
+      <legend className="mb-2 text-lg font-semibold">
         {m.shell_settings_language()}
       </legend>
       <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
@@ -99,7 +99,7 @@ function WeekStart() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">
+      <legend className="mb-2 text-lg font-semibold">
         {m.shell_settings_week_starts()}
       </legend>
       <div className="grid w-full max-w-sm grid-cols-2 gap-1 rounded-lg bg-muted p-1">
@@ -149,7 +149,7 @@ function AiFeatures() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">
+      <legend className="mb-2 text-lg font-semibold">
         {m.shell_settings_ai()}
       </legend>
       <label className="flex max-w-prose items-start gap-2 text-sm">

@@ -143,7 +143,7 @@ export function WalletForm({
       {currencyLocked && (
         <p
           id="wallet-currency-hint"
-          className="-mt-3 text-muted-foreground text-sm"
+          className="-mt-3 text-sm text-muted-foreground"
         >
           {m.setup_wallet_form_currency_locked()}
         </p>
@@ -160,7 +160,7 @@ export function WalletForm({
           aria-describedby="wallet-balance-hint"
           onChange={(e) => setBalanceText(e.target.value)}
         />
-        <p id="wallet-balance-hint" className="text-muted-foreground text-sm">
+        <p id="wallet-balance-hint" className="text-sm text-muted-foreground">
           {m.setup_wallet_form_balance_hint()}
         </p>
       </div>

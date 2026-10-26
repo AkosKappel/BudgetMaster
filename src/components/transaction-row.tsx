@@ -86,7 +86,7 @@ export function TransactionRow({
             />
           )}
         </span>
-        <span className="truncate text-muted-foreground text-sm">
+        <span className="truncate text-sm text-muted-foreground">
           {planned && m.txn_row_planned()}
           {details.filter(Boolean).join(', ')}
         </span>
@@ -122,7 +122,7 @@ export function TransactionRow({
           t.toAmount !== null &&
           t.toWallet &&
           t.toWallet.currency !== currency && (
-            <span className="text-muted-foreground text-sm">
+            <span className="text-sm text-muted-foreground">
               {formatMoney(t.toAmount, t.toWallet.currency)}
             </span>
           )}
@@ -145,7 +145,7 @@ export function TransactionRow({
           type="button"
           tabIndex={-1}
           onClick={() => onDelete(t)}
-          className="absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 bg-destructive font-medium text-destructive-foreground text-sm"
+          className="absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 bg-destructive text-sm font-medium text-destructive-foreground"
           style={{ width: ACTION_WIDTH }}
         >
           <Trash2 className="size-4" />

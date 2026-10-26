@@ -110,13 +110,13 @@ function SpaceSettingsPage() {
       <div className="flex flex-col gap-2">
         <Link
           to="/spaces"
-          className="-ml-1 flex items-center gap-1 self-start text-muted-foreground text-sm hover:text-foreground"
+          className="-ml-1 flex items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
           {m.acct_spaces_title()}
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-semibold text-2xl tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             {space.name}
           </h1>
           {space.id !== active.id && (
@@ -141,11 +141,11 @@ function SpaceSettingsPage() {
       </div>
 
       <section aria-labelledby="settings" className="flex flex-col gap-4">
-        <h2 id="settings" className="font-semibold text-lg">
+        <h2 id="settings" className="text-lg font-semibold">
           {m.acct_space_settings()}
         </h2>
         {!isOwner && (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.acct_space_owners_only()}
           </p>
         )}
@@ -206,7 +206,7 @@ function Members({
 
   return (
     <section aria-labelledby="members" className="flex flex-col gap-3">
-      <h2 id="members" className="font-semibold text-lg">
+      <h2 id="members" className="text-lg font-semibold">
         {m.acct_members_title()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">
@@ -227,7 +227,7 @@ function Members({
                     </span>
                   )}
                 </span>
-                <span className="truncate text-muted-foreground text-sm">
+                <span className="truncate text-sm text-muted-foreground">
                   {member.email}
                 </span>
               </span>
@@ -254,7 +254,7 @@ function Members({
                   ))}
                 </select>
               ) : (
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   {roleLabel(member.role)}
                 </span>
               )}
@@ -277,7 +277,7 @@ function Members({
           )
         })}
       </ul>
-      <dl className="grid gap-1 text-muted-foreground text-sm">
+      <dl className="grid gap-1 text-sm text-muted-foreground">
         {ROLES.map((role) => (
           <div key={role} className="flex gap-1.5">
             <dt className="font-medium text-foreground">{roleLabel(role)}:</dt>
@@ -327,7 +327,7 @@ function Invites({
 
   return (
     <section aria-labelledby="invite" className="flex flex-col gap-4">
-      <h2 id="invite" className="font-semibold text-lg">
+      <h2 id="invite" className="text-lg font-semibold">
         {m.acct_invite_title()}
       </h2>
       <form
@@ -382,7 +382,7 @@ function Invites({
             {m.acct_invite_send_email()}
           </label>
         )}
-        <p id="invite-hint" className="text-muted-foreground text-sm">
+        <p id="invite-hint" className="text-sm text-muted-foreground">
           {m.acct_invite_hint()}
         </p>
         <FormError message={create.error?.message ?? null} />
@@ -449,7 +449,7 @@ function Invites({
 
       {space.invites.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="font-medium text-sm">{m.acct_invite_pending()}</h3>
+          <h3 className="text-sm font-medium">{m.acct_invite_pending()}</h3>
           <ul className="divide-y rounded-lg border bg-card">
             {space.invites.map((invite) => {
               const expired = new Date(invite.expiresAt).getTime() < now
@@ -463,8 +463,8 @@ function Invites({
                     <span
                       className={
                         expired
-                          ? 'text-destructive text-sm'
-                          : 'text-muted-foreground text-sm'
+                          ? 'text-sm text-destructive'
+                          : 'text-sm text-muted-foreground'
                       }
                     >
                       {roleLabel(invite.role)},{' '}
@@ -496,7 +496,7 @@ function Invites({
               )
             })}
           </ul>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.acct_invite_resend_hint()}
           </p>
         </div>
@@ -538,7 +538,7 @@ function DangerZone({ space }: { space: Details }) {
 
   return (
     <section aria-labelledby="danger" className="flex flex-col gap-3">
-      <h2 id="danger" className="font-semibold text-lg">
+      <h2 id="danger" className="text-lg font-semibold">
         {m.acct_danger_title()}
       </h2>
       <div className="flex flex-wrap gap-2">
@@ -652,11 +652,11 @@ function RecentChanges({
 
   return (
     <section aria-labelledby="recent-changes" className="flex flex-col gap-3">
-      <h2 id="recent-changes" className="font-semibold text-lg">
+      <h2 id="recent-changes" className="text-lg font-semibold">
         {m.acct_changes_title()}
       </h2>
       {events.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {shared ? m.acct_changes_empty_shared() : m.acct_changes_empty()}
         </p>
       ) : (
@@ -675,7 +675,7 @@ function RecentChanges({
                 </span>
                 <time
                   dateTime={e.createdAt}
-                  className="text-muted-foreground text-xs"
+                  className="text-xs text-muted-foreground"
                 >
                   {new Date(e.createdAt).toLocaleString(formatLocale(), {
                     day: 'numeric',

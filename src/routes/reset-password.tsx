@@ -74,7 +74,7 @@ function ResetPassword() {
             minLength={8}
             required
           />
-          <p className="text-muted-foreground text-sm">{m.acct_reset_hint()}</p>
+          <p className="text-sm text-muted-foreground">{m.acct_reset_hint()}</p>
         </div>
         <FormError message={error} />
         <Button type="submit" size="lg" disabled={pending || !hydrated}>

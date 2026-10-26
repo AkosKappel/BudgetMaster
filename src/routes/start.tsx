@@ -95,7 +95,7 @@ function Start() {
 
   return (
     <div className="relative isolate overflow-hidden">
-      <Guilloche className="mask-b-from-40% absolute -top-40 -right-40 -z-10 size-[36rem] text-note/25" />
+      <Guilloche className="absolute -top-40 -right-40 -z-10 size-[36rem] mask-b-from-40% text-note/25" />
       <div className="mx-auto flex min-h-dvh max-w-5xl flex-col gap-16 px-4 py-8">
         <header className="flex items-center justify-between gap-4">
           <Logo />
@@ -106,10 +106,10 @@ function Start() {
 
         <main className="flex flex-col gap-20">
           <section className="flex max-w-2xl flex-col gap-6">
-            <h1 className="font-semibold text-4xl tracking-tight sm:text-5xl">
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               {m.pub_start_heading()}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-lg leading-relaxed text-muted-foreground">
               {m.pub_start_intro()}
             </p>
             <div className="flex flex-wrap items-center gap-3">
@@ -119,7 +119,7 @@ function Start() {
               </Button>
             </div>
             <FormError message={error} />
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {m.pub_start_demo_note()}
             </p>
           </section>
@@ -150,7 +150,7 @@ function Start() {
           <section aria-labelledby="features" className="flex flex-col gap-8">
             <h2
               id="features"
-              className="font-semibold text-2xl tracking-tight sm:text-3xl"
+              className="text-2xl font-semibold tracking-tight sm:text-3xl"
             >
               {m.pub_start_features_heading()}
             </h2>
@@ -159,7 +159,7 @@ function Start() {
                 <li key={title} className="flex flex-col gap-2">
                   <Icon className="size-5 text-note" aria-hidden="true" />
                   <h3 className="font-semibold">{title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="leading-relaxed text-muted-foreground">
                     {text}
                   </p>
                 </li>
@@ -173,7 +173,7 @@ function Start() {
           >
             <Lock className="size-8 shrink-0 text-note" aria-hidden="true" />
             <div className="flex flex-1 flex-col gap-1">
-              <h2 id="privacy" className="font-semibold text-lg">
+              <h2 id="privacy" className="text-lg font-semibold">
                 {m.pub_start_privacy_heading()}
               </h2>
               <p className="text-muted-foreground">

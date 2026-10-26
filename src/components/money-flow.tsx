@@ -27,7 +27,7 @@ export function MoneyFlow({ periods, categories, currency }: CategoryTrends) {
   const spent = expenses.reduce((s, c) => s + amountOf(c), 0)
   if (!period || earned + spent === 0)
     return (
-      <p className="text-muted-foreground text-sm">{m.ov_flow_no_month()}</p>
+      <p className="text-sm text-muted-foreground">{m.ov_flow_no_month()}</p>
     )
 
   const nodes: FlowNode[] = [

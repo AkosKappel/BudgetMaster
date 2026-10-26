@@ -56,7 +56,7 @@ export function SpendingPaceChart({
       <figcaption className="flex flex-col gap-2">
         <p className="max-w-prose text-sm">{summary}</p>
         <ul
-          className="flex gap-4 text-muted-foreground text-xs"
+          className="flex gap-4 text-xs text-muted-foreground"
           aria-hidden="true"
         >
           {(['current', 'previous'] as const).map((key) => (
@@ -207,7 +207,7 @@ export function SpendingPaceChart({
         </table>
       </details>
       {latest === undefined && (
-        <p className="text-muted-foreground text-sm">{m.ov_pace_empty()}</p>
+        <p className="text-sm text-muted-foreground">{m.ov_pace_empty()}</p>
       )}
     </figure>
   )

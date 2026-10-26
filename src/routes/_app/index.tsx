@@ -83,12 +83,12 @@ function Home() {
       {month === 0 && data.upcoming.length > 0 && (
         <section aria-labelledby="upcoming" className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between">
-            <h2 id="upcoming" className="font-semibold text-lg">
+            <h2 id="upcoming" className="text-lg font-semibold">
               {m.ov_home_coming_up()}
             </h2>
             <Link
               to="/recurring"
-              className="text-muted-foreground text-sm underline"
+              className="text-sm text-muted-foreground underline"
             >
               {m.ov_recurring_link()}
             </Link>
@@ -111,7 +111,7 @@ function Home() {
                           })
                         : (r.payee ?? r.category?.name)}
                     </span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {r.nextDate && formatDayHeading(r.nextDate, data.today)},{' '}
                       {r.wallet.name}
                     </span>
@@ -132,7 +132,7 @@ function Home() {
       )}
 
       <section aria-labelledby="wallets" className="flex flex-col gap-3">
-        <h2 id="wallets" className="font-semibold text-lg">
+        <h2 id="wallets" className="text-lg font-semibold">
           {m.ov_home_wallets()}
         </h2>
         {data.wallets.length === 0 ? (
@@ -174,13 +174,13 @@ function Home() {
 
       <section aria-labelledby="recent" className="flex flex-col gap-1">
         <div className="flex items-baseline justify-between">
-          <h2 id="recent" className="font-semibold text-lg">
+          <h2 id="recent" className="text-lg font-semibold">
             {m.ov_home_recent()}
           </h2>
           {data.recent.length > 0 && (
             <Link
               to="/activity"
-              className="text-muted-foreground text-sm underline"
+              className="text-sm text-muted-foreground underline"
             >
               {m.ov_home_see_all()}
             </Link>
@@ -284,10 +284,10 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
         else if (info.offset.x < -80) goTo(month + 1)
       }}
     >
-      <Guilloche className="mask-l-from-55% mask-l-to-90% absolute -top-16 -right-20 -z-10 size-72 text-note/45" />
+      <Guilloche className="absolute -top-16 -right-20 -z-10 size-72 mask-l-from-55% mask-l-to-90% text-note/45" />
       <nav
         aria-label={m.ov_home_budget_month()}
-        className="-mx-3 mb-3 flex items-center gap-1 text-muted-foreground text-sm"
+        className="-mx-3 mb-3 flex items-center gap-1 text-sm text-muted-foreground"
       >
         <Button
           variant="ghost"
@@ -316,12 +316,12 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
           <ChevronRight />
         </Button>
       </nav>
-      <h1 id="budget-heading" className="text-muted-foreground text-sm">
+      <h1 id="budget-heading" className="text-sm text-muted-foreground">
         {label}
       </h1>
       <p
         className={cn(
-          'mt-2 font-semibold text-5xl tracking-tight',
+          'mt-2 text-5xl font-semibold tracking-tight',
           over && 'text-destructive',
         )}
       >
@@ -345,7 +345,7 @@ function BudgetHero({ spaceId, month }: { spaceId: string; month: number }) {
           />
         </div>
       )}
-      <p className="mt-3 max-w-prose text-muted-foreground text-sm">{detail}</p>
+      <p className="mt-3 max-w-prose text-sm text-muted-foreground">{detail}</p>
     </motion.section>
   )
 }
@@ -361,12 +361,12 @@ function BudgetWarnings({ spaceId }: { spaceId: string }) {
   return (
     <section aria-labelledby="warnings" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between">
-        <h2 id="warnings" className="font-semibold text-lg">
+        <h2 id="warnings" className="text-lg font-semibold">
           {m.ov_home_needs_attention()}
         </h2>
         <Link
           to="/budgets"
-          className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           {m.ov_home_all_budgets()}
         </Link>
@@ -419,13 +419,13 @@ function PaceSection({ spaceId, month }: { spaceId: string; month: number }) {
   return (
     <section aria-labelledby="pace" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between">
-        <h2 id="pace" className="font-semibold text-lg">
+        <h2 id="pace" className="text-lg font-semibold">
           {m.ov_home_spending_pace()}
         </h2>
         <Link
           to="/budgets"
           search={{ month }}
-          className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           {m.ov_home_budgets()}
         </Link>

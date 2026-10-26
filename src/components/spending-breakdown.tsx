@@ -22,7 +22,7 @@ export function SpendingBreakdown({
   const max = breakdown[0]?.total ?? 0
   if (breakdown.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">{m.ov_breakdown_empty()}</p>
+      <p className="text-sm text-muted-foreground">{m.ov_breakdown_empty()}</p>
     )
   }
   const share = (value: number) =>
@@ -45,7 +45,7 @@ export function SpendingBreakdown({
               <span className="min-w-0 flex-1 truncate text-left">
                 {row.name}
               </span>
-              <span className="text-muted-foreground text-xs">
+              <span className="text-xs text-muted-foreground">
                 {share(row.total)}
               </span>
               {expandable && (
@@ -85,7 +85,7 @@ export function SpendingBreakdown({
                   <li key={child.id} className="flex flex-col gap-1">
                     <span className="flex text-sm">
                       <span className="flex-1 truncate">{child.name}</span>
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-xs text-muted-foreground">
                         {share(child.total)}
                       </span>
                     </span>

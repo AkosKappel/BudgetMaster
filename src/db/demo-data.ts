@@ -53,6 +53,7 @@ const monthStart = (monthsAgo: number) => addMonths(thisMonth, -monthsAgo)
 // Day `day` (1-based) of the month `monthsAgo` months back, never later than today.
 const dayOf = (monthsAgo: number, day: number) => {
   const date = addDays(monthStart(monthsAgo), day - 1)
+  // biome-ignore lint/complexity/useMathMinMax: ISO date strings, Math.min would return NaN
   return date > today ? today : date
 }
 export let start = monthStart(14)
@@ -517,6 +518,7 @@ export async function seedAlex(ledger: Ledger, alexId: string) {
   const period = budgetPeriod(today, 25)
   const inPeriod = (offset: number) => {
     const date = addDays(period.start, offset)
+    // biome-ignore lint/complexity/useMathMinMax: ISO date strings, Math.min would return NaN
     return date > today ? today : date
   }
 

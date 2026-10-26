@@ -54,13 +54,13 @@ function Reports() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.ov_reports_more()}
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.ov_reports_title()}
         </h1>
         <Button variant="outline" asChild>
@@ -77,52 +77,52 @@ function Reports() {
         </Button>
       </div>
       <section aria-labelledby="cash-flow" className="flex flex-col gap-3">
-        <h2 id="cash-flow" className="font-semibold text-lg">
+        <h2 id="cash-flow" className="text-lg font-semibold">
           {m.ov_reports_cash_flow()}
         </h2>
         <CashFlowChart {...data} />
       </section>
       <section aria-labelledby="money-flow" className="flex flex-col gap-3">
-        <h2 id="money-flow" className="font-semibold text-lg">
+        <h2 id="money-flow" className="text-lg font-semibold">
           {m.ov_reports_money_flow()}
         </h2>
         <MoneyFlow {...trends} />
       </section>
       <section aria-labelledby="trends" className="flex flex-col gap-3">
-        <h2 id="trends" className="font-semibold text-lg">
+        <h2 id="trends" className="text-lg font-semibold">
           {m.ov_reports_trends()}
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.ov_reports_trends_hint()}
         </p>
         <CategoryTrends {...trends} />
       </section>
       <section aria-labelledby="net-worth" className="flex flex-col gap-3">
-        <h2 id="net-worth" className="font-semibold text-lg">
+        <h2 id="net-worth" className="text-lg font-semibold">
           {m.ov_networth_title()}
         </h2>
         <NetWorthChart {...netWorth} />
       </section>
       <section aria-labelledby="forecast" className="flex flex-col gap-3">
-        <h2 id="forecast" className="font-semibold text-lg">
+        <h2 id="forecast" className="text-lg font-semibold">
           {m.ov_reports_forecast()}
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.ov_reports_forecast_hint()}
         </p>
         <ForecastChart {...forecast} />
       </section>
       <section aria-labelledby="prices" className="flex flex-col gap-3">
-        <h2 id="prices" className="font-semibold text-lg">
+        <h2 id="prices" className="text-lg font-semibold">
           {m.ov_reports_prices()}
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.ov_reports_prices_hint()}
         </p>
         <PriceChanges {...prices} />
       </section>
       <section aria-labelledby="calendar" className="flex flex-col gap-3">
-        <h2 id="calendar" className="font-semibold text-lg">
+        <h2 id="calendar" className="text-lg font-semibold">
           {m.ov_reports_calendar()}
         </h2>
         <SpendingCalendar {...calendar} />

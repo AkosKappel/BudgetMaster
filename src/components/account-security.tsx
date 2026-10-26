@@ -36,7 +36,7 @@ export function AccountSecurity() {
 
   return (
     <section aria-labelledby="security" className="flex flex-col gap-3">
-      <h2 id="security" className="font-semibold text-lg">
+      <h2 id="security" className="text-lg font-semibold">
         {m.acct_security_title()}
       </h2>
       {!user.emailVerified && (
@@ -170,7 +170,7 @@ function SignedInDevices() {
 
   if (isPending || !devices)
     return (
-      <p className="mt-3 text-muted-foreground text-sm">{m.acct_loading()}</p>
+      <p className="mt-3 text-sm text-muted-foreground">{m.acct_loading()}</p>
     )
 
   return (
@@ -191,7 +191,7 @@ function SignedInDevices() {
                 </span>
               )}
             </p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {m.acct_devices_times({
                 signedIn: formatTime(device.signedInAt),
                 lastActive: formatTime(device.lastActiveAt),
@@ -282,9 +282,9 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
       >
         <p className="text-sm">{m.acct_two_factor_scan()}</p>
         <QrCode value={setup.uri} label={m.acct_two_factor_qr_label()} />
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.acct_two_factor_cant_scan()}{' '}
-          <code className="break-all font-mono text-foreground">{secret}</code>
+          <code className="font-mono break-all text-foreground">{secret}</code>
         </p>
         <div className="flex flex-col gap-2">
           <Label htmlFor="totp-code">{m.acct_two_factor_app_code()}</Label>
@@ -358,7 +358,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
           })
         })}
       >
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.acct_two_factor_off_intro()}
         </p>
         <div className="flex flex-col gap-2">
@@ -399,7 +399,7 @@ function TwoFactorSettings({ enabled }: { enabled: boolean }) {
         })(event)
       }}
     >
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         {m.acct_two_factor_on_intro()}
       </p>
       <div className="flex flex-col gap-2">
@@ -477,9 +477,9 @@ function Passkeys() {
 
   return (
     <div className="mt-3 flex flex-col gap-3">
-      <p className="text-muted-foreground text-sm">{m.acct_passkeys_intro()}</p>
+      <p className="text-sm text-muted-foreground">{m.acct_passkeys_intro()}</p>
       {isPending ? (
-        <p className="text-muted-foreground text-sm">{m.acct_loading()}</p>
+        <p className="text-sm text-muted-foreground">{m.acct_loading()}</p>
       ) : (
         passkeys &&
         passkeys.length > 0 && (
@@ -494,7 +494,7 @@ function Passkeys() {
                   <p className="truncate font-medium">
                     {p.name ?? m.acct_passkeys_unnamed()}
                   </p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     {m.acct_passkeys_added_on({
                       date: formatTime(new Date(p.createdAt).toISOString()),
                     })}

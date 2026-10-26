@@ -42,7 +42,7 @@ function LanguageSelect() {
 
 export function PublicFooter() {
   return (
-    <footer className="flex items-center justify-between gap-4 text-muted-foreground text-sm">
+    <footer className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
       <nav aria-label={m.pub_nav_label()}>
         <ul className="flex flex-wrap gap-x-4 gap-y-2">
           {links().map(({ to, label }) => (
@@ -86,10 +86,10 @@ export function PublicPage({
           <Link to="/sign-in">{m.pub_page_sign_in_or_demo()}</Link>
         </Button>
       </header>
-      <main className="flex flex-1 flex-col gap-4 [&_a]:underline [&_a]:underline-offset-4 [&_h2]:mt-6 [&_h2]:font-semibold [&_h2]:text-xl [&_li]:ml-5 [&_li]:list-disc [&_p]:max-w-prose [&_p]:leading-relaxed [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-1.5">
-        <h1 className="font-semibold text-3xl tracking-tight">{title}</h1>
+      <main className="flex flex-1 flex-col gap-4 [&_a]:underline [&_a]:underline-offset-4 [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p]:max-w-prose [&_p]:leading-relaxed [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-1.5">
+        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
         {updated && (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.pub_page_last_updated({ date: updated })}
           </p>
         )}

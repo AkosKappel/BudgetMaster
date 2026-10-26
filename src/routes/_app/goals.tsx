@@ -73,13 +73,13 @@ function Goals() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.setup_goals_title()}
         </h1>
         {data.canWrite && (
@@ -176,7 +176,7 @@ function GoalCard({ goal, onEdit }: { goal: Goal; onEdit?: () => void }) {
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-medium">{goal.name}</h2>
-          <p className="truncate text-muted-foreground text-sm">
+          <p className="truncate text-sm text-muted-foreground">
             {m.setup_goals_in_wallet({ wallet: goal.walletName })}
           </p>
         </div>
@@ -192,7 +192,7 @@ function GoalCard({ goal, onEdit }: { goal: Goal; onEdit?: () => void }) {
         )}
       </div>
       <p className="text-sm">
-        <span className="font-semibold text-lg">{money(goal.saved)}</span>{' '}
+        <span className="text-lg font-semibold">{money(goal.saved)}</span>{' '}
         <span className="text-muted-foreground">
           {m.setup_goals_of_target({
             target: money(goal.targetAmount),

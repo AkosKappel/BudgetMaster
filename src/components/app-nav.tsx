@@ -45,7 +45,7 @@ function TabLink({ to, label, icon: Icon }: NavItem) {
     <Link
       to={to}
       activeOptions={{ exact: true }}
-      className="relative flex h-full flex-col items-center justify-center gap-1 text-muted-foreground text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[status=active]:text-foreground"
+      className="relative flex h-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[status=active]:text-foreground"
     >
       {({ isActive }) => (
         <>
@@ -87,7 +87,7 @@ export function TabBar() {
               onClick={() => openNew()}
               whileTap={{ scale: 0.9 }}
               aria-label={m.shell_nav_add_transaction()}
-              className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] shadow-primary/40 outline-none ring-4 ring-background focus-visible:ring-ring"
+              className="-mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_16px_-4px] ring-4 shadow-primary/40 ring-background outline-none focus-visible:ring-ring"
             >
               <Plus className="size-6" strokeWidth={2.25} />
             </motion.button>
@@ -163,7 +163,7 @@ export function Sidebar({
                 activeOptions={{ exact: true }}
                 title={collapsed ? label() : undefined}
                 className={cn(
-                  'relative isolate flex h-10 items-center gap-3 rounded-md px-3 text-muted-foreground text-sm outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[status=active]:font-medium data-[status=active]:text-foreground',
+                  'relative isolate flex h-10 items-center gap-3 rounded-md px-3 text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[status=active]:font-medium data-[status=active]:text-foreground',
                   collapsed && 'justify-center px-0',
                 )}
               >
@@ -195,8 +195,8 @@ export function Sidebar({
       >
         {!collapsed && (
           <div className="mb-2 min-w-0 basis-full px-3">
-            <p className="truncate font-medium text-sm">{user.name}</p>
-            <p className="truncate text-muted-foreground text-xs">
+            <p className="truncate text-sm font-medium">{user.name}</p>
+            <p className="truncate text-xs text-muted-foreground">
               {accountLabel(user)}
             </p>
           </div>

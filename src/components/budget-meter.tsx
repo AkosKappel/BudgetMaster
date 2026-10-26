@@ -61,7 +61,7 @@ export function BudgetMeter({
           style={{ width: `${used}%` }}
         />
       </div>
-      <p className="flex flex-wrap items-center gap-x-1.5 text-muted-foreground text-sm">
+      <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
         {status === 'over' && (
           <CircleAlert className="size-4 text-destructive" aria-hidden="true" />
         )}

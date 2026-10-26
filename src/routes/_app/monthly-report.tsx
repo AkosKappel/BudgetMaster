@@ -84,7 +84,7 @@ function MonthlyReport() {
       <div className="flex flex-col gap-3 print:hidden">
         <Link
           to="/reports"
-          className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+          className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
           {m.ov_reports_title()}
@@ -130,12 +130,12 @@ function MonthlyReport() {
       </div>
 
       <header>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {report.isCurrent
             ? m.ov_monthly_so_far({ space: space.name })
             : space.name}
         </p>
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.ov_monthly_heading({ period })}
         </h1>
       </header>
@@ -143,27 +143,27 @@ function MonthlyReport() {
       <AiSummary key={month} spaceId={space.id} month={month} />
 
       <section aria-labelledby="totals" className="flex flex-col gap-3">
-        <h2 id="totals" className="font-semibold text-lg">
+        <h2 id="totals" className="text-lg font-semibold">
           {m.ov_monthly_totals()}
         </h2>
         <dl className="grid grid-cols-3 gap-3 rounded-lg border bg-card p-4 print:break-inside-avoid">
           <div>
-            <dt className="text-muted-foreground text-sm">
+            <dt className="text-sm text-muted-foreground">
               {m.ov_chart_income()}
             </dt>
-            <dd className="font-semibold text-lg">{money(report.income)}</dd>
+            <dd className="text-lg font-semibold">{money(report.income)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">
+            <dt className="text-sm text-muted-foreground">
               {m.ov_home_spent()}
             </dt>
-            <dd className="font-semibold text-lg">{money(report.spent)}</dd>
+            <dd className="text-lg font-semibold">{money(report.spent)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">
+            <dt className="text-sm text-muted-foreground">
               {saved >= 0 ? m.ov_chart_saved() : m.ov_monthly_overspent()}
             </dt>
-            <dd className="font-semibold text-lg">{money(Math.abs(saved))}</dd>
+            <dd className="text-lg font-semibold">{money(Math.abs(saved))}</dd>
           </div>
         </dl>
         <p className="text-sm">
@@ -188,11 +188,11 @@ function MonthlyReport() {
       </section>
 
       <section aria-labelledby="top" className="flex flex-col gap-3">
-        <h2 id="top" className="font-semibold text-lg">
+        <h2 id="top" className="text-lg font-semibold">
           {m.ov_monthly_top_categories()}
         </h2>
         {top.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.ov_monthly_no_spending()}
           </p>
         ) : (
@@ -225,7 +225,7 @@ function MonthlyReport() {
 
       {report.categoryBudgets.length > 0 && (
         <section aria-labelledby="budgets" className="flex flex-col gap-3">
-          <h2 id="budgets" className="font-semibold text-lg">
+          <h2 id="budgets" className="text-lg font-semibold">
             {m.ov_home_budgets()}
           </h2>
           <p className="text-sm">
@@ -279,11 +279,11 @@ function MonthlyReport() {
       )}
 
       <section aria-labelledby="changes" className="flex flex-col gap-3">
-        <h2 id="changes" className="font-semibold text-lg">
+        <h2 id="changes" className="text-lg font-semibold">
           {m.ov_monthly_biggest_changes()}
         </h2>
         {changes.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.ov_monthly_no_changes()}
           </p>
         ) : (
@@ -318,7 +318,7 @@ function AiSummary({ spaceId, month }: { spaceId: string; month: number }) {
         className="flex flex-col gap-1"
       >
         <p className="max-w-prose leading-relaxed">{summary.data.text}</p>
-        <p className="text-muted-foreground text-xs">
+        <p className="text-xs text-muted-foreground">
           {m.ov_monthly_summary_by()}
         </p>
       </section>
@@ -339,8 +339,8 @@ function AiSummary({ spaceId, month }: { spaceId: string; month: number }) {
       <p
         className={
           summary.isError
-            ? 'text-destructive text-sm'
-            : 'text-muted-foreground text-xs'
+            ? 'text-sm text-destructive'
+            : 'text-xs text-muted-foreground'
         }
         role={summary.isError ? 'alert' : undefined}
       >

@@ -170,7 +170,7 @@ export function CommandPalette() {
                   <Icon style={{ color: t.category?.color }} />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">{title}</span>
-                    <span className="truncate text-muted-foreground text-xs">
+                    <span className="truncate text-xs text-muted-foreground">
                       {formatShortDate(t.date)}
                       {t.note ? `, ${t.note}` : ''}
                     </span>
@@ -204,7 +204,7 @@ export function CommandPalette() {
                 >
                   <Icon style={{ color: c.color }} />
                   {c.name}
-                  <span className="ml-auto text-muted-foreground text-xs">
+                  <span className="ml-auto text-xs text-muted-foreground">
                     {c.type === 'income'
                       ? m.shell_palette_income_category()
                       : m.shell_palette_category()}
@@ -222,7 +222,7 @@ export function CommandPalette() {
                 >
                   <Icon style={{ color: w.color }} />
                   {w.name}
-                  <span className="ml-auto text-muted-foreground text-xs">
+                  <span className="ml-auto text-xs text-muted-foreground">
                     {m.shell_palette_wallet()}
                   </span>
                 </CommandItem>
@@ -236,7 +236,7 @@ export function CommandPalette() {
               >
                 <Tag style={{ color: t.color }} />
                 {t.name}
-                <span className="ml-auto text-muted-foreground text-xs">
+                <span className="ml-auto text-xs text-muted-foreground">
                   {m.shell_palette_tag()}
                 </span>
               </CommandItem>

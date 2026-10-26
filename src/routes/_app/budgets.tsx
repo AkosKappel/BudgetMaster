@@ -82,7 +82,7 @@ function Budgets() {
       )}
     >
       <div className="flex flex-col gap-3">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.ov_home_budgets()}
         </h1>
         <nav
@@ -129,7 +129,7 @@ function Budgets() {
         className="flex flex-col gap-3 rounded-xl border bg-card p-5"
       >
         <div className="flex items-baseline justify-between gap-3">
-          <h2 id="overall" className="text-muted-foreground text-sm">
+          <h2 id="overall" className="text-sm text-muted-foreground">
             {m.ov_budgets_all_spending()}
           </h2>
           {data.canWrite && (
@@ -151,7 +151,7 @@ function Budgets() {
             </Button>
           )}
         </div>
-        <p className="font-semibold text-4xl tracking-tight">
+        <p className="text-4xl font-semibold tracking-tight">
           {money(data.spent)}
         </p>
         {data.overall ? (
@@ -162,14 +162,14 @@ function Budgets() {
             daysLeft={data.isCurrent ? data.daysLeft : undefined}
           />
         ) : (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.ov_budgets_no_overall()}
           </p>
         )}
       </section>
 
       <section aria-labelledby="pace" className="flex flex-col gap-3">
-        <h2 id="pace" className="font-semibold text-lg">
+        <h2 id="pace" className="text-lg font-semibold">
           {m.ov_home_spending_pace()}
         </h2>
         <SpendingPaceChart
@@ -185,7 +185,7 @@ function Budgets() {
         className="flex flex-col gap-3"
       >
         <div className="flex items-center justify-between gap-3">
-          <h2 id="category-budgets" className="font-semibold text-lg">
+          <h2 id="category-budgets" className="text-lg font-semibold">
             {m.ov_budgets_category_budgets()}
           </h2>
           {data.canWrite && data.unbudgeted.length > 0 && (
@@ -200,7 +200,7 @@ function Budgets() {
           )}
         </div>
         {data.categoryBudgets.length > 0 && data.income > 0 && (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {m.ov_budgets_assigned({
               income: money(data.income),
               assigned: money(data.assigned),
@@ -238,7 +238,7 @@ function Budgets() {
                       {b.name}
                     </span>
                     {b.isParent && (
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-xs text-muted-foreground">
                         {m.ov_budgets_incl_subcategories()}
                       </span>
                     )}
@@ -251,7 +251,7 @@ function Budgets() {
                     daysLeft={data.isCurrent ? data.daysLeft : undefined}
                   />
                   {b.carried > 0 && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {m.ov_budgets_carried({ amount: money(b.carried) })}
                     </span>
                   )}
@@ -290,7 +290,7 @@ function Budgets() {
       </section>
 
       <section aria-labelledby="breakdown" className="flex flex-col gap-3">
-        <h2 id="breakdown" className="font-semibold text-lg">
+        <h2 id="breakdown" className="text-lg font-semibold">
           {m.ov_budgets_where_it_went()}
         </h2>
         <SpendingBreakdown
@@ -439,8 +439,8 @@ function BudgetSheet({
             <Label htmlFor="budget-amount">
               {m.ov_budgets_monthly_limit()}
             </Label>
-            <div className="flex items-baseline gap-2 border-input border-b-2 pb-1 focus-within:border-ring">
-              <span className="text-muted-foreground text-xl">
+            <div className="flex items-baseline gap-2 border-b-2 border-input pb-1 focus-within:border-ring">
+              <span className="text-xl text-muted-foreground">
                 {report.currency}
               </span>
               <input
@@ -454,7 +454,7 @@ function BudgetSheet({
                     : ''
                 }
                 placeholder="0.00"
-                className="min-w-0 flex-1 bg-transparent font-semibold text-3xl outline-none placeholder:text-muted-foreground/50"
+                className="min-w-0 flex-1 bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground/50"
               />
             </div>
           </div>

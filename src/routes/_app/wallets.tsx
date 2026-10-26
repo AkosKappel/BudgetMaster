@@ -99,13 +99,13 @@ function Wallets() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.setup_wallets_title()}
         </h1>
         {data.canWrite && (
@@ -155,10 +155,10 @@ function Wallets() {
 
       {archived.length > 0 && (
         <details>
-          <summary className="cursor-pointer font-semibold text-lg">
+          <summary className="cursor-pointer text-lg font-semibold">
             {m.setup_archived_count({ count: archived.length })}
           </summary>
-          <p className="my-3 max-w-prose text-muted-foreground text-sm">
+          <p className="my-3 max-w-prose text-sm text-muted-foreground">
             {m.setup_wallets_archived_hint()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
@@ -262,7 +262,7 @@ function WalletRow({
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate">{wallet.name}</span>
-        <span className="text-muted-foreground text-sm">
+        <span className="text-sm text-muted-foreground">
           {WALLET_TYPES[wallet.type].label()}
         </span>
       </span>

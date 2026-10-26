@@ -53,7 +53,7 @@ function Spaces() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.acct_spaces_title()}
         </h1>
         <Button onClick={() => setCreating(true)}>
@@ -79,12 +79,12 @@ function Spaces() {
                   <span className="truncate font-medium">
                     {s.name}
                     {s.id === active.id && (
-                      <span className="ml-2 font-normal text-muted-foreground text-sm">
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">
                         {m.acct_spaces_active()}
                       </span>
                     )}
                   </span>
-                  <span className="text-muted-foreground text-sm">
+                  <span className="text-sm text-muted-foreground">
                     {s.personal
                       ? m.acct_spaces_personal_only_you()
                       : m.acct_spaces_role_members({

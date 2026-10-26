@@ -115,13 +115,13 @@ function Recurring() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.setup_recurring_title()}
         </h1>
         {data.canWrite && (
@@ -184,7 +184,7 @@ function Recurring() {
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-medium">{label(rule)}</span>
-                  <span className="truncate text-muted-foreground text-sm">
+                  <span className="truncate text-sm text-muted-foreground">
                     {describeSchedule(rule)} · {status}
                   </span>
                 </span>
@@ -227,12 +227,12 @@ function Recurring() {
         <section aria-labelledby="suggestions" className="flex flex-col gap-3">
           <h2
             id="suggestions"
-            className="flex items-center gap-2 font-semibold text-lg"
+            className="flex items-center gap-2 text-lg font-semibold"
           >
             <Sparkles className="size-4 text-note" aria-hidden="true" />
             {m.setup_recurring_suggestions_title()}
           </h2>
-          <p className="max-w-prose text-muted-foreground text-sm">
+          <p className="max-w-prose text-sm text-muted-foreground">
             {m.setup_recurring_suggestions_intro()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
@@ -245,7 +245,7 @@ function Recurring() {
                 >
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium">{s.payee}</span>
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-sm text-muted-foreground">
                       {m.setup_recurring_suggestion_detail({
                         cadence: CADENCE_LABEL[s.cadence](),
                         count: s.count,

@@ -65,11 +65,11 @@ function InvitePage() {
         <Users className="size-6" />
       </span>
       {invite.status === 'invalid' ? (
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.acct_invite_not_found()}
         </h1>
       ) : (
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.acct_invite_heading({
             name: invite.invitedBy ?? m.acct_invite_someone(),
             space: invite.spaceName,

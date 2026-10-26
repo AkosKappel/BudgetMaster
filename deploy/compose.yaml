@@ -21,7 +21,8 @@ services:
     healthcheck:
       # Over TCP: on the first start the image runs a temporary socket-only server, which
       # would pass a socket check before the real one is up.
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U budgetmaster -d budgetmaster"]
+      test:
+        ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U budgetmaster -d budgetmaster"]
       interval: 5s
       timeout: 3s
       retries: 20

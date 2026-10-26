@@ -79,7 +79,7 @@ function SignUp() {
             required
             aria-describedby="password-hint"
           />
-          <p id="password-hint" className="text-muted-foreground text-sm">
+          <p id="password-hint" className="text-sm text-muted-foreground">
             {m.acct_auth_password_hint()}
           </p>
         </div>
@@ -87,7 +87,7 @@ function SignUp() {
         <Button type="submit" size="lg" disabled={pending}>
           {m.acct_sign_up_title()}
         </Button>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.acct_sign_up_have_account()}{' '}
           <Link
             to="/sign-in"

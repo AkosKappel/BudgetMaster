@@ -74,7 +74,7 @@ export function SpaceSettingsForm({
               aria-invalid={field.state.meta.errors.length > 0}
             />
             {field.state.meta.errors.length > 0 && (
-              <p className="text-destructive text-sm">
+              <p className="text-sm text-destructive">
                 {(field.state.meta.errors[0] as { message?: string })?.message}
               </p>
             )}
@@ -130,7 +130,7 @@ export function SpaceSettingsForm({
       </div>
       <p
         id="space-start-day-hint"
-        className="-mt-2 text-muted-foreground text-sm"
+        className="-mt-2 text-sm text-muted-foreground"
       >
         {m.acct_space_form_start_day_hint()}
       </p>

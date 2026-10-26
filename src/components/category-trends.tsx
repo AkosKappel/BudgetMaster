@@ -48,7 +48,7 @@ export function CategoryTrends({ categories, currency }: Trends) {
 
   if (rows.length === 0)
     return (
-      <p className="text-muted-foreground text-sm">{m.ov_trends_empty()}</p>
+      <p className="text-sm text-muted-foreground">{m.ov_trends_empty()}</p>
     )
 
   return (
@@ -59,7 +59,7 @@ export function CategoryTrends({ categories, currency }: Trends) {
           <Sparkline values={c.complete} color={c.color} />
           <span className="flex w-28 flex-col items-end">
             <span className="font-medium tabular-nums">{money(c.last)}</span>
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               {c.change === null
                 ? m.ov_trends_new()
                 : c.change === 0

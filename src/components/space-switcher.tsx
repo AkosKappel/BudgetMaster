@@ -57,7 +57,7 @@ export function SpaceSwitcher({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel className="text-muted-foreground text-xs">
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
           {m.shell_palette_spaces()}
         </DropdownMenuLabel>
         {spaces.map((s) => {
@@ -71,7 +71,7 @@ export function SpaceSwitcher({
               <Icon />
               <span className="flex min-w-0 flex-col">
                 <span className="truncate">{s.name}</span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   {s.personal
                     ? m.shell_space_only_you()
                     : m.shell_space_members({

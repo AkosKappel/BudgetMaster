@@ -100,7 +100,7 @@ function Welcome() {
   return (
     <div className="flex max-w-md flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.shell_welcome_title()}
         </h1>
         <p className="text-muted-foreground">{m.shell_welcome_intro()}</p>
@@ -150,7 +150,7 @@ function Welcome() {
         </div>
         <p
           id="welcome-start-hint"
-          className="-mt-3 text-muted-foreground text-sm"
+          className="-mt-3 text-sm text-muted-foreground"
         >
           {m.shell_welcome_start_hint()}
         </p>
@@ -187,7 +187,7 @@ function Welcome() {
             aria-describedby="welcome-budget-hint"
             onChange={(e) => setBudgetText(e.target.value)}
           />
-          <p id="welcome-budget-hint" className="text-muted-foreground text-sm">
+          <p id="welcome-budget-hint" className="text-sm text-muted-foreground">
             {m.shell_welcome_budget_hint()}
           </p>
         </div>
@@ -202,7 +202,7 @@ function Welcome() {
         </Button>
         <Link
           to="/"
-          className="text-center text-muted-foreground text-sm underline-offset-4 hover:underline"
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
         >
           {m.shell_welcome_skip()}
         </Link>

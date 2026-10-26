@@ -55,7 +55,7 @@ export function CashFlowChart({ months, currency }: CashFlow) {
       <figcaption className="flex flex-col gap-2">
         <p className="max-w-prose text-sm">{summary(months, money)}</p>
         <ul
-          className="flex gap-4 text-muted-foreground text-xs"
+          className="flex gap-4 text-xs text-muted-foreground"
           aria-hidden="true"
         >
           {(['income', 'expense'] as const).map((key) => (

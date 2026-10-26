@@ -80,7 +80,7 @@ function TwoFactor() {
         </Button>
         <button
           type="button"
-          className="w-fit text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+          className="w-fit text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           onClick={() => setBackup(!backup)}
         >
           {backup
@@ -90,7 +90,7 @@ function TwoFactor() {
         <Link
           to="/sign-in"
           search={{ redirect: search.redirect }}
-          className="w-fit text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+          className="w-fit text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           {m.acct_auth_back_to_sign_in()}
         </Link>

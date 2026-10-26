@@ -278,12 +278,12 @@ function Import() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         {m.setup_import_title()}
       </h1>
       <p className="max-w-prose text-muted-foreground">
@@ -291,7 +291,7 @@ function Import() {
       </p>
 
       <section aria-labelledby="import-file" className="flex flex-col gap-3">
-        <h2 id="import-file" className="font-semibold text-lg">
+        <h2 id="import-file" className="text-lg font-semibold">
           {m.setup_import_step_file()}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -339,7 +339,7 @@ function Import() {
               }}
             />
             {options.canReadReceipts && (
-              <p id="import-pdf-hint" className="text-muted-foreground text-xs">
+              <p id="import-pdf-hint" className="text-xs text-muted-foreground">
                 {readingPdf
                   ? m.setup_import_pdf_reading()
                   : m.setup_import_pdf_hint()}
@@ -354,11 +354,11 @@ function Import() {
           aria-labelledby="import-columns"
           className="flex flex-col gap-3"
         >
-          <h2 id="import-columns" className="font-semibold text-lg">
+          <h2 id="import-columns" className="text-lg font-semibold">
             {m.setup_import_step_columns()}
           </h2>
           {remembered && (
-            <p className="text-muted-foreground text-sm" role="status">
+            <p className="text-sm text-muted-foreground" role="status">
               {m.setup_import_remembered()}
             </p>
           )}
@@ -437,7 +437,7 @@ function Import() {
               onChange={(payee) => setMapping({ ...mapping, payee })}
             />
           </div>
-          <p className="text-muted-foreground text-sm" aria-live="polite">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
             {m.setup_import_readable({
               readable: readable.length,
               total: rows.length,
@@ -489,7 +489,7 @@ function RecentImports({ spaceId }: { spaceId: string }) {
 
   return (
     <section aria-labelledby="recent-imports" className="flex flex-col gap-3">
-      <h2 id="recent-imports" className="font-semibold text-lg">
+      <h2 id="recent-imports" className="text-lg font-semibold">
         {m.setup_import_recent()}
       </h2>
       <ul className="divide-y rounded-lg border bg-card">
@@ -499,7 +499,7 @@ function RecentImports({ spaceId }: { spaceId: string }) {
               <span className="truncate font-medium">
                 {i.fileName ?? m.setup_import_statement()}
               </span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {new Date(i.createdAt).toLocaleDateString(formatLocale(), {
                   day: 'numeric',
                   month: 'short',
@@ -622,10 +622,10 @@ function ReviewStep({
 
   return (
     <section aria-labelledby="import-review" className="flex flex-col gap-3">
-      <h2 id="import-review" className="font-semibold text-lg">
+      <h2 id="import-review" className="text-lg font-semibold">
         {m.setup_import_step_review()}
       </h2>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         {duplicates > 0 &&
           `${m.setup_import_duplicates({ count: duplicates })} `}
         {m.setup_import_categories_hint()}
@@ -653,7 +653,7 @@ function ReviewStep({
                 <span className="truncate">
                   {row.payee || m.setup_import_no_payee()}
                 </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   {formatShortDate(row.date)}
                   {row.duplicate && (
                     <>

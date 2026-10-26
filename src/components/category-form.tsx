@@ -51,7 +51,7 @@ export function CategoryForm({
     >
       {!editing && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 font-medium text-sm">
+          <legend className="mb-2 text-sm font-medium">
             {m.setup_form_type()}
           </legend>
           <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
@@ -109,7 +109,7 @@ export function CategoryForm({
         {hasChildren && (
           <p
             id="category-parent-hint"
-            className="text-muted-foreground text-sm"
+            className="text-sm text-muted-foreground"
           >
             {m.setup_category_form_parent_locked()}
           </p>

@@ -9,8 +9,8 @@ A mobile-first personal finance app: record income and expenses in seconds, see 
 
 **Live:** https://budgetmaster.tailb52c43.ts.net. **Try the demo** there for a private copy of 14 months of sample data, no sign-up needed.
 
-| Home | Activity | Budgets | Reports | Dark mode |
-| --- | --- | --- | --- | --- |
+| Home                               | Activity                                   | Budgets                                  | Reports                                  | Dark mode                                            |
+| ---------------------------------- | ------------------------------------------ | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
 | ![Home](docs/screenshots/home.jpg) | ![Activity](docs/screenshots/activity.jpg) | ![Budgets](docs/screenshots/budgets.jpg) | ![Reports](docs/screenshots/reports.jpg) | ![Home in dark mode](docs/screenshots/home-dark.jpg) |
 
 ## Features
@@ -82,7 +82,6 @@ The app runs on http://localhost:3000.
 **Try the demo** on the sign-in page gives every visitor a private anonymous account with about 14 months of sample data (Better Auth `anonymous` plugin). Signing up keeps the data; otherwise it is deleted after 48 hours. The generator lives in `src/db/demo-data.ts`.
 
 For development, `pnpm db:seed` also recreates three shared logins (listed on the sign-in page in dev only), all with the password `demo-budget-2026`:
-
 - `demo@budgetmaster.app`: about 14 months of personal data and owner of a shared Household space
 - `jordan@budgetmaster.app`: small personal space, member of Household
 - `empty@budgetmaster.app`: no data, for empty states

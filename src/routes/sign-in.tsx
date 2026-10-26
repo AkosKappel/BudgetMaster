@@ -68,7 +68,7 @@ function SignIn() {
             <Label htmlFor="password">{m.acct_auth_password()}</Label>
             <Link
               to="/forgot-password"
-              className="text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               {m.acct_sign_in_forgot()}
             </Link>
@@ -94,7 +94,7 @@ function SignIn() {
           <KeyRound />
           {m.acct_sign_in_passkey()}
         </Button>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.acct_sign_in_new_here()}{' '}
           <Link
             to="/sign-up"
@@ -110,7 +110,7 @@ function SignIn() {
         <h2 id="demo" className="font-medium">
           {m.acct_sign_in_demo_title()}
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           {m.acct_sign_in_demo_text()}
         </p>
         <Button
@@ -135,7 +135,7 @@ function SignIn() {
                   className="flex w-full flex-col items-start px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50"
                 >
                   <span className="font-medium">{account.name}</span>
-                  <span className="text-muted-foreground text-sm">
+                  <span className="text-sm text-muted-foreground">
                     {account.description}
                   </span>
                 </button>

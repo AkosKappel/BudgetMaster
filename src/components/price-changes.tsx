@@ -12,7 +12,7 @@ export function PriceChanges({ payees, inflation, currency }: Changes) {
   const money = (minor: number) => formatMoney(minor, currency)
   if (inflation === null)
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         {m.ov_prices_not_enough()}
       </p>
     )
@@ -31,7 +31,7 @@ export function PriceChanges({ payees, inflation, currency }: Changes) {
         {payees.slice(0, 8).map((p) => (
           <li key={p.payee} className="flex items-center gap-3 px-4 py-3">
             <span className="min-w-0 flex-1 truncate">{p.payee}</span>
-            <span className="text-muted-foreground text-sm">
+            <span className="text-sm text-muted-foreground">
               {money(p.before)} → {money(p.recent)}
             </span>
             <span className="w-24 text-right font-medium">

@@ -140,13 +140,13 @@ function YearInReview() {
     <div className="flex flex-col gap-6">
       <Link
         to="/reports"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.ov_reports_title()}
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.ov_year_heading({ year: r.year })}
         </h1>
         <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ function YearInReview() {
           </Button>
         </div>
       </div>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         {(r.complete ? m.ov_year_intro : m.ov_year_intro_so_far)({
           count: r.transactions,
           currency: r.currency,
@@ -197,7 +197,7 @@ function YearInReview() {
                 i === 0 && 'border-note/40 sm:col-span-2',
               )}
             >
-              <span className="text-muted-foreground text-sm">{c.label}</span>
+              <span className="text-sm text-muted-foreground">{c.label}</span>
               <span
                 className={cn(
                   'font-semibold tracking-tight',
@@ -207,7 +207,7 @@ function YearInReview() {
                 {c.value}
               </span>
               {c.detail && (
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   {c.detail}
                 </span>
               )}

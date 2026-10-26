@@ -32,7 +32,7 @@ export function ThemeSwitch() {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-semibold text-lg">
+      <legend className="mb-2 text-lg font-semibold">
         {m.shell_theme_appearance()}
       </legend>
       <div className="grid w-full max-w-sm grid-cols-3 gap-1 rounded-lg bg-muted p-1">
@@ -80,7 +80,7 @@ export function ThemeMenu({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuLabel className="text-muted-foreground text-xs">
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
           {m.shell_theme_title()}
         </DropdownMenuLabel>
         <DropdownMenuRadioGroup

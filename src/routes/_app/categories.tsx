@@ -153,13 +153,13 @@ function Categories() {
     <div className="flex flex-col gap-6">
       <Link
         to="/more"
-        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-muted-foreground text-sm hover:text-foreground"
+        className="-ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         {m.setup_back_more()}
       </Link>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {m.setup_categories_title()}
         </h1>
         {data.canWrite && (
@@ -176,7 +176,7 @@ function Categories() {
           aria-labelledby={`${type}-heading`}
           className="flex flex-col gap-3"
         >
-          <h2 id={`${type}-heading`} className="font-semibold text-lg">
+          <h2 id={`${type}-heading`} className="text-lg font-semibold">
             {type === 'expense'
               ? m.setup_categories_expenses()
               : m.setup_categories_income()}
@@ -220,10 +220,10 @@ function Categories() {
 
       {archived.length > 0 && (
         <details>
-          <summary className="cursor-pointer font-semibold text-lg">
+          <summary className="cursor-pointer text-lg font-semibold">
             {m.setup_archived_count({ count: archived.length })}
           </summary>
-          <p className="my-3 max-w-prose text-muted-foreground text-sm">
+          <p className="my-3 max-w-prose text-sm text-muted-foreground">
             {m.setup_categories_archived_hint()}
           </p>
           <ul className="divide-y rounded-lg border bg-card">
@@ -393,7 +393,7 @@ function MergeOrDelete({
   return (
     <div className="mt-4 flex flex-col gap-3 border-t pt-4">
       <Label htmlFor="merge-into">{m.setup_categories_merge_label()}</Label>
-      <p id="merge-into-hint" className="text-muted-foreground text-sm">
+      <p id="merge-into-hint" className="text-sm text-muted-foreground">
         {m.setup_categories_merge_hint({ name: category.name })}
       </p>
       <div className="flex gap-2">
