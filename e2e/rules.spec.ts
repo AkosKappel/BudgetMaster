@@ -37,11 +37,13 @@ test('rules fill quick add and the import, and the import can create them', asyn
 
   // Import: the rule suggests the category; a different pick for another payee is remembered.
   await page.goto('/import')
+  // Amounts outside every demo range, so no row is taken for a duplicate (the demo's
+  // 49.00 transit pass on the 2nd disabled a -49.00 row early in the month).
   await page.getByLabel('CSV file').setInputFiles({
     name: 'statement.csv',
     mimeType: 'text/csv',
     buffer: Buffer.from(
-      `Date,Description,Amount\n${day()},E2E Coffee Bar 99,-3.50\n${day()},E2E Gadgets,-49.00\n`,
+      `Date,Description,Amount\n${day()},E2E Coffee Bar 99,-1.37\n${day()},E2E Gadgets,-1234.57\n`,
     ),
   })
   await page.getByRole('button', { name: 'Review 2 rows' }).click()
