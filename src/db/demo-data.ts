@@ -410,10 +410,12 @@ export async function seedAlex(ledger: Ledger, alexId: string) {
     archivedAt: new Date(monthStart(9)),
   })
 
+  // Searches back from `start`, not forward: a later first charge can leave a single payment
+  // in the year-ago window of "Prices you pay", which needs two.
   const first31 = (() => {
     let month = start
     while (addMonths(`${month.slice(0, 8)}31`, 0).slice(8) !== '31') {
-      month = addMonths(month, 1)
+      month = addMonths(month, -1)
     }
     return `${month.slice(0, 8)}31`
   })()
