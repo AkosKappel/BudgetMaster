@@ -82,6 +82,7 @@ The app runs on http://localhost:3000.
 **Try the demo** on the sign-in page gives every visitor a private anonymous account with about 14 months of sample data (Better Auth `anonymous` plugin). Signing up keeps the data; otherwise it is deleted after 48 hours. The generator lives in `src/db/demo-data.ts`.
 
 For development, `pnpm db:seed` also recreates three shared logins (listed on the sign-in page in dev only), all with the password `demo-budget-2026`:
+
 - `demo@budgetmaster.app`: about 14 months of personal data and owner of a shared Household space
 - `jordan@budgetmaster.app`: small personal space, member of Household
 - `empty@budgetmaster.app`: no data, for empty states

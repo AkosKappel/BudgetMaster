@@ -96,6 +96,7 @@ The package is public, like the ambulance images. To check from any machine:
 
 If it is made private (GitHub, your profile, Packages, `budgetmaster`, Package settings,
 Change visibility), the server needs a read-only login once:
+
 1. GitHub, Settings, Developer settings, Personal access tokens, Tokens (classic), Generate
    new token: only the `read:packages` scope, an expiry you will remember.
 2. On the server: `docker login ghcr.io -u AkosKappel` and paste the token as the password.
