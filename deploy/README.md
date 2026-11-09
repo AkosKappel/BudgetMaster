@@ -3,12 +3,12 @@
 The live app runs from its own folder, not from this repository, so the development
 checkout can change branches, rebuild and reset its database without touching it.
 
-|                 | Development                           | Production                                                                    |
-| --------------- | ------------------------------------- | ----------------------------------------------------------------------------- |
-| Folder          | `~/projects/BudgetMaster`             | `~/deploy/budgetmaster`                                                       |
-| Compose project | `budgetmaster`                        | `budgetmaster-prod`                                                           |
+|                 | Development                           | Production                                                                                                                  |
+| --------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Folder          | `~/projects/BudgetMaster`             | `~/deploy/budgetmaster`                                                                                                     |
+| Compose project | `budgetmaster`                        | `budgetmaster-prod`                                                                                                         |
 | App             | `pnpm dev` on port 3000               | image from GHCR behind nginx on `127.0.0.1:8085`, public via Cloudflare Tunnel (the old Tailscale Funnel address redirects) |
-| Database        | `budgetmaster-db` on `127.0.0.1:5436` | `budgetmaster-prod-db`, no host port                                          |
+| Database        | `budgetmaster-db` on `127.0.0.1:5436` | `budgetmaster-prod-db`, no host port                                                                                        |
 
 ## First setup
 
