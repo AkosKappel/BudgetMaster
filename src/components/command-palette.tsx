@@ -1,4 +1,8 @@
-import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys'
+import {
+  type DisplayHotkey,
+  formatForDisplay,
+  useHotkey,
+} from '@tanstack/react-hotkeys'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -392,7 +396,7 @@ export function CommandPalette() {
   )
 }
 
-function HotkeyHint({ hotkey }: { hotkey: string }) {
+function HotkeyHint({ hotkey }: { hotkey: DisplayHotkey }) {
   const isClient = useIsClient()
   if (!isClient) return null
   return <CommandShortcut>{formatForDisplay(hotkey)}</CommandShortcut>
