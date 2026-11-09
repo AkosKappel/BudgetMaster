@@ -7,7 +7,7 @@ checkout can change branches, rebuild and reset its database without touching it
 | --------------- | ------------------------------------- | ----------------------------------------------------------------------------- |
 | Folder          | `~/projects/BudgetMaster`             | `~/deploy/budgetmaster`                                                       |
 | Compose project | `budgetmaster`                        | `budgetmaster-prod`                                                           |
-| App             | `pnpm dev` on port 3000               | image from GHCR behind nginx on `127.0.0.1:8085`, public via Tailscale Funnel |
+| App             | `pnpm dev` on port 3000               | image from GHCR behind nginx on `127.0.0.1:8085`, public via Cloudflare Tunnel (the old Tailscale Funnel address redirects) |
 | Database        | `budgetmaster-db` on `127.0.0.1:5436` | `budgetmaster-prod-db`, no host port                                          |
 
 ## First setup
@@ -18,8 +18,8 @@ checkout can change branches, rebuild and reset its database without touching it
 2. Create the folder and copy the files from this directory:
 
    ```bash
-   mkdir -p ~/deploy/budgetmaster/tailscale ~/deploy/budgetmaster/maintenance ~/deploy/budgetmaster/nginx ~/logs/budgetmaster
-   cp deploy/compose.yaml deploy/compose.tailscale.yaml ~/deploy/budgetmaster/
+   mkdir -p ~/deploy/budgetmaster/tailscale ~/deploy/budgetmaster/cloudflared ~/deploy/budgetmaster/maintenance ~/deploy/budgetmaster/nginx ~/logs/budgetmaster
+   cp deploy/compose.yaml deploy/compose.tailscale.yaml deploy/compose.cloudflare.yaml ~/deploy/budgetmaster/
    cp deploy/tailscale/serve.json ~/deploy/budgetmaster/tailscale/
    cp deploy/maintenance/index.html ~/deploy/budgetmaster/maintenance/
    cp deploy/nginx/default.conf ~/deploy/budgetmaster/nginx/
@@ -32,7 +32,7 @@ checkout can change branches, rebuild and reset its database without touching it
    other apps). `chmod 600` both files.
 4. Start it: `cd ~/deploy/budgetmaster && docker compose up -d`. The `migrate` container runs
    first; the app starts once it has finished.
-5. Check `https://budgetmaster.tailb52c43.ts.net/api/health` and sign in with the demo.
+5. Check `https://budgetmaster.akoskappel.dev/api/health` and sign in with the demo.
 
 ## Deploy a new version
 
@@ -51,7 +51,7 @@ how to go back; migrations only move forward, so go back only to a version with 
 schema, or restore the dump the script made.
 
 After the first deploy, check `docker compose logs app` for Better Auth's warning that it
-"could not determine a client IP": without the visitor's address from the Tailscale proxy,
+"could not determine a client IP": without the visitor's address from the tunnel,
 rate limits fall back to one bucket shared by everyone.
 
 When a file in this `deploy/` folder changed, copy it to the deploy folder before running
@@ -102,3 +102,12 @@ Change visibility), the server needs a read-only login once:
 2. On the server: `docker login ghcr.io -u AkosKappel` and paste the token as the password.
    Docker Desktop keeps it in the Windows credential store, not in a file.
 3. Note the token's expiry in `infra/open-items.md`; pulls fail after it.
+
+## Public address
+
+https://budgetmaster.akoskappel.dev goes through a Cloudflare Tunnel: `compose.cloudflare.yaml` runs a
+`cloudflared` connector that forwards every request to nginx. Its token goes into
+`cloudflared/tunnel.env` (`TUNNEL_TOKEN=...`, `chmod 600`; print it with
+`cloudflared tunnel token budgetmaster` on a machine logged in to the `akoskappel.dev` zone).
+The Tailscale sidecar still serves the old `budgetmaster.tailb52c43.ts.net` address, where nginx
+answers with a 301 to the new domain.

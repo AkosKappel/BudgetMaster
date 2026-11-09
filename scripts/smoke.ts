@@ -1,4 +1,4 @@
-// Post-deploy smoke test (H-08): `node scripts/smoke.ts https://budgetmaster.tailb52c43.ts.net`.
+// Post-deploy smoke test (H-08): `node scripts/smoke.ts https://budgetmaster.akoskappel.dev`.
 // Checks the health route, the sign-in page and a real demo sign-in, then signs out again.
 // Exits non-zero on the first failure. Starting a demo seeds one temporary account, deleted
 // after 48 hours like every demo, and counts against the 5 demos per hour per address.

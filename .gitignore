@@ -23,5 +23,6 @@ test-results
 playwright-report
 deploy/.env
 deploy/tailscale/ts.env
+deploy/cloudflared/tunnel.env
 lighthouse-report
 .lighthouseci
