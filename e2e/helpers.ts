@@ -9,6 +9,16 @@ export async function startDemo(page: Page) {
 }
 
 export async function expectNoAxeViolations(page: Page) {
+  // A button fading in from its disabled opacity reads as low contrast mid-transition.
+  // Infinite animations (spinners) never finish, so only finite ones are awaited.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+        .map((a) => a.finished.catch(() => {})),
+    ),
+  )
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze()

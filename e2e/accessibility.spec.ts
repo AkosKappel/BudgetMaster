@@ -151,11 +151,11 @@ test('the language picker switches the public pages to Hungarian and Slovak', as
     page.getByRole('heading', { level: 1, name: /Tudd, mennyit költhetsz/ }),
   ).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
-  await expectNoAxeViolations(page)
-
   await expect(
     page.getByRole('button', { name: 'Demó kipróbálása' }).first(),
   ).toBeEnabled()
+  await expectNoAxeViolations(page)
+
   await page.getByLabel('Nyelv').selectOption('sk')
   await page.goto('/faq')
   await expect(
