@@ -205,7 +205,10 @@ test('keyboard users can skip the navigation and keep focus after deleting', asy
   await expect(page.locator('main')).toBeFocused()
 
   // The deleted row is gone, so focus returns to the page rather than to nothing.
-  await page.getByRole('button', { name: /^Billa/ }).first().focus()
+  await page
+    .getByRole('button', { name: /^Billa/ })
+    .first()
+    .focus()
   await page.keyboard.press('Enter')
   await page.getByRole('button', { name: 'Delete transaction' }).focus()
   await page.keyboard.press('Enter')
