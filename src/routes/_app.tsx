@@ -64,8 +64,19 @@ function AppShell() {
         collapsed ? 'md:grid-cols-[3.5rem_1fr]' : 'md:grid-cols-[15rem_1fr]',
       )}
     >
+      {/* Fixed, so it takes no grid cell; shown only while focused. */}
+      <a
+        href="#main"
+        className="fixed top-2 left-2 z-50 -translate-y-24 rounded-md bg-background px-4 py-3 text-sm font-medium shadow-md outline-ring focus-visible:translate-y-0 focus-visible:outline-2 print:hidden"
+      >
+        {m.shell_app_skip_to_content()}
+      </a>
       <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <main className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pt-10 md:pb-10 print:max-w-none print:p-0">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-2xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] outline-none md:px-8 md:pt-10 md:pb-10 print:max-w-none print:p-0"
+      >
         <header className="-mx-3 mb-4 flex items-center gap-1 md:hidden print:hidden">
           <SpaceSwitcher className="min-w-0 flex-1" />
           <SearchButton compact />

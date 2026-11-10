@@ -79,6 +79,7 @@ export function SpendingPaceChart({
 
       <ChartContainer config={config} className="aspect-auto h-56 w-full">
         <LineChart
+          title={m.ov_home_spending_pace()}
           data={pace}
           margin={{ top: 12, right: 12, bottom: 0, left: 0 }}
         >

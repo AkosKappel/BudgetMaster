@@ -72,6 +72,7 @@ export function ForecastChart(props: Forecast) {
       </figcaption>
       <ChartContainer config={config} className="aspect-auto h-48 w-full">
         <AreaChart
+          title={m.ov_reports_forecast()}
           data={points}
           margin={{ top: 8, right: 28, bottom: 0, left: 0 }}
         >

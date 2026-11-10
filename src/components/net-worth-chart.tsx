@@ -38,6 +38,7 @@ export function NetWorthChart({ points, currency }: NetWorth) {
       <figcaption className="max-w-prose text-sm">{summary}</figcaption>
       <ChartContainer config={config} className="aspect-auto h-48 w-full">
         <AreaChart
+          title={m.ov_networth_title()}
           data={points}
           margin={{ top: 8, right: 12, bottom: 0, left: 0 }}
         >

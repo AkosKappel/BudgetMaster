@@ -188,3 +188,58 @@ test('signed-out visitors at the bare address get the landing page', async ({
   await page.goto('/')
   await expect(page).not.toHaveURL(/start/)
 })
+
+test('keyboard users can skip the navigation and keep focus after deleting', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Keyboard walkthrough is for desktop')
+  await startDemo(page)
+  await page.goto('/activity')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to content' })
+  await expect(skip).toBeFocused()
+  await expect(skip).toBeInViewport()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('main')).toBeFocused()
+
+  // The deleted row is gone, so focus returns to the page rather than to nothing.
+  await page.getByRole('button', { name: /^Billa/ }).first().focus()
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Delete transaction' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Transaction deleted')).toBeVisible()
+  await expect(page.locator('main')).toBeFocused()
+})
+
+test('charts that take focus are named', async ({ page }) => {
+  await startDemo(page)
+  await page.goto('/reports')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const charts = page.locator('svg.recharts-surface[tabindex="0"]')
+  await expect(charts.first()).toBeVisible()
+  for (const chart of await charts.all()) {
+    await expect(chart).toHaveAccessibleName(/\S/)
+  }
+})
+
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' })
+
+  test('sheets appear without sliding in', async ({ page }) => {
+    await startDemo(page)
+    await page
+      .getByRole('button', { name: /add transaction|add expense/i })
+      .first()
+      .click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    const sliding = await page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter((a) => (a as CSSAnimation).animationName?.startsWith('slide'))
+        .map((a) => a.effect?.getComputedTiming().duration),
+    )
+    expect(sliding.every((duration) => duration === 0)).toBe(true)
+  })
+})

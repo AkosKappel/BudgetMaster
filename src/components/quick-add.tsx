@@ -27,10 +27,13 @@ export function QuickAddDrawer() {
     >
       <DrawerContent
         onCloseAutoFocus={(event) => {
-          if (returnFocus?.isConnected) {
-            event.preventDefault()
-            returnFocus.focus()
-          }
+          if (!returnFocus) return
+          event.preventDefault()
+          // A deleted transaction's row is gone; keep focus in the page instead of losing it.
+          ;(returnFocus.isConnected
+            ? returnFocus
+            : document.getElementById('main')
+          )?.focus()
         }}
         className="max-h-[92dvh] data-[vaul-drawer-direction=right]:max-h-dvh data-[vaul-drawer-direction=right]:sm:max-w-md"
       >

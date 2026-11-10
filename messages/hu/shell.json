@@ -133,6 +133,7 @@
   "shell_meta_og_description": "Bevételek, kiadások és keretek a telefonodon, egyedül vagy közösen a pároddal. Próbáld ki a demót, regisztráció nélkül.",
   "shell_meta_og_image_alt": "BudgetMaster logó és a „Try the demo, no sign-up needed” felirat",
   "shell_app_no_space": "Ehhez a fiókhoz nem tartozik kassza.",
+  "shell_app_skip_to_content": "Ugrás a tartalomra",
   "shell_more_settings_hint": "Megjelenés, bejelentkezés és biztonság, az adataid",
   "shell_more_spaces_hint": "Közös kasszák, tagok és meghívók",
   "shell_more_wallets": "Számlák",

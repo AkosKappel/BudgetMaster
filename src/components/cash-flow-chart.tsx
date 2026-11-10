@@ -72,6 +72,7 @@ export function CashFlowChart({ months, currency }: CashFlow) {
 
       <ChartContainer config={config} className="aspect-auto h-64 w-full">
         <BarChart
+          title={m.ov_reports_cash_flow()}
           data={data}
           stackOffset="sign"
           margin={{ top: 8, right: 4, bottom: 0, left: 0 }}

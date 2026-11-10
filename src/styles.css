@@ -111,3 +111,11 @@
     @apply bg-background font-sans text-foreground antialiased;
   }
 }
+
+/* Vaul slides sheets in regardless of the system setting; with reduced motion they appear in place.
+   `body` outranks the styles Vaul injects at runtime. */
+@media (prefers-reduced-motion: reduce) {
+  body [data-vaul-drawer] {
+    animation-duration: 0s;
+  }
+}
