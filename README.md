@@ -77,6 +77,8 @@ The app runs on http://localhost:3000.
 | `pnpm test`        | Run unit tests (`node --test`)         |
 | `pnpm test:e2e`    | Run Playwright tests (build first)     |
 
+`pnpm install` also turns on a Git pre-commit hook (`.githooks/pre-commit`) that runs the `pnpm check` rules on the staged files, so a commit CI would fail on formatting is refused locally. `pnpm check:fix` fixes what it reports.
+
 ## Demo data
 
 **Try the demo** on the sign-in page gives every visitor a private anonymous account with about 14 months of sample data (Better Auth `anonymous` plugin). Signing up keeps the data; otherwise it is deleted after 48 hours. The generator lives in `src/db/demo-data.ts`.

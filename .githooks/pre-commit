@@ -1,0 +1,4 @@
+#!/bin/sh
+# The format and lint check CI's `check` job runs, on the files being committed.
+# `pnpm check:fix` fixes what it reports.
+exec pnpm exec biome check --staged --no-errors-on-unmatched
