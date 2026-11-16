@@ -11,7 +11,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm'
-import webpush from 'web-push'
+import * as webpush from 'web-push'
 
 import { db } from '@/db'
 import {
