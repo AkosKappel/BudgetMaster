@@ -9,6 +9,8 @@ A mobile-first personal finance app: record income and expenses in seconds, see 
 
 **Live:** https://budgetmaster.akoskappel.dev. **Try the demo** there for a private copy of 14 months of sample data, no sign-up needed.
 
+**Case study:** [akoskappel.dev/projects/budget-master](https://akoskappel.dev/projects/budget-master)
+
 | Home                               | Activity                                   | Budgets                                  | Reports                                  | Dark mode                                            |
 | ---------------------------------- | ------------------------------------------ | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
 | ![Home](docs/screenshots/home.jpg) | ![Activity](docs/screenshots/activity.jpg) | ![Budgets](docs/screenshots/budgets.jpg) | ![Reports](docs/screenshots/reports.jpg) | ![Home in dark mode](docs/screenshots/home-dark.jpg) |
